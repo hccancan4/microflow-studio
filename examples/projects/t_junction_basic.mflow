@@ -1,0 +1,249 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "name": "T-Junction Basic",
+    "author": "MicroFlow Studio",
+    "created": "2025-06-01T10:00:00.000Z",
+    "modified": "2025-06-01T10:00:00.000Z",
+    "description": "A simple T-junction with one inlet, one main channel, and two outlet branches. Use as a starting point for droplet generation or flow splitting experiments.",
+    "tags": ["t-junction", "flow-splitting", "example"]
+  },
+  "canvas": {
+    "width": 20000,
+    "height": 15000,
+    "unit": "um",
+    "gridSize": 50,
+    "showGrid": true,
+    "showRuler": true,
+    "zoom": 1.0,
+    "panX": 0,
+    "panY": 0
+  },
+  "components": [
+    {
+      "id": "comp_ex_tjunc_1",
+      "type": "port",
+      "position": { "x": 500, "y": 5000 },
+      "rotation": 0,
+      "params": { "diameter": 500, "portType": "inlet" },
+      "ports": [
+        {
+          "id": "port_ex_tjunc_1_0",
+          "componentId": "comp_ex_tjunc_1",
+          "portIndex": 0,
+          "position": { "x": 250, "y": 0 },
+          "type": "output",
+          "diameter": 500,
+          "connected": true
+        }
+      ],
+      "label": "Inlet"
+    },
+    {
+      "id": "comp_ex_tjunc_2",
+      "type": "straight_channel",
+      "position": { "x": 1500, "y": 5000 },
+      "rotation": 0,
+      "params": { "width": 300, "length": 4000, "depth": 50 },
+      "ports": [
+        {
+          "id": "port_ex_tjunc_2_0",
+          "componentId": "comp_ex_tjunc_2",
+          "portIndex": 0,
+          "position": { "x": 0, "y": 0 },
+          "type": "input",
+          "diameter": 50,
+          "connected": true
+        },
+        {
+          "id": "port_ex_tjunc_2_1",
+          "componentId": "comp_ex_tjunc_2",
+          "portIndex": 1,
+          "position": { "x": 4000, "y": 0 },
+          "type": "output",
+          "diameter": 50,
+          "connected": true
+        }
+      ],
+      "label": "Main Channel"
+    },
+    {
+      "id": "comp_ex_tjunc_3",
+      "type": "t_junction",
+      "position": { "x": 6000, "y": 5000 },
+      "rotation": 0,
+      "params": { "mainWidth": 300, "branchWidth": 200, "angle": 90, "depth": 50 },
+      "ports": [
+        {
+          "id": "port_ex_tjunc_3_0",
+          "componentId": "comp_ex_tjunc_3",
+          "portIndex": 0,
+          "position": { "x": 0, "y": 0 },
+          "type": "input",
+          "diameter": 50,
+          "connected": true
+        },
+        {
+          "id": "port_ex_tjunc_3_1",
+          "componentId": "comp_ex_tjunc_3",
+          "portIndex": 1,
+          "position": { "x": 600, "y": 0 },
+          "type": "output",
+          "diameter": 50,
+          "connected": true
+        },
+        {
+          "id": "port_ex_tjunc_3_2",
+          "componentId": "comp_ex_tjunc_3",
+          "portIndex": 2,
+          "position": { "x": 300, "y": -600 },
+          "type": "output",
+          "diameter": 50,
+          "connected": true
+        }
+      ],
+      "label": "T-Split"
+    },
+    {
+      "id": "comp_ex_tjunc_4",
+      "type": "straight_channel",
+      "position": { "x": 7000, "y": 5000 },
+      "rotation": 0,
+      "params": { "width": 200, "length": 3000, "depth": 50 },
+      "ports": [
+        {
+          "id": "port_ex_tjunc_4_0",
+          "componentId": "comp_ex_tjunc_4",
+          "portIndex": 0,
+          "position": { "x": 0, "y": 0 },
+          "type": "input",
+          "diameter": 50,
+          "connected": true
+        },
+        {
+          "id": "port_ex_tjunc_4_1",
+          "componentId": "comp_ex_tjunc_4",
+          "portIndex": 1,
+          "position": { "x": 3000, "y": 0 },
+          "type": "output",
+          "diameter": 50,
+          "connected": true
+        }
+      ],
+      "label": "Branch A"
+    },
+    {
+      "id": "comp_ex_tjunc_5",
+      "type": "straight_channel",
+      "position": { "x": 7000, "y": 3500 },
+      "rotation": 270,
+      "params": { "width": 200, "length": 3000, "depth": 50 },
+      "ports": [
+        {
+          "id": "port_ex_tjunc_5_0",
+          "componentId": "comp_ex_tjunc_5",
+          "portIndex": 0,
+          "position": { "x": 0, "y": 0 },
+          "type": "input",
+          "diameter": 50,
+          "connected": true
+        },
+        {
+          "id": "port_ex_tjunc_5_1",
+          "componentId": "comp_ex_tjunc_5",
+          "portIndex": 1,
+          "position": { "x": 3000, "y": 0 },
+          "type": "output",
+          "diameter": 50,
+          "connected": true
+        }
+      ],
+      "label": "Branch B"
+    },
+    {
+      "id": "comp_ex_tjunc_6",
+      "type": "port",
+      "position": { "x": 10500, "y": 5000 },
+      "rotation": 0,
+      "params": { "diameter": 500, "portType": "outlet" },
+      "ports": [
+        {
+          "id": "port_ex_tjunc_6_0",
+          "componentId": "comp_ex_tjunc_6",
+          "portIndex": 0,
+          "position": { "x": -250, "y": 0 },
+          "type": "input",
+          "diameter": 500,
+          "connected": true
+        }
+      ],
+      "label": "Outlet A"
+    },
+    {
+      "id": "comp_ex_tjunc_7",
+      "type": "port",
+      "position": { "x": 7000, "y": 2000 },
+      "rotation": 270,
+      "params": { "diameter": 500, "portType": "outlet" },
+      "ports": [
+        {
+          "id": "port_ex_tjunc_7_0",
+          "componentId": "comp_ex_tjunc_7",
+          "portIndex": 0,
+          "position": { "x": -250, "y": 0 },
+          "type": "input",
+          "diameter": 500,
+          "connected": true
+        }
+      ],
+      "label": "Outlet B"
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn_ex_tjunc_1",
+      "fromComponentId": "comp_ex_tjunc_1",
+      "fromPortIndex": 0,
+      "toComponentId": "comp_ex_tjunc_2",
+      "toPortIndex": 0
+    },
+    {
+      "id": "conn_ex_tjunc_2",
+      "fromComponentId": "comp_ex_tjunc_2",
+      "fromPortIndex": 1,
+      "toComponentId": "comp_ex_tjunc_3",
+      "toPortIndex": 0
+    },
+    {
+      "id": "conn_ex_tjunc_3",
+      "fromComponentId": "comp_ex_tjunc_3",
+      "fromPortIndex": 1,
+      "toComponentId": "comp_ex_tjunc_4",
+      "toPortIndex": 0
+    },
+    {
+      "id": "conn_ex_tjunc_4",
+      "fromComponentId": "comp_ex_tjunc_3",
+      "fromPortIndex": 2,
+      "toComponentId": "comp_ex_tjunc_5",
+      "toPortIndex": 0
+    },
+    {
+      "id": "conn_ex_tjunc_5",
+      "fromComponentId": "comp_ex_tjunc_4",
+      "fromPortIndex": 1,
+      "toComponentId": "comp_ex_tjunc_6",
+      "toPortIndex": 0
+    },
+    {
+      "id": "conn_ex_tjunc_6",
+      "fromComponentId": "comp_ex_tjunc_5",
+      "fromPortIndex": 1,
+      "toComponentId": "comp_ex_tjunc_7",
+      "toPortIndex": 0
+    }
+  ],
+  "simulation_results": null,
+  "experiment_data": [],
+  "script": "-- T-Junction script\n-- Run basic_t_junction.lua to regenerate this design programmatically.\n"
+}

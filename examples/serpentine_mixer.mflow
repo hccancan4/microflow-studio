@@ -1,0 +1,246 @@
+{
+  "mflow_version": 1,
+  "metadata": {
+    "name": "Serpentine Mixer (8 turns)",
+    "description": "Passive serpentine mixer for two aqueous streams. 8 U-turns, channel width 150 μm, depth 50 μm, turn radius 300 μm, straight segment 2000 μm. Total channel length ≈ 23.5 mm. Suitable for Re < 10, Pe > 100.",
+    "author": "MicroFlow Studio Examples",
+    "created_at": "2025-09-01T10:00:00Z",
+    "updated_at": "2025-09-01T10:00:00Z",
+    "tags": ["mixer", "serpentine", "passive-mixing", "laminar"],
+    "units": "um"
+  },
+  "design": {
+    "canvas": {
+      "width": 14000.0,
+      "height": 10000.0,
+      "grid_size": 50.0,
+      "background_color": "#1a1a2e"
+    },
+    "components": [
+      {
+        "id": "comp-inlet-a",
+        "kind": "inlet_port",
+        "label": "Stream A (5 μL/min)",
+        "position": { "x": 500.0, "y": 3500.0 },
+        "rotation": 0.0,
+        "params": {
+          "diameter": 400.0,
+          "boundary_type": "flow_rate",
+          "value": 5.0,
+          "fluid": "water"
+        },
+        "ports": [
+          {
+            "id": "port-a-out",
+            "name": "outlet",
+            "position": { "x": 200.0, "y": 0.0 },
+            "direction": "out",
+            "connected_to": "ch-inlet-a"
+          }
+        ]
+      },
+      {
+        "id": "comp-inlet-b",
+        "kind": "inlet_port",
+        "label": "Stream B (5 μL/min)",
+        "position": { "x": 500.0, "y": 4500.0 },
+        "rotation": 0.0,
+        "params": {
+          "diameter": 400.0,
+          "boundary_type": "flow_rate",
+          "value": 5.0,
+          "fluid": "pbs_1x"
+        },
+        "ports": [
+          {
+            "id": "port-b-out",
+            "name": "outlet",
+            "position": { "x": 200.0, "y": 0.0 },
+            "direction": "out",
+            "connected_to": "ch-inlet-b"
+          }
+        ]
+      },
+      {
+        "id": "comp-y-junction",
+        "kind": "y_junction",
+        "label": "Y-Junction (merge)",
+        "position": { "x": 1500.0, "y": 4000.0 },
+        "rotation": 0.0,
+        "params": {
+          "arm_width": 150.0,
+          "stem_width": 150.0,
+          "depth": 50.0,
+          "half_angle": 15.0
+        },
+        "ports": [
+          {
+            "id": "port-yj-a",
+            "name": "arm_a",
+            "position": { "x": -300.0, "y": -250.0 },
+            "direction": "in",
+            "connected_to": "ch-inlet-a"
+          },
+          {
+            "id": "port-yj-b",
+            "name": "arm_b",
+            "position": { "x": -300.0, "y": 250.0 },
+            "direction": "in",
+            "connected_to": "ch-inlet-b"
+          },
+          {
+            "id": "port-yj-stem",
+            "name": "stem",
+            "position": { "x": 300.0, "y": 0.0 },
+            "direction": "out",
+            "connected_to": "ch-serpentine"
+          }
+        ]
+      },
+      {
+        "id": "comp-serpentine",
+        "kind": "serpentine_mixer",
+        "label": "Serpentine Mixer (8 turns)",
+        "position": { "x": 4000.0, "y": 4000.0 },
+        "rotation": 0.0,
+        "params": {
+          "channel_width": 150.0,
+          "depth": 50.0,
+          "turn_radius": 300.0,
+          "straight_length": 2000.0,
+          "n_turns": 8,
+          "pitch": 800.0
+        },
+        "ports": [
+          {
+            "id": "port-ser-in",
+            "name": "inlet",
+            "position": { "x": -2000.0, "y": 0.0 },
+            "direction": "in",
+            "connected_to": "ch-serpentine"
+          },
+          {
+            "id": "port-ser-out",
+            "name": "outlet",
+            "position": { "x": 2000.0, "y": 0.0 },
+            "direction": "out",
+            "connected_to": "ch-outlet-main"
+          }
+        ]
+      },
+      {
+        "id": "comp-outlet",
+        "kind": "outlet_port",
+        "label": "Mixed Output",
+        "position": { "x": 12000.0, "y": 4000.0 },
+        "rotation": 0.0,
+        "params": {
+          "diameter": 400.0,
+          "pressure": 0.0
+        },
+        "ports": [
+          {
+            "id": "port-outlet-in",
+            "name": "inlet",
+            "position": { "x": -200.0, "y": 0.0 },
+            "direction": "in",
+            "connected_to": "ch-outlet-main"
+          }
+        ]
+      }
+    ],
+    "channels": [
+      {
+        "id": "ch-inlet-a",
+        "label": "Stream A inlet",
+        "kind": "straight",
+        "width": 150.0,
+        "depth": 50.0,
+        "points": [
+          { "x": 700.0, "y": 3500.0 },
+          { "x": 1200.0, "y": 3750.0 }
+        ],
+        "start_port": "port-a-out",
+        "end_port": "port-yj-a",
+        "style": { "color": "#4fc3f7", "line_width": 2 }
+      },
+      {
+        "id": "ch-inlet-b",
+        "label": "Stream B inlet",
+        "kind": "straight",
+        "width": 150.0,
+        "depth": 50.0,
+        "points": [
+          { "x": 700.0, "y": 4500.0 },
+          { "x": 1200.0, "y": 4250.0 }
+        ],
+        "start_port": "port-b-out",
+        "end_port": "port-yj-b",
+        "style": { "color": "#f97316", "line_width": 2 }
+      },
+      {
+        "id": "ch-serpentine",
+        "label": "Pre-mixer straight",
+        "kind": "straight",
+        "width": 150.0,
+        "depth": 50.0,
+        "points": [
+          { "x": 1800.0, "y": 4000.0 },
+          { "x": 2000.0, "y": 4000.0 }
+        ],
+        "start_port": "port-yj-stem",
+        "end_port": "port-ser-in",
+        "style": { "color": "#a78bfa", "line_width": 2 }
+      },
+      {
+        "id": "ch-outlet-main",
+        "label": "Mixed stream outlet",
+        "kind": "straight",
+        "width": 150.0,
+        "depth": 50.0,
+        "points": [
+          { "x": 6000.0, "y": 4000.0 },
+          { "x": 11800.0, "y": 4000.0 }
+        ],
+        "start_port": "port-ser-out",
+        "end_port": "port-outlet-in",
+        "style": { "color": "#34d399", "line_width": 2 }
+      }
+    ]
+  },
+  "simulation": {
+    "level": "analytical",
+    "fluid": {
+      "name": "water",
+      "density": 997.0,
+      "viscosity": 0.000890
+    },
+    "boundary_conditions": [
+      {
+        "port_id": "port-a-out",
+        "type": "flow_rate",
+        "value": 5.0,
+        "unit": "ul_min"
+      },
+      {
+        "port_id": "port-b-out",
+        "type": "flow_rate",
+        "value": 5.0,
+        "unit": "ul_min"
+      },
+      {
+        "port_id": "port-outlet-in",
+        "type": "pressure",
+        "value": 0.0,
+        "unit": "pa"
+      }
+    ],
+    "notes": "Combined flow: 10 μL/min in 150×50 μm channel. U_mean = 22.2 mm/s. Re ≈ 1.9 (laminar). D_mol (fluorescent dye) ≈ 4×10⁻¹⁰ m²/s. Pe ≈ 53. Total serpentine length ≈ 23.5 mm. Characteristic mixing length ≈ 63 mm → partial mixing after 8 turns. For complete mixing add more turns or reduce flow rate."
+  },
+  "script": {
+    "language": "lua",
+    "content": "-- Serpentine Mixer Analysis\n-- Estimates mixing efficiency after N turns\n\nlocal Q_total = 10      -- μL/min\nlocal w = 150           -- μm\nlocal h = 50            -- μm\nlocal R_bend = 300      -- μm\nlocal L_straight = 2000 -- μm\nlocal n_turns = 8\n\n-- Fluid properties (water)\nlocal rho = 997\nlocal mu = 0.000890\nlocal D_mol = 4e-10     -- m²/s, fluorescent dye\n\n-- SI conversions\nlocal Q_SI = Q_total * 1.667e-11\nlocal w_SI = w * 1e-6\nlocal h_SI = h * 1e-6\nlocal A = w_SI * h_SI\nlocal U = Q_SI / A\nlocal Dh = 2 * w_SI * h_SI / (w_SI + h_SI)\n\n-- Dimensionless numbers\nlocal Re = rho * U * Dh / mu\nlocal Pe = U * Dh / D_mol\n\n-- Total serpentine length\nlocal L_arc = math.pi * R_bend * 1e-6  -- one U-turn arc (180°)\nlocal L_total_m = n_turns * (L_straight * 1e-6 + L_arc)\n\nmf.log(string.format(\"Mean velocity: %.2f mm/s\", U * 1000))\nmf.log(string.format(\"Re = %.2f, Pe = %.0f\", Re, Pe))\nmf.log(string.format(\"D_h = %.1f μm\", Dh * 1e6))\nmf.log(string.format(\"Total channel length: %.1f mm\", L_total_m * 1000))\n\n-- Approximate mixing index per turn (empirical, laminar serpentine)\n-- From Stroock et al. 2002 concept\nlocal n_mix = Pe / (2 * math.pi^2)  -- characteristic turns for full mixing\nlocal MI = 1 - math.exp(-n_turns / n_mix)\n\nmf.log(string.format(\"Characteristic mixing turns n_mix = %.1f\", n_mix))\nmf.log(string.format(\"Estimated mixing index after %d turns: MI = %.3f\", n_turns, MI))\n\nif MI > 0.95 then\n  mf.log(\"Status: Excellent mixing (MI > 0.95)\")\nelseif MI > 0.8 then\n  mf.log(\"Status: Good mixing (MI > 0.80)\")\nelse\n  mf.log(string.format(\"Status: Partial mixing — need ~%.0f turns for MI > 0.95\", -n_mix * math.log(0.05)))\nend\n\nlocal result = mf.simulate({ fluid = \"water\" })\nmf.log(string.format(\"Total pressure drop: %.1f Pa\", result.total_pressure_drop_pa))\n",
+    "last_run_at": null,
+    "last_run_output": null
+  }
+}

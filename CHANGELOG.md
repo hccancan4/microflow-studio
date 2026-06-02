@@ -1,0 +1,132 @@
+# Changelog — MicroFlow Studio
+
+All notable changes are documented here, organised by development phase.
+
+---
+
+## Phase 1 — Project Skeleton
+
+- Tauri v2 project initialised (Rust + React 18 + TypeScript + Vite)
+- Application layout: Toolbar, left Sidebar, centre canvas area, right Properties panel, bottom Results panel
+- Zustand 5 stores created: `useDesignStore`, `useProjectStore`, `useSimulationStore`
+- TypeScript type definitions: `ChipComponent`, `Connection`, `CanvasState`, `SimulationParams`, `MFlowProject`
+- Tailwind CSS with custom MicroFlow dark-theme tokens (`mf-bg`, `mf-blue`, etc.)
+- Status bar with component count, zoom level, dirty indicator
+
+---
+
+## Phase 2 — Canvas Editor & Component Library
+
+- Konva.js canvas with three-layer architecture (grid, components, overlays)
+- Drag-and-drop component placement from Sidebar
+- All 10 microfluidic component types with type-specific Konva shapes (`ComponentShapes.tsx`)
+- Default parameters per type (`getDefaultParams`)
+- Port circles rendered on components; port-to-port connection drawing (`PortOverlay`)
+- Multi-select, move, rotate, delete via keyboard and context menu
+- Grid snapping (25 / 50 / 100 μm); zoom (mouse wheel); pan (middle-drag)
+- Ruler overlay with real μm scale (`Ruler.tsx`)
+- Undo/redo with 50-step history stack in `useDesignStore`
+- Right-click context menu (duplicate, delete, properties)
+- `PropertiesPanel` for editing selected component parameters
+
+---
+
+## Phase 3 — Lua Scripting
+
+- Embedded Lua 5.4 interpreter via `mlua` 0.10 (Rust crate)
+- Sandboxed environment: `os`, `io`, `debug`, `package`, `require` removed; custom `print` routed to output log
+- `Chip` Lua API: `Chip.new`, 10 `chip:add_*` methods, `chip:connect`, `chip:clear`
+- `ComponentRef` and `PortRef` UserData types for port-level connection control
+- `Sweep.run({param, values, callback})` for parametric iteration
+- `DesignAction` enum (`AddComponent`, `Connect`, `ClearDesign`, `UpdateCanvas`) serialised to Tauri events
+- `ScriptContext` (`Arc<Mutex<Vec<DesignAction>>>`) pattern for thread-safe action collection
+- `execute_script` IPC command; emits `script-action` and `script-completed` events
+- `useScriptDispatcher` hook batches actions and dispatches to `useDesignStore`
+- Monaco editor with Lua syntax highlighting in `ScriptEditor` panel
+- Live output log; error display
+
+---
+
+## Phase 4A — Analytical Simulation
+
+- `run_analytic_network` IPC command and `simulation/analytic.rs` solver
+- Hydraulic diameter, Hagen-Poiseuille resistance, flow rate, Reynolds number formulas
+- Dean number for curved channels; serpentine mixing efficiency (Stroock model)
+- `extract_channel` mapping all 10 component types to effective rectangular channels
+- DFS-based all-simple-paths network solver with series/parallel resistance combination
+- Fallback for disconnected designs (per-component independent solve)
+- Parabolic velocity profile generation (21 points per channel)
+- `ResultsPanel` with 4 tabs: Özet (summary table), Hız Profili (velocity chart), Basınç (pressure bar chart), CFD (placeholder)
+- `run_analytic_simulation` command wired to Toolbar button
+
+---
+
+## Phase 4B — 2D CFD Solver
+
+- `run_cfd_simulation` IPC command and `simulation/cfd.rs` solver
+- 2D incompressible Navier-Stokes, Chorin projection method
+- Parabolic inlet profile; no-slip walls; outflow boundary
+- Gauss-Seidel SOR Poisson solver (ω = 1.7, 80 sub-iterations per step)
+- Three grid resolutions: Coarse (60×16), Medium (100×24), Fine (160×36)
+- `CfdField` output: velocityX, velocityY, pressure, magnitude, wallShear, residuals, iterations, converged
+- `simulation-progress` Tauri events every 5 iterations; `ProgressOverlay` toast
+- `CfdOverlay` heatmap rendered as ImageData over Konva canvas
+- 4 colormaps: jet, viridis, plasma, coolwarm (toggle buttons in Results panel CFD tab)
+- CFD target component selection: selected `straight_channel` or first available
+
+---
+
+## Phase 5A — PNG & SVG Export
+
+- `ExportDialog` with format selector (PNG / SVG / GDS-II), DPI (72–600), background (White / Dark / Transparent), scale bar toggle
+- `ExportRenderer` — offscreen Konva `<Stage>` renders design → `toDataURL()` → base64
+- `export_png_data` IPC command: base64 decode → `image` crate → alpha composite → save
+- `composite_over_background` per-pixel alpha blending in Rust
+- `svgExporter.ts` — generates complete SVG string from components + connections; optional μm scale bar
+- `export_svg` IPC command writes SVG as UTF-8 bytes
+
+---
+
+## Phase 5B — GDS-II Export
+
+- `export/gds.rs` — full GDS-II Stream Format binary writer
+- GDS-II floating-point encoding (`pack_gds_real`, taban-16 excess-64 format)
+- Record types: HEADER, BGNLIB, LIBNAME, UNITS, BGNSTR, STRNAME, BOUNDARY, LAYER, DATATYPE, XY, ENDEL, ENDSTR, ENDLIB
+- db-unit = 0.001 μm (1 nm resolution); user-unit = 1 μm
+- `gdsGeometry.ts` generates `GdsPolygon[]` for all 10 component types (265 lines)
+- `export_gds_file` IPC command: receives polygons + params from frontend, calls `save_gds`
+- Structure name sanitised from project name (uppercase, max 31 chars)
+
+---
+
+## Phase 6A — Experiment Data Import & Comparison
+
+- `ExperimentImportDialog` — CSV/JSON import wizard with column mapping
+- `csvParser.ts` parses delimiter-separated files into `ExperimentDataSet`
+- `useExperimentStore` manages datasets (add, remove, replaceAll, nextColor)
+- Experiment datasets overlaid on simulation result charts in `ResultsPanel`
+- `experimentMetrics.ts` — R², RMSE, per-point error map computation
+- Error map visualisation in the CFD results tab
+- `experiment_data` field persisted in `.mflow` file format
+- "Import Experiment" Toolbar button and `Ctrl+I` shortcut
+
+---
+
+## Phase 6B — Parametric Sweep
+
+- `SweepDialog` UI — parameter selection, value range, step count
+- `useSweepStore` — sweep configuration, progress, and results state
+- `sweepRunner.ts` — batch execution loop; calls analytic solver per step; collects results
+- Lua `Sweep.run({param, values, callback})` for scripted sweeps
+- Results displayed in SweepDialog results table
+
+---
+
+## Polish Phase
+
+- Clippy warnings resolved across all Rust modules (`#[allow(...)]` only where justified)
+- Edge-case guards: empty component list, disconnected network, zero-resistance paths, NaN/Inf clamping in CFD field
+- `is_multiple_of(2)` for GDS ASCII record padding (replaces `% 2 == 0`)
+- Unused variable prefixes (`_comp_by_id`) to silence Rust warnings
+- TypeScript: 0 errors (`tsc --noEmit`)
+- Bundle size optimised: 3 JS chunks, 1 CSS, total ≈ 1.1 MB

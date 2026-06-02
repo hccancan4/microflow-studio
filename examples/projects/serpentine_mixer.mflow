@@ -1,0 +1,179 @@
+{
+  "version": "1.0",
+  "metadata": {
+    "name": "Serpentine Mixer",
+    "author": "MicroFlow Studio",
+    "created": "2025-06-01T11:00:00.000Z",
+    "modified": "2025-06-01T11:00:00.000Z",
+    "description": "An 8-turn serpentine passive mixer. One inlet feeds a short main channel into the serpentine, then exits to an outlet. Run Analytic simulation to see Reynolds number and mixing efficiency (Stroock model). Import mixing_efficiency.json as experiment data to compare.",
+    "tags": ["serpentine", "mixer", "passive-mixing", "example"]
+  },
+  "canvas": {
+    "width": 20000,
+    "height": 15000,
+    "unit": "um",
+    "gridSize": 50,
+    "showGrid": true,
+    "showRuler": true,
+    "zoom": 1.0,
+    "panX": 0,
+    "panY": 0
+  },
+  "components": [
+    {
+      "id": "comp_ex_mix_1",
+      "type": "port",
+      "position": { "x": 500, "y": 7000 },
+      "rotation": 0,
+      "params": { "diameter": 500, "portType": "inlet" },
+      "ports": [
+        {
+          "id": "port_ex_mix_1_0",
+          "componentId": "comp_ex_mix_1",
+          "portIndex": 0,
+          "position": { "x": 250, "y": 0 },
+          "type": "output",
+          "diameter": 500,
+          "connected": true
+        }
+      ],
+      "label": "Inlet"
+    },
+    {
+      "id": "comp_ex_mix_2",
+      "type": "straight_channel",
+      "position": { "x": 1500, "y": 7000 },
+      "rotation": 0,
+      "params": { "width": 200, "length": 2000, "depth": 50 },
+      "ports": [
+        {
+          "id": "port_ex_mix_2_0",
+          "componentId": "comp_ex_mix_2",
+          "portIndex": 0,
+          "position": { "x": 0, "y": 0 },
+          "type": "input",
+          "diameter": 50,
+          "connected": true
+        },
+        {
+          "id": "port_ex_mix_2_1",
+          "componentId": "comp_ex_mix_2",
+          "portIndex": 1,
+          "position": { "x": 2000, "y": 0 },
+          "type": "output",
+          "diameter": 50,
+          "connected": true
+        }
+      ],
+      "label": "Feed Channel"
+    },
+    {
+      "id": "comp_ex_mix_3",
+      "type": "serpentine_mixer",
+      "position": { "x": 4000, "y": 7000 },
+      "rotation": 0,
+      "params": { "channelWidth": 200, "turns": 8, "pitch": 600, "depth": 50 },
+      "ports": [
+        {
+          "id": "port_ex_mix_3_0",
+          "componentId": "comp_ex_mix_3",
+          "portIndex": 0,
+          "position": { "x": 0, "y": 0 },
+          "type": "input",
+          "diameter": 50,
+          "connected": true
+        },
+        {
+          "id": "port_ex_mix_3_1",
+          "componentId": "comp_ex_mix_3",
+          "portIndex": 1,
+          "position": { "x": 600, "y": 0 },
+          "type": "output",
+          "diameter": 50,
+          "connected": true
+        }
+      ],
+      "label": "Serpentine Mixer (8 turns)"
+    },
+    {
+      "id": "comp_ex_mix_4",
+      "type": "straight_channel",
+      "position": { "x": 5200, "y": 7000 },
+      "rotation": 0,
+      "params": { "width": 200, "length": 2000, "depth": 50 },
+      "ports": [
+        {
+          "id": "port_ex_mix_4_0",
+          "componentId": "comp_ex_mix_4",
+          "portIndex": 0,
+          "position": { "x": 0, "y": 0 },
+          "type": "input",
+          "diameter": 50,
+          "connected": true
+        },
+        {
+          "id": "port_ex_mix_4_1",
+          "componentId": "comp_ex_mix_4",
+          "portIndex": 1,
+          "position": { "x": 2000, "y": 0 },
+          "type": "output",
+          "diameter": 50,
+          "connected": true
+        }
+      ],
+      "label": "Exit Channel"
+    },
+    {
+      "id": "comp_ex_mix_5",
+      "type": "port",
+      "position": { "x": 7700, "y": 7000 },
+      "rotation": 0,
+      "params": { "diameter": 500, "portType": "outlet" },
+      "ports": [
+        {
+          "id": "port_ex_mix_5_0",
+          "componentId": "comp_ex_mix_5",
+          "portIndex": 0,
+          "position": { "x": -250, "y": 0 },
+          "type": "input",
+          "diameter": 500,
+          "connected": true
+        }
+      ],
+      "label": "Outlet"
+    }
+  ],
+  "connections": [
+    {
+      "id": "conn_ex_mix_1",
+      "fromComponentId": "comp_ex_mix_1",
+      "fromPortIndex": 0,
+      "toComponentId": "comp_ex_mix_2",
+      "toPortIndex": 0
+    },
+    {
+      "id": "conn_ex_mix_2",
+      "fromComponentId": "comp_ex_mix_2",
+      "fromPortIndex": 1,
+      "toComponentId": "comp_ex_mix_3",
+      "toPortIndex": 0
+    },
+    {
+      "id": "conn_ex_mix_3",
+      "fromComponentId": "comp_ex_mix_3",
+      "fromPortIndex": 1,
+      "toComponentId": "comp_ex_mix_4",
+      "toPortIndex": 0
+    },
+    {
+      "id": "conn_ex_mix_4",
+      "fromComponentId": "comp_ex_mix_4",
+      "fromPortIndex": 1,
+      "toComponentId": "comp_ex_mix_5",
+      "toPortIndex": 0
+    }
+  ],
+  "simulation_results": null,
+  "experiment_data": [],
+  "script": "-- Serpentine mixer script\n-- Load examples/data/mixing_efficiency.json as experiment data\n-- then run Analytic simulation to compare measured vs theoretical mixing efficiency.\n"
+}

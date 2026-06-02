@@ -1,0 +1,81 @@
+# ════════════════════════════════════════════════════════════════════════
+# Node / Vite / npm
+# ════════════════════════════════════════════════════════════════════════
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.local
+
+# Log dosyaları
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ════════════════════════════════════════════════════════════════════════
+# Rust / Cargo / Tauri
+# ════════════════════════════════════════════════════════════════════════
+# 5+ GB build cache — absolute path'ler cache'lenir, taşınınca yeniden derleme gerek
+src-tauri/target/
+src-tauri/gen/
+src-tauri/Cargo.lock.bak
+
+# Tauri build outputs
+src-tauri/bundle/
+src-tauri/release/
+
+# ════════════════════════════════════════════════════════════════════════
+# Editör / IDE
+# ════════════════════════════════════════════════════════════════════════
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# JetBrains
+.idea/
+*.iml
+
+# Vim
+*~
+.*.swp
+
+# ════════════════════════════════════════════════════════════════════════
+# OS-spesifik
+# ════════════════════════════════════════════════════════════════════════
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ════════════════════════════════════════════════════════════════════════
+# Güvenlik / Hassas dosyalar — ASLA commit etme
+# ════════════════════════════════════════════════════════════════════════
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+secrets/
+credentials/
+
+# Tauri imzalama anahtarları
+src-tauri/*.pem
+src-tauri/private.key
+
+# ════════════════════════════════════════════════════════════════════════
+# Claude Code / AI ayarları (kişisel)
+# ════════════════════════════════════════════════════════════════════════
+.claude/
+CLAUDE.md

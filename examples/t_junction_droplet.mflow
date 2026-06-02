@@ -1,0 +1,217 @@
+{
+  "mflow_version": 1,
+  "metadata": {
+    "name": "T-Junction Droplet Generator",
+    "description": "Water-in-oil droplet generation using a T-junction. Continuous phase: mineral oil at 15 μL/min. Dispersed phase: water at 5 μL/min. Channel width 200 μm, depth 50 μm. Expected droplet regime: squeezing (Ca ≈ 0.003).",
+    "author": "MicroFlow Studio Examples",
+    "created_at": "2025-09-01T10:00:00Z",
+    "updated_at": "2025-09-01T10:00:00Z",
+    "tags": ["droplet", "water-in-oil", "t-junction", "squeezing-regime"],
+    "units": "um"
+  },
+  "design": {
+    "canvas": {
+      "width": 8000.0,
+      "height": 5000.0,
+      "grid_size": 50.0,
+      "background_color": "#1a1a2e"
+    },
+    "components": [
+      {
+        "id": "comp-oil-inlet",
+        "kind": "inlet_port",
+        "label": "Oil Inlet (15 μL/min)",
+        "position": { "x": 500.0, "y": 2000.0 },
+        "rotation": 0.0,
+        "params": {
+          "diameter": 500.0,
+          "boundary_type": "flow_rate",
+          "value": 15.0,
+          "fluid": "mineral_oil"
+        },
+        "ports": [
+          {
+            "id": "port-oil-out",
+            "name": "outlet",
+            "position": { "x": 250.0, "y": 0.0 },
+            "direction": "out",
+            "connected_to": "ch-oil-main"
+          }
+        ]
+      },
+      {
+        "id": "comp-water-inlet",
+        "kind": "inlet_port",
+        "label": "Water Inlet (5 μL/min)",
+        "position": { "x": 2500.0, "y": 500.0 },
+        "rotation": 0.0,
+        "params": {
+          "diameter": 500.0,
+          "boundary_type": "flow_rate",
+          "value": 5.0,
+          "fluid": "water"
+        },
+        "ports": [
+          {
+            "id": "port-water-out",
+            "name": "outlet",
+            "position": { "x": 0.0, "y": 250.0 },
+            "direction": "out",
+            "connected_to": "ch-water-side"
+          }
+        ]
+      },
+      {
+        "id": "comp-tj-1",
+        "kind": "t_junction",
+        "label": "T-Junction",
+        "position": { "x": 2500.0, "y": 2000.0 },
+        "rotation": 0.0,
+        "params": {
+          "main_width": 200.0,
+          "side_width": 100.0,
+          "depth": 50.0,
+          "junction_angle": 90.0
+        },
+        "ports": [
+          {
+            "id": "port-tj-main-in",
+            "name": "main_inlet",
+            "position": { "x": -400.0, "y": 0.0 },
+            "direction": "in",
+            "connected_to": "ch-oil-main"
+          },
+          {
+            "id": "port-tj-side",
+            "name": "side_inlet",
+            "position": { "x": 0.0, "y": -300.0 },
+            "direction": "in",
+            "connected_to": "ch-water-side"
+          },
+          {
+            "id": "port-tj-out",
+            "name": "outlet",
+            "position": { "x": 400.0, "y": 0.0 },
+            "direction": "out",
+            "connected_to": "ch-droplet-collection"
+          }
+        ]
+      },
+      {
+        "id": "comp-outlet-1",
+        "kind": "outlet_port",
+        "label": "Droplet Collection",
+        "position": { "x": 7000.0, "y": 2000.0 },
+        "rotation": 0.0,
+        "params": {
+          "diameter": 500.0,
+          "pressure": 0.0
+        },
+        "ports": [
+          {
+            "id": "port-outlet-in",
+            "name": "inlet",
+            "position": { "x": -250.0, "y": 0.0 },
+            "direction": "in",
+            "connected_to": "ch-droplet-collection"
+          }
+        ]
+      }
+    ],
+    "channels": [
+      {
+        "id": "ch-oil-main",
+        "label": "Oil main channel",
+        "kind": "straight",
+        "width": 200.0,
+        "depth": 50.0,
+        "points": [
+          { "x": 750.0, "y": 2000.0 },
+          { "x": 2100.0, "y": 2000.0 }
+        ],
+        "start_port": "port-oil-out",
+        "end_port": "port-tj-main-in",
+        "style": {
+          "color": "#ffb347",
+          "line_width": 2
+        }
+      },
+      {
+        "id": "ch-water-side",
+        "label": "Water side channel",
+        "kind": "straight",
+        "width": 100.0,
+        "depth": 50.0,
+        "points": [
+          { "x": 2500.0, "y": 750.0 },
+          { "x": 2500.0, "y": 1700.0 }
+        ],
+        "start_port": "port-water-out",
+        "end_port": "port-tj-side",
+        "style": {
+          "color": "#4fc3f7",
+          "line_width": 2
+        }
+      },
+      {
+        "id": "ch-droplet-collection",
+        "label": "Droplet collection channel",
+        "kind": "straight",
+        "width": 200.0,
+        "depth": 50.0,
+        "points": [
+          { "x": 2900.0, "y": 2000.0 },
+          { "x": 6750.0, "y": 2000.0 }
+        ],
+        "start_port": "port-tj-out",
+        "end_port": "port-outlet-in",
+        "style": {
+          "color": "#a78bfa",
+          "line_width": 2
+        }
+      }
+    ]
+  },
+  "simulation": {
+    "level": "analytical",
+    "fluid": {
+      "name": "water",
+      "density": 997.0,
+      "viscosity": 0.000890
+    },
+    "boundary_conditions": [
+      {
+        "port_id": "port-oil-out",
+        "type": "flow_rate",
+        "value": 15.0,
+        "unit": "ul_min"
+      },
+      {
+        "port_id": "port-water-out",
+        "type": "flow_rate",
+        "value": 5.0,
+        "unit": "ul_min"
+      },
+      {
+        "port_id": "port-outlet-in",
+        "type": "pressure",
+        "value": 0.0,
+        "unit": "pa"
+      }
+    ],
+    "cfd_settings": {
+      "mesh_resolution": "medium",
+      "max_iterations": 2000,
+      "tolerance": 1e-5,
+      "relaxation_u": 0.7,
+      "relaxation_p": 0.3
+    },
+    "notes": "Water-in-oil system. Oil: mineral oil (μ=0.025 Pa·s). Water: μ=0.000890 Pa·s. Interfacial tension: ~0.035 N/m (without surfactant). Ca_oil ≈ 0.003 → squeezing regime. Expected droplet length: ~250 μm. Flow rate ratio Q_w/Q_oil = 1/3."
+  },
+  "script": {
+    "language": "lua",
+    "content": "-- T-Junction Droplet Generator\n-- Analytical estimates for droplet size\n\nlocal Q_oil = 15    -- μL/min\nlocal Q_water = 5   -- μL/min\nlocal w_main = 200  -- μm\nlocal w_side = 100  -- μm\nlocal depth = 50    -- μm\n\n-- Interfacial tension water-oil (Pa·m = N/m)\nlocal gamma = 0.035\n\n-- Oil velocity in main channel\nlocal A_main = w_main * depth * 1e-12  -- m²\nlocal Q_oil_SI = Q_oil * 1.667e-11     -- m³/s\nlocal U_oil = Q_oil_SI / A_main        -- m/s\n\n-- Capillary number\nlocal mu_oil = 0.025\nlocal Ca = mu_oil * U_oil / gamma\n\nmf.log(string.format(\"Oil velocity: %.4f m/s\", U_oil))\nmf.log(string.format(\"Capillary number Ca = %.4f\", Ca))\n\nif Ca < 0.01 then\n  mf.log(\"Regime: SQUEEZING (Ca < 0.01)\")\n  -- Garstecki 2006 scaling law: L_drop/w_main ≈ 1 + Q_d/Q_c\n  local L_drop = w_main * (1 + Q_water / Q_oil)\n  mf.log(string.format(\"Predicted droplet length: %.1f μm\", L_drop))\nelseif Ca < 0.3 then\n  mf.log(\"Regime: DRIPPING (0.01 < Ca < 0.3)\")\nelse\n  mf.log(\"Regime: JETTING (Ca > 0.3) — not recommended\")\nend\n\nlocal result = mf.simulate({ fluid = \"water\" })\nmf.log(string.format(\"Total pressure drop: %.1f Pa\", result.total_pressure_drop_pa))\n",
+    "last_run_at": null,
+    "last_run_output": null
+  }
+}

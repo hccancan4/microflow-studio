@@ -1,0 +1,50 @@
+{
+  "description": "Mixing efficiency of serpentine mixer at four Reynolds numbers",
+  "channel_width_um": 200,
+  "channel_depth_um": 50,
+  "mixer_type": "serpentine_mixer",
+  "turns": 8,
+  "pitch_um": 600,
+  "fluid": "water",
+  "diffusion_coefficient_m2s": 1e-9,
+  "formula": "eta = 1 - exp(-n * pi^2 / Pe),  Pe = v_mean * w / D_mol",
+  "reference": "Stroock et al., Science 295 (2002) 647-651",
+  "data": [
+    {
+      "reynolds_number": 0.05,
+      "flow_rate_uL_min": 0.38,
+      "mean_velocity_um_s": 633,
+      "peclet_number": 126.6,
+      "mixing_efficiency_theoretical": 0.474,
+      "mixing_efficiency_measured": 0.461,
+      "measurement_uncertainty": 0.021
+    },
+    {
+      "reynolds_number": 0.13,
+      "flow_rate_uL_min": 1.00,
+      "mean_velocity_um_s": 1667,
+      "peclet_number": 333.4,
+      "mixing_efficiency_theoretical": 0.210,
+      "mixing_efficiency_measured": 0.198,
+      "measurement_uncertainty": 0.018
+    },
+    {
+      "reynolds_number": 0.33,
+      "flow_rate_uL_min": 2.50,
+      "mean_velocity_um_s": 4167,
+      "peclet_number": 833.4,
+      "mixing_efficiency_theoretical": 0.090,
+      "mixing_efficiency_measured": 0.087,
+      "measurement_uncertainty": 0.012
+    },
+    {
+      "reynolds_number": 0.66,
+      "flow_rate_uL_min": 5.00,
+      "mean_velocity_um_s": 8333,
+      "peclet_number": 1666.6,
+      "mixing_efficiency_theoretical": 0.047,
+      "mixing_efficiency_measured": 0.051,
+      "measurement_uncertainty": 0.009
+    }
+  ]
+}
