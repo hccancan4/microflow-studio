@@ -4,12 +4,13 @@
  * HTML Canvas kullanıyor (Konva dışında, performans için).
  */
 import React, { useRef, useEffect } from 'react';
+import { TOKENS } from '../../theme/tokens';
 
 const RULER_SIZE    = 24; // px — cetvel kalınlığı
-const BG_COLOR      = '#16213e';
-const TICK_COLOR    = '#3a5a8a';
-const TEXT_COLOR    = '#6a8aaa';
-const CURSOR_COLOR  = '#4fc3f7';
+const BG_COLOR      = TOKENS.panel;
+const TICK_COLOR    = TOKENS.borderStrong;
+const TEXT_COLOR    = TOKENS.textDim;
+const CURSOR_COLOR  = TOKENS.dye;
 
 interface RulerProps {
   orientation: 'horizontal' | 'vertical';

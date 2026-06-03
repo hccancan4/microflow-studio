@@ -6,6 +6,16 @@ import React, { useState } from 'react';
 import { FiChevronDown, FiChevronRight } from 'react-icons/fi';
 import type { ComponentType } from '../../types';
 import clsx from 'clsx';
+import { COMPONENT_COLORS, PORT_COLORS } from '../../theme/componentColors';
+
+// Bileşen renkleri — canvas ile birebir aynı (componentColors.ts tek kaynak)
+const C_CHANNEL   = COMPONENT_COLORS.straight_channel.stroke;
+const C_JUNCTION  = COMPONENT_COLORS.t_junction.stroke;
+const C_MIXER     = COMPONENT_COLORS.serpentine_mixer.stroke;
+const C_DROPLET   = COMPONENT_COLORS.droplet_generator.stroke;
+const C_FILTER    = COMPONENT_COLORS.filter_array.stroke;
+const C_EXPANSION = COMPONENT_COLORS.expansion.stroke;
+const C_RESERVOIR = COMPONENT_COLORS.reservoir.stroke;
 
 interface ComponentDef {
   type: ComponentType;
@@ -24,66 +34,69 @@ interface Category {
 // SVG önizleme ikonları
 const ChannelIcon = () => (
   <svg width="32" height="20" viewBox="0 0 32 20">
-    <rect x="1" y="7" width="30" height="6" fill="none" stroke="#4fc3f7" strokeWidth="1.5" rx="1" />
+    <rect x="1" y="7" width="30" height="6" fill="none" stroke={C_CHANNEL} strokeWidth="1.5" rx="1" />
   </svg>
 );
 const CurvedIcon = () => (
   <svg width="32" height="32" viewBox="0 0 32 32">
-    <path d="M 4 28 A 24 24 0 0 1 28 4" fill="none" stroke="#4fc3f7" strokeWidth="3" />
+    <path d="M 4 28 A 24 24 0 0 1 28 4" fill="none" stroke={C_CHANNEL} strokeWidth="3" />
   </svg>
 );
 const TIcon = () => (
   <svg width="32" height="32" viewBox="0 0 32 32">
-    <rect x="1" y="13" width="30" height="6" fill="none" stroke="#4fc3f7" strokeWidth="1.5" />
-    <rect x="13" y="1" width="6" height="14" fill="none" stroke="#4fc3f7" strokeWidth="1.5" />
+    <rect x="1" y="13" width="30" height="6" fill="none" stroke={C_JUNCTION} strokeWidth="1.5" />
+    <rect x="13" y="1" width="6" height="14" fill="none" stroke={C_JUNCTION} strokeWidth="1.5" />
   </svg>
 );
 const YIcon = () => (
   <svg width="32" height="32" viewBox="0 0 32 32">
-    <line x1="16" y1="16" x2="4" y2="4" stroke="#4fc3f7" strokeWidth="3" strokeLinecap="round" />
-    <line x1="16" y1="16" x2="28" y2="4" stroke="#4fc3f7" strokeWidth="3" strokeLinecap="round" />
-    <line x1="16" y1="16" x2="16" y2="31" stroke="#4fc3f7" strokeWidth="3" strokeLinecap="round" />
+    <line x1="16" y1="16" x2="4" y2="4" stroke={C_JUNCTION} strokeWidth="3" strokeLinecap="round" />
+    <line x1="16" y1="16" x2="28" y2="4" stroke={C_JUNCTION} strokeWidth="3" strokeLinecap="round" />
+    <line x1="16" y1="16" x2="16" y2="31" stroke={C_JUNCTION} strokeWidth="3" strokeLinecap="round" />
   </svg>
 );
 const MixerIcon = () => (
   <svg width="32" height="32" viewBox="0 0 32 32">
-    <path d="M4 8 H28 M4 14 H28 M4 20 H28 M4 26 H28" fill="none" stroke="#4fc3f7" strokeWidth="2" />
-    <line x1="4" y1="8" x2="4" y2="26" stroke="#4fc3f7" strokeWidth="2" />
-    <line x1="28" y1="8" x2="28" y2="26" stroke="#4fc3f7" strokeWidth="2" />
+    <path d="M4 8 H28 M4 14 H28 M4 20 H28 M4 26 H28" fill="none" stroke={C_MIXER} strokeWidth="2" />
+    <line x1="4" y1="8" x2="4" y2="26" stroke={C_MIXER} strokeWidth="2" />
+    <line x1="28" y1="8" x2="28" y2="26" stroke={C_MIXER} strokeWidth="2" />
   </svg>
 );
-const PortIcon = ({ type }: { type: 'inlet' | 'outlet' }) => (
-  <svg width="32" height="32" viewBox="0 0 32 32">
-    <circle cx="16" cy="16" r="10" fill="none" stroke={type === 'inlet' ? '#66bb6a' : '#ff7043'} strokeWidth="2" />
-    <circle cx="16" cy="16" r="4" fill={type === 'inlet' ? '#66bb6a' : '#ff7043'} />
-  </svg>
-);
+const PortIcon = ({ type }: { type: 'inlet' | 'outlet' }) => {
+  const col = type === 'inlet' ? PORT_COLORS.inlet.stroke : PORT_COLORS.outlet.stroke;
+  return (
+    <svg width="32" height="32" viewBox="0 0 32 32">
+      <circle cx="16" cy="16" r="10" fill="none" stroke={col} strokeWidth="2" />
+      <circle cx="16" cy="16" r="4" fill={col} />
+    </svg>
+  );
+};
 const DropletIcon = () => (
   <svg width="32" height="32" viewBox="0 0 32 32">
-    <rect x="1" y="13" width="30" height="6" fill="none" stroke="#4fc3f7" strokeWidth="1.5" />
-    <rect x="13" y="1" width="6" height="30" fill="none" stroke="#4fc3f7" strokeWidth="1.5" />
-    <circle cx="16" cy="16" r="4" fill="#ff7043" opacity="0.8" />
+    <rect x="1" y="13" width="30" height="6" fill="none" stroke={C_DROPLET} strokeWidth="1.5" />
+    <rect x="13" y="1" width="6" height="30" fill="none" stroke={C_DROPLET} strokeWidth="1.5" />
+    <circle cx="16" cy="16" r="4" fill={C_DROPLET} opacity="0.8" />
   </svg>
 );
 const FilterIcon = () => (
   <svg width="32" height="32" viewBox="0 0 32 32">
     {[8, 16, 24].map(x =>
       [8, 16, 24].map(y => (
-        <circle key={`${x}-${y}`} cx={x} cy={y} r="2.5" fill="#4fc3f7" />
+        <circle key={`${x}-${y}`} cx={x} cy={y} r="2.5" fill={C_FILTER} />
       ))
     )}
   </svg>
 );
 const ExpansionIcon = () => (
   <svg width="32" height="20" viewBox="0 0 32 20">
-    <path d="M1 7 H10 L22 3 H31" fill="none" stroke="#4fc3f7" strokeWidth="1.5" />
-    <path d="M1 13 H10 L22 17 H31" fill="none" stroke="#4fc3f7" strokeWidth="1.5" />
+    <path d="M1 7 H10 L22 3 H31" fill="none" stroke={C_EXPANSION} strokeWidth="1.5" />
+    <path d="M1 13 H10 L22 17 H31" fill="none" stroke={C_EXPANSION} strokeWidth="1.5" />
   </svg>
 );
 const ReservoirIcon = () => (
   <svg width="32" height="32" viewBox="0 0 32 32">
-    <rect x="3" y="3" width="26" height="26" fill="none" stroke="#4fc3f7" strokeWidth="1.5" rx="2" />
-    <rect x="7" y="7" width="18" height="18" fill="#4fc3f7" opacity="0.2" rx="1" />
+    <rect x="3" y="3" width="26" height="26" fill="none" stroke={C_RESERVOIR} strokeWidth="1.5" rx="2" />
+    <rect x="7" y="7" width="18" height="18" fill={C_RESERVOIR} opacity="0.2" rx="1" />
   </svg>
 );
 

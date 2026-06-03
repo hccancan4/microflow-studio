@@ -89,7 +89,7 @@ const KeyboardHelp: React.FC<Props> = ({ open, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70"
+      className="backdrop-enter fixed inset-0 z-[60] flex items-center justify-center bg-black/70"
       role="dialog"
       aria-modal="true"
       aria-labelledby="kbhelp-title"
@@ -97,7 +97,7 @@ const KeyboardHelp: React.FC<Props> = ({ open, onClose }) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-mf-surface border border-mf-border-strong rounded-sm shadow-pop w-[640px] max-w-[92vw] max-h-[88vh] flex flex-col">
+      <div className="dialog-enter bg-mf-surface border border-mf-border-strong rounded-ds-lg shadow-pop w-[640px] max-w-[92vw] max-h-[88vh] flex flex-col">
         <div className="panel-header">
           <span id="kbhelp-title">Klavye Kısayolları</span>
           <button

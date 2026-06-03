@@ -1,7 +1,8 @@
 /**
- * ResultsPanel — Alt panel: Simülasyon sonuçları (Faz 4A genişletmesi)
- * Analitik: özet metrikler + bileşen tablosu + basınç/debi bar chart + hız profili
- * CFD: görselleştirme kontrolleri (Faz 4B'de renk haritası eklenecek)
+ * ResultsPanel — Alt panel: Simülasyon sonuçları.
+ * Analitik: özet metrikler + bileşen tablosu + basınç/debi bar chart + hız profili.
+ * CFD: renk haritası kontrolleri + residual yakınsama grafiği.
+ * Ayrıca deney verisi karşılaştırma ve parametrik tarama sekmeleri.
  */
 import React, { useMemo, useState } from 'react';
 import { useSimulationStore } from '../../stores/useSimulationStore';
@@ -9,7 +10,7 @@ import { useDesignStore } from '../../stores/useDesignStore';
 import { useExperimentStore } from '../../stores/useExperimentStore';
 import { useSweepStore } from '../../stores/useSweepStore';
 import { sweepResultsToCsv } from '../../utils/sweepRunner';
-import { FiActivity, FiAlertCircle, FiLoader, FiGrid, FiTrendingUp, FiBarChart2, FiDatabase, FiEye, FiEyeOff, FiTrash2, FiSliders, FiDownload, FiXCircle } from 'react-icons/fi';
+import { FiActivity, FiAlertCircle, FiLoader, FiGrid, FiTrendingUp, FiBarChart2, FiDatabase, FiEye, FiEyeOff, FiTrash2, FiSliders, FiDownload, FiXCircle, FiCheckCircle } from 'react-icons/fi';
 import clsx from 'clsx';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -18,6 +19,17 @@ import {
 import type { AnalyticResult, VelocityProfile, CfdField, ColormapType, ExperimentDataSet, SimulationResult } from '../../types';
 import { colormapCssGradient, colormap as colormapEval } from '../../utils/colormaps';
 import { computeMetrics } from '../../utils/experimentMetrics';
+import { TOKENS, CHART_SERIES } from '../../theme/tokens';
+import { toast, confirmAsync } from '../../stores/useUiStore';
+
+// ── Ortak recharts tema sabitleri (token-güdümlü) ─────────────────────────
+const AXIS_TICK = { fontSize: 10, fill: TOKENS.chartAxis } as const;
+const TOOLTIP_STYLE = {
+  background: TOKENS.chartTooltipBg,
+  border: `1px solid ${TOKENS.chartTooltipBorder}`,
+  borderRadius: 4,
+  fontSize: 11,
+} as const;
 
 interface ResultsPanelProps {
   height: number;
@@ -106,16 +118,23 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ height }) => {
           </div>
         )}
 
-        {/* Analitik için tab seçici */}
+        {/* Analitik için tab seçici — mantıksal gruplar: Analiz | Doğrulama | Tarama */}
         {isAnalytic && result?.analyticResults && result.analyticResults.length > 0 && (
           <div className="flex items-center gap-1">
+            {/* Analiz grubu */}
             <TabBtn active={tab === 'summary'} onClick={() => setTab('summary')} icon={<FiActivity size={10} />}>Özet</TabBtn>
             <TabBtn active={tab === 'components'} onClick={() => setTab('components')} icon={<FiGrid size={10} />}>Bileşenler</TabBtn>
             <TabBtn active={tab === 'charts'} onClick={() => setTab('charts')} icon={<FiBarChart2 size={10} />}>Grafik</TabBtn>
             <TabBtn active={tab === 'profile'} onClick={() => setTab('profile')} icon={<FiTrendingUp size={10} />}>Profil</TabBtn>
+            {/* Doğrulama grubu */}
+            <div className="tool-divider" />
             <TabBtn active={tab === 'experiment'} onClick={() => setTab('experiment')} icon={<FiDatabase size={10} />}>Deney</TabBtn>
+            {/* Tarama grubu */}
             {sweepHasData && (
-              <TabBtn active={tab === 'sweep'} onClick={() => setTab('sweep')} icon={<FiSliders size={10} />}>Tarama</TabBtn>
+              <>
+                <div className="tool-divider" />
+                <TabBtn active={tab === 'sweep'} onClick={() => setTab('sweep')} icon={<FiSliders size={10} />}>Tarama</TabBtn>
+              </>
             )}
           </div>
         )}
@@ -131,8 +150,14 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ height }) => {
       {/* İçerik */}
       <div className="flex-1 overflow-auto">
         {status === 'idle' && !result && !sweepHasData && (
-          <div className="flex items-center justify-center h-full text-mf-text-dark text-sm p-3">
-            Simülasyon çalıştırmak için üstteki butonları kullanın.
+          <div className="flex flex-col items-center justify-center h-full gap-1.5 text-center p-3">
+            <FiActivity size={22} className="text-mf-text-dark opacity-40" />
+            <div className="text-sm text-mf-text-dim">Henüz sonuç yok</div>
+            <div className="text-xs text-mf-text-dark">
+              Toolbar'dan <span className="text-mf-orange">Hızlı Analiz</span> ·{' '}
+              <span className="text-mf-blue">CFD Sim.</span> ·{' '}
+              <span className="text-mf-text">Tarama</span> çalıştırın
+            </div>
           </div>
         )}
 
@@ -349,57 +374,57 @@ const ChartsTab: React.FC<{
 
   return (
     <div className="grid grid-cols-2 gap-2 h-full">
-      <ChartCard title="Debi dağılımı (μL/min)" color="#4fc3f7">
+      <ChartCard title="Debi dağılımı (μL/min)">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, bottom: 24, left: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" />
-            <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#8b949e' }} angle={-20} textAnchor="end" height={40} />
-            <YAxis tick={{ fontSize: 10, fill: '#8b949e' }} />
-            <Tooltip contentStyle={{ background: '#161b22', border: '1px solid #2a2d3a', fontSize: 11 }} />
-            <Bar dataKey="debi" fill="#4fc3f7" />
+            <CartesianGrid strokeDasharray="3 3" stroke={TOKENS.chartGrid} />
+            <XAxis dataKey="name" tick={AXIS_TICK} angle={-20} textAnchor="end" height={40} />
+            <YAxis tick={AXIS_TICK} />
+            <Tooltip contentStyle={TOOLTIP_STYLE} />
+            <Bar dataKey="debi" fill={CHART_SERIES.flow} />
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>
 
-      <ChartCard title="Basınç düşümü (Pa)" color="#ff7043">
+      <ChartCard title="Basınç düşümü (Pa)">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, bottom: 24, left: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" />
-            <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#8b949e' }} angle={-20} textAnchor="end" height={40} />
-            <YAxis tick={{ fontSize: 10, fill: '#8b949e' }} />
-            <Tooltip contentStyle={{ background: '#161b22', border: '1px solid #2a2d3a', fontSize: 11 }} />
-            <Bar dataKey="basinc" fill="#ff7043" />
+            <CartesianGrid strokeDasharray="3 3" stroke={TOKENS.chartGrid} />
+            <XAxis dataKey="name" tick={AXIS_TICK} angle={-20} textAnchor="end" height={40} />
+            <YAxis tick={AXIS_TICK} />
+            <Tooltip contentStyle={TOOLTIP_STYLE} />
+            <Bar dataKey="basinc" fill={CHART_SERIES.pressure} />
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>
 
-      <ChartCard title="Reynolds sayısı" color="#81c784">
+      <ChartCard title="Reynolds sayısı">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, bottom: 24, left: 8 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" />
-            <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#8b949e' }} angle={-20} textAnchor="end" height={40} />
-            <YAxis tick={{ fontSize: 10, fill: '#8b949e' }} />
-            <Tooltip contentStyle={{ background: '#161b22', border: '1px solid #2a2d3a', fontSize: 11 }} />
-            <ReferenceLine y={2000} stroke="#ff7043" strokeDasharray="4 2" label={{ value: 'türbülans eşiği', fill: '#ff7043', fontSize: 9 }} />
-            <Bar dataKey="re" fill="#81c784" />
+            <CartesianGrid strokeDasharray="3 3" stroke={TOKENS.chartGrid} />
+            <XAxis dataKey="name" tick={AXIS_TICK} angle={-20} textAnchor="end" height={40} />
+            <YAxis tick={AXIS_TICK} />
+            <Tooltip contentStyle={TOOLTIP_STYLE} />
+            <ReferenceLine y={2000} stroke={TOKENS.active} strokeDasharray="4 2" label={{ value: 'türbülans eşiği', fill: TOKENS.active, fontSize: 9 }} />
+            <Bar dataKey="re" fill={CHART_SERIES.reynolds} />
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>
 
-      <ChartCard title="Direnç (Pa·s/m³, log ölçek)" color="#ba68c8">
+      <ChartCard title="Direnç (Pa·s/m³, log ölçek)">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={data.map((d, i) => ({ ...d, r: Math.log10(analytics[i].resistance || 1) }))}
             margin={{ top: 8, right: 8, bottom: 24, left: 8 }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" />
-            <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#8b949e' }} angle={-20} textAnchor="end" height={40} />
-            <YAxis tick={{ fontSize: 10, fill: '#8b949e' }} label={{ value: 'log₁₀(R)', angle: -90, position: 'insideLeft', fontSize: 10, fill: '#8b949e' }} />
+            <CartesianGrid strokeDasharray="3 3" stroke={TOKENS.chartGrid} />
+            <XAxis dataKey="name" tick={AXIS_TICK} angle={-20} textAnchor="end" height={40} />
+            <YAxis tick={AXIS_TICK} label={{ value: 'log₁₀(R)', angle: -90, position: 'insideLeft', fontSize: 10, fill: TOKENS.chartAxis }} />
             <Tooltip
-              contentStyle={{ background: '#161b22', border: '1px solid #2a2d3a', fontSize: 11 }}
+              contentStyle={TOOLTIP_STYLE}
               formatter={(v: number | string) => [`10^${Number(v).toFixed(2)}`, 'Direnç']}
             />
-            <Bar dataKey="r" fill="#ba68c8" />
+            <Bar dataKey="r" fill={CHART_SERIES.resistance} />
           </BarChart>
         </ResponsiveContainer>
       </ChartCard>
@@ -495,23 +520,23 @@ const ProfileTab: React.FC<{
                 <ComposedChart
                   margin={{ top: 8, right: 16, bottom: 32, left: 8 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={TOKENS.chartGrid} />
                   <XAxis
                     dataKey="y"
                     type="number"
-                    tick={{ fontSize: 10, fill: '#8b949e' }}
-                    label={{ value: 'y (μm) — kanal kesiti', position: 'insideBottom', offset: -12, fontSize: 10, fill: '#8b949e' }}
+                    tick={AXIS_TICK}
+                    label={{ value: 'y (μm) — kanal kesiti', position: 'insideBottom', offset: -12, fontSize: 10, fill: TOKENS.chartAxis }}
                   />
                   <YAxis
-                    tick={{ fontSize: 10, fill: '#8b949e' }}
-                    label={{ value: 'v (mm/s)', angle: -90, position: 'insideLeft', fontSize: 10, fill: '#8b949e' }}
+                    tick={AXIS_TICK}
+                    label={{ value: 'v (mm/s)', angle: -90, position: 'insideLeft', fontSize: 10, fill: TOKENS.chartAxis }}
                   />
-                  <Tooltip contentStyle={{ background: '#161b22', border: '1px solid #2a2d3a', fontSize: 11 }} />
-                  <Line data={simLine} type="monotone" dataKey="v" stroke="#4fc3f7" strokeWidth={2} dot={false} name="Simülasyon" />
+                  <Tooltip contentStyle={TOOLTIP_STYLE} />
+                  <Line data={simLine} type="monotone" dataKey="v" stroke={CHART_SERIES.flow} strokeWidth={2} dot={false} name="Simülasyon" />
                   <ReferenceLine
                     y={Number((active.mean_velocity * 1000).toFixed(4))}
-                    stroke="#81c784" strokeDasharray="4 2"
-                    label={{ value: 'v̄', fill: '#81c784', fontSize: 10, position: 'insideTopRight' }}
+                    stroke={TOKENS.ok} strokeDasharray="4 2"
+                    label={{ value: 'v̄', fill: TOKENS.ok, fontSize: 10, position: 'insideTopRight' }}
                   />
                   {linkedVelocityDatasets.map((d) => (
                     <Scatter
@@ -593,13 +618,12 @@ const ExperimentTab: React.FC<{
           {datasets.map((d) => (
             <tr key={d.id} className="border-b border-mf-border/50">
               <td className="py-1 pr-2">
-                <span
-                  className="inline-block w-3 h-3 rounded-full border border-mf-border cursor-pointer"
-                  style={{ background: d.color }}
-                  onClick={() => {
-                    const c = prompt('Renk (hex)', d.color);
-                    if (c) updateDataset(d.id, { color: c });
-                  }}
+                <input
+                  type="color"
+                  value={d.color}
+                  onChange={(e) => updateDataset(d.id, { color: e.target.value })}
+                  className="w-4 h-4 rounded-full border border-mf-border cursor-pointer bg-transparent p-0"
+                  style={{ appearance: 'none', WebkitAppearance: 'none' }}
                   title="Rengi değiştir"
                 />
               </td>
@@ -634,7 +658,15 @@ const ExperimentTab: React.FC<{
               </td>
               <td className="py-1">
                 <button
-                  onClick={() => confirm(`"${d.name}" silinsin mi?`) && removeDataset(d.id)}
+                  onClick={async () => {
+                    const ok = await confirmAsync({
+                      title: 'Veri Setini Sil',
+                      message: `"${d.name}" veri seti silinsin mi?`,
+                      confirmLabel: 'Sil',
+                      danger: true,
+                    });
+                    if (ok) removeDataset(d.id);
+                  }}
                   className="btn-icon w-6 h-6 hover:text-mf-red"
                   title="Sil"
                 >
@@ -759,16 +791,16 @@ const CfdView: React.FC<{
           <div className="text-xs text-mf-text-dim mb-1">Yakınsama — log₁₀(residual) vs iterasyon</div>
           <ResponsiveContainer width="100%" height="88%">
             <LineChart data={residualData} margin={{ top: 4, right: 12, bottom: 22, left: 8 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2a2d3a" />
-              <XAxis dataKey="iter" tick={{ fontSize: 10, fill: '#8b949e' }}
-                label={{ value: 'iterasyon', position: 'insideBottom', offset: -8, fontSize: 10, fill: '#8b949e' }} />
-              <YAxis tick={{ fontSize: 10, fill: '#8b949e' }}
-                label={{ value: 'log₁₀|∇·u|', angle: -90, position: 'insideLeft', fontSize: 10, fill: '#8b949e' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke={TOKENS.chartGrid} />
+              <XAxis dataKey="iter" tick={AXIS_TICK}
+                label={{ value: 'iterasyon', position: 'insideBottom', offset: -8, fontSize: 10, fill: TOKENS.chartAxis }} />
+              <YAxis tick={AXIS_TICK}
+                label={{ value: 'log₁₀|∇·u|', angle: -90, position: 'insideLeft', fontSize: 10, fill: TOKENS.chartAxis }} />
               <Tooltip
-                contentStyle={{ background: '#161b22', border: '1px solid #2a2d3a', fontSize: 11 }}
+                contentStyle={TOOLTIP_STYLE}
                 formatter={(v: number | string) => [`${Number(v).toFixed(2)}`, 'log₁₀(res)']}
               />
-              <Line type="monotone" dataKey="log" stroke="#ffd54f" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="log" stroke={CHART_SERIES.residual} strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -878,10 +910,10 @@ const ErrorMapPanel: React.FC<{
           </div>
         )}
       </div>
-      <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ background: '#0d1117' }}>
+      <svg width="100%" height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ background: TOKENS.bg }}>
         {/* Domain sınırı */}
         <rect x="8" y="8" width={svgW - 16} height={svgH - 16} fill="none"
-              stroke="#2a2d3a" strokeWidth="1" strokeDasharray="2 4" />
+              stroke={TOKENS.chartGrid} strokeWidth="1" strokeDasharray="2 4" />
         {samples.map((s, i) => {
           const nx = s.x / domainW;                    // 0..1
           const ny = (s.y + yOffset) / domainH;        // 0..1
@@ -904,10 +936,10 @@ exp=${s.exp.toExponential(3)} m/s
         })}
         {/* Legend */}
         <g transform={`translate(${svgW - 120}, ${svgH - 14})`}>
-          <text x="0" y="-2" fontSize="9" fill="#8b949e">|hata|: 0</text>
-          <text x="108" y="-2" fontSize="9" fill="#8b949e" textAnchor="end">{maxAbsErr.toExponential(1)}</text>
+          <text x="0" y="-2" fontSize="9" fill={TOKENS.chartAxis}>|hata|: 0</text>
+          <text x="108" y="-2" fontSize="9" fill={TOKENS.chartAxis} textAnchor="end">{maxAbsErr.toExponential(1)}</text>
           <rect x="0" y="0" width="108" height="6"
-                fill="url(#errgrad)" stroke="#2a2d3a" strokeWidth="0.5" />
+                fill="url(#errgrad)" stroke={TOKENS.chartGrid} strokeWidth="0.5" />
         </g>
         <defs>
           <linearGradient id="errgrad" x1="0" y1="0" x2="1" y2="0">
@@ -965,7 +997,7 @@ const TabBtn: React.FC<{ active: boolean; onClick: () => void; icon: React.React
   </button>
 );
 
-const ChartCard: React.FC<{ title: string; color: string; children: React.ReactNode }> = ({ title, children }) => (
+const ChartCard: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <div className="bg-mf-bg border border-mf-border rounded flex flex-col min-h-0">
     <div className="px-2 py-1 text-xs text-mf-text-dim border-b border-mf-border">{title}</div>
     <div className="flex-1 min-h-0">{children}</div>
@@ -1017,8 +1049,9 @@ const SweepTab: React.FC = () => {
       if (!path) return;
       const csv = sweepResultsToCsv(config, runs);
       await writeTextFile(path, csv);
+      toast.success(`CSV dışa aktarıldı: ${path}`);
     } catch (e) {
-      alert(`CSV dışa aktarma hatası: ${e}`);
+      toast.error(`CSV dışa aktarma hatası: ${e}`);
     }
   };
 
@@ -1054,9 +1087,13 @@ const SweepTab: React.FC = () => {
           )}
           {!running && runs.length > 0 && (
             <>
+              {/* Tamamlanma durumu */}
+              <span className="flex items-center gap-1 text-xs text-mf-green">
+                <FiCheckCircle size={11} /> {runs.length} koşu
+              </span>
               <button
                 onClick={handleExportCsv}
-                className="flex items-center gap-1 px-2 py-0.5 text-xs text-mf-blue hover:text-blue-300 border border-mf-blue/40 rounded"
+                className="flex items-center gap-1 px-2 py-0.5 text-xs text-mf-blue hover:text-mf-cyan border border-mf-blue/40 rounded-ds-sm"
                 title="CSV dışa aktar"
               >
                 <FiDownload size={11} /> CSV
@@ -1102,23 +1139,23 @@ const SweepTab: React.FC = () => {
           <div className="flex-1 min-h-0 p-1">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 8, right: 12, bottom: 22, left: 8 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <CartesianGrid strokeDasharray="3 3" stroke={TOKENS.chartGrid} />
                 <XAxis
                   dataKey="x"
                   type="number"
                   domain={['auto', 'auto']}
-                  tick={{ fontSize: 10, fill: '#9ca3af' }}
-                  label={{ value: `${config.paramLabel} (${config.unit})`, position: 'insideBottom', offset: -8, fill: '#9ca3af', fontSize: 10 }}
+                  tick={AXIS_TICK}
+                  label={{ value: `${config.paramLabel} (${config.unit})`, position: 'insideBottom', offset: -8, fill: TOKENS.chartAxis, fontSize: 10 }}
                 />
                 <YAxis
-                  tick={{ fontSize: 10, fill: '#9ca3af' }}
-                  label={{ value: metricLabel[metric], angle: -90, position: 'insideLeft', fill: '#9ca3af', fontSize: 10 }}
+                  tick={AXIS_TICK}
+                  label={{ value: metricLabel[metric], angle: -90, position: 'insideLeft', fill: TOKENS.chartAxis, fontSize: 10 }}
                 />
                 <Tooltip
-                  contentStyle={{ background: '#1f2937', border: '1px solid #374151', fontSize: 11 }}
+                  contentStyle={TOOLTIP_STYLE}
                   labelFormatter={(v: number | string) => `${config.paramLabel}: ${Number(v).toFixed(3)} ${config.unit}`}
                 />
-                <Line type="monotone" dataKey={metric} stroke="#60a5fa" strokeWidth={2} dot={{ r: 2 }} isAnimationActive={false} />
+                <Line type="monotone" dataKey={metric} stroke={CHART_SERIES.flow} strokeWidth={2} dot={{ r: 2 }} isAnimationActive={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>

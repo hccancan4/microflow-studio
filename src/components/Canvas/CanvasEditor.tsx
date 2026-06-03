@@ -33,11 +33,12 @@ import { useCursorStore } from '../../stores/useCursorStore';
 import type { ComponentType, ChipComponent } from '../../types';
 import { getDefaultParams } from '../../utils/componentDefaults';
 import { worldBbox, bboxesIntersect } from '../../utils/componentBbox';
+import { TOKENS } from '../../theme/tokens';
 import {
   FiTrash2, FiCopy, FiClipboard, FiRotateCw, FiRotateCcw,
 } from 'react-icons/fi';
 
-const CANVAS_BG = '#0d1117';
+const CANVAS_BG = TOKENS.bg;
 
 // Bbox hesabı componentBbox.ts modülüne taşındı (her tip için doğru AABB).
 
@@ -719,24 +720,54 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
     setDirty(true);
   }, [maybeSnap, selectedIds, moveComponents, setDragOffset, setDirty]);
 
-  // ── Grid çizgileri ───────────────────────────────────────────────────────
+  // ── Grid çizgileri — adaptif major/minor + fade + origin işareti ─────────
+  // Minor çizgiler yakınlaştıkça belirginleşir, çok sıkışınca (zoom-out) gizlenir.
+  // Major çizgiler (her 5 hücre) her zaman görünür ve daha belirgindir.
   const renderGrid = useCallback(() => {
-    const lines: React.ReactNode[] = [];
+    const els: React.ReactNode[] = [];
     const { gridSize, zoom: z, panX, panY } = canvas;
 
     const startX = Math.floor(-panX / z / gridSize) * gridSize - gridSize;
     const startY = Math.floor(-panY / z / gridSize) * gridSize - gridSize;
     const endX   = startX + (width  - RULER_SIZE) / z + gridSize * 2;
     const endY   = startY + (height - RULER_SIZE) / z + gridSize * 2;
-    const sw     = 0.4 / z;
+
+    const MAJOR_EVERY = 5;                       // her 5 hücrede bir kalın çizgi
+    const minorSpacingPx = gridSize * z;         // minor çizgiler arası ekran-px
+    const showMinor = minorSpacingPx >= 7;       // çok sıkıysa minor'ı gizle (fade-out)
+    const minorOpacity = Math.min(0.45, Math.max(0, (minorSpacingPx - 7) / 36));
+    const swMinor = 0.5 / z;
+    const swMajor = 0.9 / z;
+
+    const isMajor = (v: number) => (((Math.round(v / gridSize) % MAJOR_EVERY) + MAJOR_EVERY) % MAJOR_EVERY) === 0;
 
     for (let x = startX; x <= endX; x += gridSize) {
-      lines.push(<Line key={`v${x}`} points={[x, startY, x, endY]} stroke="#1e3a5f" strokeWidth={sw} opacity={0.8} listening={false} />);
+      const major = isMajor(x);
+      if (!major && !showMinor) continue;
+      els.push(<Line key={`v${x}`} points={[x, startY, x, endY]}
+        stroke={major ? TOKENS.borderStrong : TOKENS.border}
+        strokeWidth={major ? swMajor : swMinor}
+        opacity={major ? 0.7 : minorOpacity} listening={false} />);
     }
     for (let y = startY; y <= endY; y += gridSize) {
-      lines.push(<Line key={`h${y}`} points={[startX, y, endX, y]} stroke="#1e3a5f" strokeWidth={sw} opacity={0.8} listening={false} />);
+      const major = isMajor(y);
+      if (!major && !showMinor) continue;
+      els.push(<Line key={`h${y}`} points={[startX, y, endX, y]}
+        stroke={major ? TOKENS.borderStrong : TOKENS.border}
+        strokeWidth={major ? swMajor : swMinor}
+        opacity={major ? 0.7 : minorOpacity} listening={false} />);
     }
-    return lines;
+
+    // Origin (0,0) referans işareti — ince çapraz (CAD geleneği)
+    if (startX <= 0 && endX >= 0 && startY <= 0 && endY >= 0) {
+      const o = gridSize * 0.6;
+      const swO = 0.9 / z;
+      els.push(
+        <Line key="ox" points={[-o, 0, o, 0]} stroke={TOKENS.dyeDim} strokeWidth={swO} opacity={0.55} listening={false} />,
+        <Line key="oy" points={[0, -o, 0, o]} stroke={TOKENS.dyeDim} strokeWidth={swO} opacity={0.55} listening={false} />,
+      );
+    }
+    return els;
   }, [canvas, width, height]);
 
   // ── Rubber-band dikdörtgeni (canvas koordinatlarında) ────────────────────
@@ -751,8 +782,8 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
         y={Math.min(startY, currentY)}
         width={Math.abs(currentX - startX)}
         height={Math.abs(currentY - startY)}
-        fill="rgba(79,195,247,0.08)"
-        stroke="#4fc3f7"
+        fill="rgba(79, 195, 247, 0.08)"
+        stroke={TOKENS.dye}
         strokeWidth={Math.max(1 / z, 1.5 / z)}
         dash={[12 / z, 6 / z]}
         listening={false}
@@ -772,7 +803,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
       <div className="flex" style={{ height: RULER_SIZE }}>
         {/* Sol üst köşe karesi */}
         <div
-          style={{ width: RULER_SIZE, height: RULER_SIZE, flexShrink: 0, backgroundColor: '#16213e', borderRight: '1px solid #1e3a5f', borderBottom: '1px solid #1e3a5f' }}
+          style={{ width: RULER_SIZE, height: RULER_SIZE, flexShrink: 0, backgroundColor: TOKENS.panel, borderRight: `1px solid ${TOKENS.border}`, borderBottom: `1px solid ${TOKENS.border}` }}
           title={`Grid: ${canvas.gridSize}μm`}
         >
           <div className="w-full h-full flex items-center justify-center text-mf-text-dark text-xs font-mono">μ</div>
@@ -859,12 +890,14 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
                   comp={comp}
                   selected={selectedIds.includes(comp.id)}
                   zoom={canvas.zoom}
-                  onClick={(e) => handleCompClick(e, comp.id)}
-                  onDblClick={(e) => handleCompDblClick(e, comp.id)}
-                  onContextMenu={(e) => handleCompContextMenu(e, comp.id)}
-                  onDragStart={(e) => handleCompDragStart(e, comp.id)}
-                  onDragMove={(e) => handleCompDragMove(e, comp.id)}
-                  onDragEnd={(e) => handleCompDragEnd(e, comp.id)}
+                  /* Stable useCallback'ler doğrudan geçilir (inline arrow yok)
+                     → React.memo mousemove sırasında re-render'ı atlar */
+                  onClick={handleCompClick}
+                  onDblClick={handleCompDblClick}
+                  onContextMenu={handleCompContextMenu}
+                  onDragStart={handleCompDragStart}
+                  onDragMove={handleCompDragMove}
+                  onDragEnd={handleCompDragEnd}
                 />
               ))}
 
@@ -885,10 +918,12 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
           {/* Boş canvas ipucu */}
           {components.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="text-center text-mf-text-dark">
-                <div className="text-5xl mb-3 opacity-20 font-mono">μ</div>
-                <div className="text-sm opacity-50">Sol panelden bileşen sürükleyip bırakın</div>
-                <div className="text-xs mt-1 opacity-30">veya Script sekmesinde Lua kodu yazın</div>
+              <div className="text-center">
+                <div className="text-5xl mb-2 opacity-25 font-mono text-mf-dye">μ</div>
+                <div className="text-sm text-mf-text-dim">Boş tasarım</div>
+                <div className="text-xs text-mf-text-dark mt-1">
+                  Sol panelden bileşen sürükleyin · Script sekmesinde Lua yazın
+                </div>
               </div>
             </div>
           )}

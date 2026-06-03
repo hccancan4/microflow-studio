@@ -15,6 +15,7 @@ import { useSweepStore, buildSweepValues } from '../stores/useSweepStore';
 import { componentDisplayLabel, getParamOption, getSweepableParams } from '../utils/sweepHelpers';
 import { runSweep } from '../utils/sweepRunner';
 import { useEscapeClose } from '../hooks/useEscapeClose';
+import { toast } from '../stores/useUiStore';
 
 interface Props {
   open: boolean;
@@ -103,7 +104,10 @@ const SweepDialog: React.FC<Props> = ({ open, onClose }) => {
       inletPressure: params.inletPressure ?? 1000,
       fluid: params.fluidProperties,
       config: cfg,
-    }).catch((e) => console.error('Sweep hatası:', e));
+    }).catch((e) => {
+      console.error('Sweep hatası:', e);
+      toast.error(`Tarama hatası: ${e}`);
+    });
   };
 
   const running = useSweepStore((s) => s.running);
@@ -115,7 +119,7 @@ const SweepDialog: React.FC<Props> = ({ open, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      className="backdrop-enter fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       role="dialog"
       aria-modal="true"
       aria-labelledby="sweep-dialog-title"
@@ -124,7 +128,7 @@ const SweepDialog: React.FC<Props> = ({ open, onClose }) => {
         if (e.target === e.currentTarget && !running) onClose();
       }}
     >
-      <div className="bg-mf-panel border border-mf-border rounded-lg shadow-xl w-[560px] max-w-[92vw] max-h-[90vh] flex flex-col">
+      <div className="dialog-enter bg-mf-panel border border-mf-border rounded-ds-lg shadow-pop w-[560px] max-w-[92vw] max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between px-4 py-3 border-b border-mf-border">
           <h3 id="sweep-dialog-title" className="text-mf-text text-sm font-semibold">Parametre Taraması</h3>
           <button

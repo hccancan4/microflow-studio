@@ -13,6 +13,8 @@
 import type { ChipComponent, Connection } from '../types';
 import { getAllCanvasPorts } from './portUtils';
 import { computeDesignBBox } from './exportRenderer';
+import { COMPONENT_COLORS, PORT_COLORS } from '../theme/componentColors';
+import { TOKENS } from '../theme/tokens';
 
 export interface SvgExportOptions {
   background: 'white' | 'dark' | 'transparent';
@@ -20,12 +22,14 @@ export interface SvgExportOptions {
   paddingUm: number;
 }
 
-const COLOR_CHANNEL     = '#4fc3f7';
-const COLOR_CHANNEL_DRK = '#1f6b8a';
-const COLOR_JUNCTION    = '#ff9800';
-const COLOR_RESERVOIR   = '#9c27b0';
-const COLOR_PORT        = '#4caf50';
-const COLOR_FILTER      = '#795548';
+// Export paleti — canvas ile birebir aynı (componentColors.ts tek kaynak).
+// SVG export'un canvas görünümüyle tutarlı olması için.
+const COLOR_CHANNEL     = COMPONENT_COLORS.straight_channel.stroke;
+const COLOR_CHANNEL_DRK = TOKENS.dyeDim;
+const COLOR_JUNCTION    = COMPONENT_COLORS.t_junction.stroke;
+const COLOR_RESERVOIR   = COMPONENT_COLORS.reservoir.stroke;
+const COLOR_PORT        = PORT_COLORS.inlet.stroke;
+const COLOR_FILTER      = COMPONENT_COLORS.filter_array.stroke;
 
 function escapeXml(s: string): string {
   return s

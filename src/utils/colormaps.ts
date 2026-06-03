@@ -86,6 +86,26 @@ export function colormap(t: number, type: ColormapType): RGB {
   }
 }
 
+// ── 256-girişli renk LUT'u (tip başına bir kez hesaplanır, memoize) ────────
+// fieldToImageData her pikselde colormap() çağırmak yerine bu tablodan okur;
+// CFD overlay render'ında belirgin hızlanma sağlar (interpolasyon tekrarı yok).
+const LUT_SIZE = 256;
+const lutCache = new Map<ColormapType, Uint8Array>();
+
+function colormapLut(type: ColormapType): Uint8Array {
+  const cached = lutCache.get(type);
+  if (cached) return cached;
+  const lut = new Uint8Array(LUT_SIZE * 3);
+  for (let i = 0; i < LUT_SIZE; i++) {
+    const [r, g, b] = colormap(i / (LUT_SIZE - 1), type);
+    lut[i * 3] = r;
+    lut[i * 3 + 1] = g;
+    lut[i * 3 + 2] = b;
+  }
+  lutCache.set(type, lut);
+  return lut;
+}
+
 /**
  * 2D skaler sahayı (row-major, width×height) RGBA `Uint8ClampedArray` (ImageData uyumlu)
  * olarak renklendirir. `y` eksenini ters çevirmek için `flipY=true`.
@@ -104,17 +124,19 @@ export function fieldToImageData(
   const span = max - min;
   const inv = span > 0 ? 1 / span : 0;
   const out = new Uint8ClampedArray(width * height * 4);
+  const lut = colormapLut(type);
 
   for (let j = 0; j < height; j++) {
     const jSrc = flipY ? height - 1 - j : j;
     for (let i = 0; i < width; i++) {
       const src = jSrc * width + i;
       const dst = (j * width + i) * 4;
-      const t = (values[src] - min) * inv;
-      const [r, g, b] = colormap(t, type);
-      out[dst + 0] = r;
-      out[dst + 1] = g;
-      out[dst + 2] = b;
+      let t = (values[src] - min) * inv;
+      t = t < 0 ? 0 : t > 1 ? 1 : t;          // [0,1] clamp (LUT indeksi için)
+      const li = ((t * (LUT_SIZE - 1) + 0.5) | 0) * 3;
+      out[dst + 0] = lut[li];
+      out[dst + 1] = lut[li + 1];
+      out[dst + 2] = lut[li + 2];
       out[dst + 3] = alpha;
     }
   }

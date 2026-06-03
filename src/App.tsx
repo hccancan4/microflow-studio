@@ -2,14 +2,15 @@
  * App.tsx — MicroFlow Studio ana uygulama bileşeni
  * Layout: Toolbar + Sol Panel + Merkez (Canvas/Script) + Sağ Panel + Alt Panel
  */
-import React, { useEffect, useCallback, useRef, useState } from 'react';
+import React, { useEffect, useCallback, useRef, useState, Suspense, lazy } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 
 import Toolbar from './components/Toolbar/Toolbar';
 import Sidebar from './components/Sidebar/Sidebar';
 import CanvasEditor from './components/Canvas/CanvasEditor';
-import ScriptEditor from './components/ScriptEditor/ScriptEditor';
+// ScriptEditor (Monaco) yalnız Script sekmesine geçilince yüklenir (kod-bölme).
+const ScriptEditor = lazy(() => import('./components/ScriptEditor/ScriptEditor'));
 import ResultsPanel from './components/ResultsPanel/ResultsPanel';
 import PropertiesPanel from './components/PropertiesPanel/PropertiesPanel';
 import ProgressOverlay from './components/ProgressOverlay';
@@ -27,6 +28,8 @@ import { useSimulationStore } from './stores/useSimulationStore';
 import { useSweepStore } from './stores/useSweepStore';
 import { useExperimentStore } from './stores/useExperimentStore';
 import { useScriptDispatcher, type ScriptRunStatus } from './hooks/useScriptDispatcher';
+import Notifications from './components/Notifications';
+import { toast, confirmAsync } from './stores/useUiStore';
 import type { RawMFlowProject, RawAnalyticDesignResult, CfdField, ChipComponent, Connection, ProjectMetadata } from './types';
 
 import './index.css';
@@ -65,7 +68,10 @@ const App: React.FC = () => {
     newProject: handleNewProjectStore,
   } = useProjectStore();
 
-  const { components, connections } = useDesignStore();
+  // Seçici abonelik: App yalnız components/connections değişince re-render eder
+  // (canvas pan/zoom, seçim, dragOffset değişiklikleri App'i tetiklemez).
+  const components = useDesignStore((s) => s.components);
+  const connections = useDesignStore((s) => s.connections);
   const { setStatus, setProgress, setResult, setError, reset, params } = useSimulationStore();
   // Sim durumu — analitik/CFD/sweep koşarken paralel çalıştırmayı engelle
   const simStatus = useSimulationStore((s) => s.status);
@@ -149,9 +155,17 @@ const App: React.FC = () => {
   }, []);
 
   // Dosya işlemleri — isDirty closure'unu kullanmak yerine getState ile fresh oku
-  const handleNewProject = useCallback(() => {
+  const handleNewProject = useCallback(async () => {
     const dirty = useProjectStore.getState().isDirty;
-    if (dirty && !confirm('Kaydedilmemiş değişiklikler var. Devam etmek istiyor musunuz?')) return;
+    if (dirty) {
+      const ok = await confirmAsync({
+        title: 'Yeni Proje',
+        message: 'Kaydedilmemiş değişiklikler var. Yeni projeye geçilsin mi?',
+        confirmLabel: 'Devam et',
+        danger: true,
+      });
+      if (!ok) return;
+    }
     handleNewProjectStore();
     useDesignStore.getState().clearDesign();
     useExperimentStore.getState().clear();
@@ -166,8 +180,9 @@ const App: React.FC = () => {
       const project = buildProjectPayload();
       await invoke<void>('save_project_file', { project, path: filePath });
       markClean(false);
+      toast.success('Proje kaydedildi');
     } catch (err) {
-      alert(`Kaydetme hatası: ${err}`);
+      toast.error(`Kaydetme hatası: ${err}`);
     }
   }, []);
 
@@ -184,16 +199,25 @@ const App: React.FC = () => {
       useProjectStore.getState().setFilePath(path);
       useProjectStore.getState().setDirty(false);
       useProjectStore.getState().addRecentFile(path);
+      toast.success('Proje kaydedildi');
     } catch (err) {
       // Dialog import / save IPC hataları sessiz kalmasın
       console.error('[handleSaveAs]', err);
-      alert(`Kaydetme hatası: ${err}`);
+      toast.error(`Kaydetme hatası: ${err}`);
     }
   }, []);
 
   const handleOpen = useCallback(async () => {
     const dirty = useProjectStore.getState().isDirty;
-    if (dirty && !confirm('Kaydedilmemiş değişiklikler var. Devam etmek istiyor musunuz?')) return;
+    if (dirty) {
+      const ok = await confirmAsync({
+        title: 'Proje Aç',
+        message: 'Kaydedilmemiş değişiklikler var. Başka bir proje açılsın mı?',
+        confirmLabel: 'Aç',
+        danger: true,
+      });
+      if (!ok) return;
+    }
     try {
       const { open: openFile } = await import('@tauri-apps/plugin-dialog');
       const path = await openFile({
@@ -233,7 +257,7 @@ const App: React.FC = () => {
 
   const handleExport = useCallback(() => {
     if (useDesignStore.getState().components.length === 0) {
-      alert("Dışa aktarmak için canvas'a bileşen ekleyin.");
+      toast.warn("Dışa aktarmak için canvas'a bileşen ekleyin.");
       return;
     }
     setExportDialogOpen(true);
@@ -263,7 +287,7 @@ const App: React.FC = () => {
         await invoke<void>('export_svg', { outputPath: path, svg });
         setExportBusy(false);
         setExportDialogOpen(false);
-        alert(`SVG dışa aktarıldı:\n${path}`);
+        toast.success(`SVG dışa aktarıldı: ${path}`);
         return;
       }
 
@@ -285,7 +309,7 @@ const App: React.FC = () => {
         });
         setExportBusy(false);
         setExportDialogOpen(false);
-        alert(`GDS-II dışa aktarıldı (${polygons.length} poligon, ${size} bayt):\n${path}`);
+        toast.success(`GDS-II dışa aktarıldı (${polygons.length} poligon, ${size} bayt): ${path}`);
         return;
       }
 
@@ -317,11 +341,11 @@ const App: React.FC = () => {
       });
       setExportBusy(false);
       setExportDialogOpen(false);
-      alert(`PNG dışa aktarıldı (${w}×${h}):\n${path}`);
+      toast.success(`PNG dışa aktarıldı (${w}×${h}): ${path}`);
     } catch (err) {
       setExportJob(null);
       setExportBusy(false);
-      alert(`Dışa aktarma hatası: ${err}`);
+      toast.error(`Dışa aktarma hatası: ${err}`);
     }
   }, [components, connections]);
 
@@ -331,7 +355,7 @@ const App: React.FC = () => {
     if (useSimulationStore.getState().status === 'running') return;
     if (useSweepStore.getState().running) return;
     if (components.length === 0) {
-      alert("Önce canvas'a bileşen ekleyin.");
+      toast.warn("Önce canvas'a bileşen ekleyin.");
       return;
     }
     reset();
@@ -393,7 +417,7 @@ const App: React.FC = () => {
     if (useSimulationStore.getState().status === 'running') return;
     if (useSweepStore.getState().running) return;
     if (components.length === 0) {
-      alert("Önce canvas'a bileşen ekleyin.");
+      toast.warn("Önce canvas'a bileşen ekleyin.");
       return;
     }
 
@@ -405,7 +429,7 @@ const App: React.FC = () => {
       ?? candidates[0];
 
     if (!target) {
-      alert("CFD için bir Düz Kanal bileşeni gereklidir. Canvas'a ekleyin ve seçin.");
+      toast.warn("CFD için bir Düz Kanal bileşeni gereklidir. Canvas'a ekleyin ve seçin.");
       return;
     }
 
@@ -550,12 +574,14 @@ const App: React.FC = () => {
             {activeTab === 'canvas' ? (
               <CanvasEditor width={centerSize.width} height={canvasHeight} />
             ) : (
-              <ScriptEditor
-                height={canvasHeight}
-                onRunScript={handleRunScript}
-                runStatus={scriptStatus}
-                outputLog={scriptOutputLog}
-              />
+              <Suspense fallback={<EditorLoading height={canvasHeight} />}>
+                <ScriptEditor
+                  height={canvasHeight}
+                  onRunScript={handleRunScript}
+                  runStatus={scriptStatus}
+                  outputLog={scriptOutputLog}
+                />
+              </Suspense>
             )}
           </div>
 
@@ -603,9 +629,22 @@ const App: React.FC = () => {
 
       {/* Klavye kısayolları (? veya F1) */}
       <KeyboardHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
+
+      {/* Toast + onay diyaloğu (native alert/confirm yerine) */}
+      <Notifications />
     </div>
   );
 };
+
+// ScriptEditor lazy-load sırasında gösterilen yükleme durumu
+const EditorLoading: React.FC<{ height: number }> = ({ height }) => (
+  <div className="flex items-center justify-center bg-mf-bg" style={{ height }}>
+    <div className="flex items-center gap-2 text-mf-text-dim text-sm">
+      <span className="inline-block w-4 h-4 border-2 border-mf-border border-t-mf-dye rounded-full animate-spin" />
+      Editör yükleniyor…
+    </div>
+  </div>
+);
 
 // ─── Status bar — CAD-stili, hücre tabanlı ─────────────────────────────────
 import { useCursorStore } from './stores/useCursorStore';
@@ -718,7 +757,8 @@ const StatusChip: React.FC<{ kind: 'idle' | 'busy' | 'ok' | 'err'; children: Rea
   );
 };
 
-const APP_VERSION = '0.1.0';
+// Versiyon package.json'dan inject edilir (vite define → __APP_VERSION__)
+const APP_VERSION = __APP_VERSION__;
 
 // Zoom göstergesi + tıklanabilir preset menü
 const ZOOM_PRESETS = [0.25, 0.5, 1, 2, 4];

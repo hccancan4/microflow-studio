@@ -1,12 +1,13 @@
 /**
- * ScriptEditor — Monaco Editor ile Lua script editörü
- * Faz 3'te tam Lua desteği eklenecek
+ * ScriptEditor — Monaco Editor ile Lua script editörü.
+ * Lua 5.4 sözdizimi vurgulama + Chip API otomatik tamamlama; sandbox'lı çalışma.
  */
 import React, { useState } from 'react';
 import Editor from '@monaco-editor/react';
 import { useProjectStore } from '../../stores/useProjectStore';
 import { FiPlay, FiRefreshCw, FiAlertCircle, FiCheckCircle, FiTerminal, FiChevronDown, FiChevronUp } from 'react-icons/fi';
 import type { ScriptRunStatus } from '../../hooks/useScriptDispatcher';
+import { TOKENS } from '../../theme/tokens';
 
 interface ScriptEditorProps {
   height: number;
@@ -59,14 +60,16 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({ height, onRunScript, runSta
         { token: 'number', foreground: '79b8ff' },
         { token: 'identifier', foreground: 'e1e4e8' },
       ],
+      // Editör chrome'u uygulama yüzeyleriyle hizalı (token'lar).
+      // Syntax token renkleri (yukarıda) bilinçli ayrı bir kod paleti.
       colors: {
-        'editor.background': '#0d1117',
-        'editor.foreground': '#e1e4e8',
-        'editor.lineHighlightBackground': '#161b22',
-        'editor.selectionBackground': '#264f78',
-        'editorLineNumber.foreground': '#3c4047',
-        'editorLineNumber.activeForeground': '#6e7681',
-        'editor.inactiveSelectionBackground': '#1f2937',
+        'editor.background': TOKENS.bg,
+        'editor.foreground': TOKENS.text,
+        'editor.lineHighlightBackground': TOKENS.panel,
+        'editor.selectionBackground': TOKENS.dyeDim,
+        'editorLineNumber.foreground': TOKENS.textDark,
+        'editorLineNumber.activeForeground': TOKENS.textDim,
+        'editor.inactiveSelectionBackground': TOKENS.elev,
       },
     });
     monaco.editor.setTheme('mf-dark');

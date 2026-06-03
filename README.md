@@ -2,13 +2,29 @@
 
 Mikroakışkan çip tasarımı ve simülasyonu için profesyonel masaüstü uygulaması. [Tauri v2](https://tauri.app/) (Rust backend + React frontend), AutoCAD/Fusion 360 tarzı bir CAD ergonomisiyle inşa edildi.
 
-![Version](https://img.shields.io/badge/version-0.1.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tauri](https://img.shields.io/badge/tauri-v2-orange) ![Tests](https://img.shields.io/badge/tests-36%20passing-brightgreen)
+![Version](https://img.shields.io/badge/version-1.0.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tauri](https://img.shields.io/badge/tauri-v2-orange) ![Tests](https://img.shields.io/badge/tests-36%20passing-brightgreen)
 
 ---
 
 ## Ne yapar
 
 Sürükle-bırak canvas editöründe 10 tip parametrik bileşenden mikroakışkan çip tasarımı yaparsın. Tasarımı **analitik ağ çözücü** (Hagen-Poiseuille) veya **2D CFD çözücüsü** (Chorin projeksiyon) ile analiz edersin. Sonuçlar sekmeli panellerde gösterilir; deney verileriyle karşılaştırılır. Tamamlanan tasarımlar **PNG / SVG / GDS-II** (fotomask üretimi) olarak dışa aktarılır. Gömülü **Lua scripting** ortamı tam programatik çip üretimi + parametre taraması sağlar.
+
+---
+
+## Ekran Görüntüleri
+
+> Görseller `docs/images/` altında. (Henüz eklenmediyse `npm run tauri dev` ile çalıştırıp çekilebilir.)
+
+| Canvas editörü | CFD ısı haritası |
+|---|---|
+| ![Canvas](docs/images/canvas.png) | ![CFD](docs/images/cfd.png) |
+
+| Sonuç panelleri | Parametre taraması |
+|---|---|
+| ![Sonuçlar](docs/images/results.png) | ![Tarama](docs/images/sweep.png) |
+
+![Lua script editörü](docs/images/script.png)
 
 ---
 

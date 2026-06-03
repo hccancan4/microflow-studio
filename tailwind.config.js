@@ -1,4 +1,8 @@
 /** @type {import('tailwindcss').Config} */
+// ─── MicroFlow Studio "Laminar" — Tailwind ↔ Design Token köprüsü ───────────
+// Tüm değerler src/styles/design-system.css içindeki CSS custom property'lerden
+// okunur (var(--...)). Hardcoded hex YOK — token tek kaynak. Böylece `bg-mf-bg`
+// gibi utility'ler runtime'da token-güdümlü olur.
 export default {
   content: [
     "./index.html",
@@ -7,41 +11,51 @@ export default {
   theme: {
     extend: {
       colors: {
-        // ─── MicroFlow Studio: profesyonel CAD koyu tema ─────────────
-        // Felsefe: gri %95, renk %5 (sinyal). Kontrast WCAG AA hedefi.
-        // Ana çalışma yüzeyleri (canvas) en koyu, panel/toolbar daha
-        // açık olarak katmanlanır — "yüzey yükseklik" hissi.
-
-        // Ana yüzeyler (z-axis: koyu → açık ile yükselir)
-        'mf-bg':        '#0b0d10', // Canvas / çalışma yüzeyi (en koyu, en arka)
-        'mf-surface':   '#111418', // Panel gövdeleri
-        'mf-panel':     '#161a1f', // Toolbar / başlık çubuğu
-        'mf-elev':      '#1d2228', // Hover, seçili satır, dropdown
+        // rgb(var(--x-rgb) / <alpha-value>) deseni → `/opacity` modifier'ları
+        // (bg-mf-red/60, border-mf-blue/40 vb.) çalışmaya devam eder.
+        // Yüzeyler
+        'mf-bg':        'rgb(var(--mf-bg-rgb) / <alpha-value>)',
+        'mf-surface':   'rgb(var(--mf-surface-rgb) / <alpha-value>)',
+        'mf-panel':     'rgb(var(--mf-panel-rgb) / <alpha-value>)',
+        'mf-elev':      'rgb(var(--mf-elev-rgb) / <alpha-value>)',
 
         // Kenarlıklar
-        'mf-border':       '#252b32', // Standart border
-        'mf-border-strong':'#363d46', // Vurgulu (tab seçili, focus)
+        'mf-border':        'rgb(var(--mf-border-rgb) / <alpha-value>)',
+        'mf-border-strong': 'rgb(var(--mf-border-strong-rgb) / <alpha-value>)',
 
-        // Aksan: tek dominant — diğerleri yalnız sinyal için
-        'mf-blue':      '#4fc3f7', // Birincil aksan (akış / ölçüm)
-        'mf-blue-dim':  '#2563a6',
-        'mf-cyan':      '#67e8f9', // İkincil — bağlantı çizgileri
+        // Boya (ana aksan) — mf-blue/cyan eski adlar, token'a bağlandı
+        'mf-blue':      'rgb(var(--mf-dye-rgb) / <alpha-value>)',
+        'mf-blue-dim':  'rgb(var(--mf-dye-dim-rgb) / <alpha-value>)',
+        'mf-cyan':      'rgb(var(--mf-dye-bright-rgb) / <alpha-value>)',
+        'mf-dye':       'rgb(var(--mf-dye-rgb) / <alpha-value>)',
+        'mf-dye-bright':'rgb(var(--mf-dye-bright-rgb) / <alpha-value>)',
+        'mf-dye-dim':   'rgb(var(--mf-dye-dim-rgb) / <alpha-value>)',
 
-        // Sinyal renkleri (yalnız durum bildirimi için)
-        'mf-orange':    '#f59e0b', // Çalışıyor / dikkat
-        'mf-orange-dim':'#b45309',
-        'mf-green':     '#22c55e', // Başarı / inlet
-        'mf-yellow':    '#eab308', // Uyarı
-        'mf-red':       '#ef4444', // Hata / outlet / silme
+        // Sinyal renkleri (semantik)
+        'mf-orange':     'rgb(var(--mf-active-rgb) / <alpha-value>)',
+        'mf-orange-dim': 'rgb(var(--mf-active-dim-rgb) / <alpha-value>)',
+        'mf-active':     'rgb(var(--mf-active-rgb) / <alpha-value>)',
+        'mf-green':      'rgb(var(--mf-ok-rgb) / <alpha-value>)',
+        'mf-yellow':     'rgb(var(--mf-warn-rgb) / <alpha-value>)',
+        'mf-red':        'rgb(var(--mf-error-rgb) / <alpha-value>)',
 
-        // Metin (kontrast hiyerarşisi)
-        'mf-text':       '#e6e8ea', // Ana metin (15.4:1 üzerinde mf-bg)
-        'mf-text-dim':   '#9aa3ad', // İkincil (5.7:1)
-        'mf-text-dark':  '#5c6571', // Pasif / etiket (3.5:1, AA Large)
+        // Metin
+        'mf-text':      'rgb(var(--mf-text-rgb) / <alpha-value>)',
+        'mf-text-dim':  'rgb(var(--mf-text-dim-rgb) / <alpha-value>)',
+        'mf-text-dark': 'rgb(var(--mf-text-dark-rgb) / <alpha-value>)',
+
+        // Bileşen paleti (DOM rozet/legend için — canvas componentColors.ts kullanır)
+        'comp-channel':     'rgb(var(--comp-channel-rgb) / <alpha-value>)',
+        'comp-expansion':   'rgb(var(--comp-expansion-rgb) / <alpha-value>)',
+        'comp-mixer':       'rgb(var(--comp-mixer-rgb) / <alpha-value>)',
+        'comp-junction':    'rgb(var(--comp-junction-rgb) / <alpha-value>)',
+        'comp-filter':      'rgb(var(--comp-filter-rgb) / <alpha-value>)',
+        'comp-droplet':     'rgb(var(--comp-droplet-rgb) / <alpha-value>)',
+        'comp-reservoir':   'rgb(var(--comp-reservoir-rgb) / <alpha-value>)',
+        'comp-port-inlet':  'rgb(var(--comp-port-inlet-rgb) / <alpha-value>)',
+        'comp-port-outlet': 'rgb(var(--comp-port-outlet-rgb) / <alpha-value>)',
       },
       fontFamily: {
-        // IBM Plex: teknik, mühendislik kökenli, ücretsiz, karakterli.
-        // Plex Sans → arayüz; Plex Mono → sayısal değerler / kod.
         sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
         mono: ['"IBM Plex Mono"', 'JetBrains Mono', 'Consolas', 'monospace'],
       },
@@ -52,17 +66,39 @@ export default {
         'sm':  ['12px', { lineHeight: '16px' }],
         'base':['13px', { lineHeight: '18px' }],
       },
+      spacing: {
+        // 4px tabanlı (design-system.css --space-* ile hizalı)
+        'ds-1': 'var(--space-1)',
+        'ds-2': 'var(--space-2)',
+        'ds-3': 'var(--space-3)',
+        'ds-4': 'var(--space-4)',
+        'ds-5': 'var(--space-5)',
+        'ds-6': 'var(--space-6)',
+        'ds-8': 'var(--space-8)',
+      },
+      borderRadius: {
+        'ds-sm': 'var(--radius-sm)',
+        'ds-md': 'var(--radius-md)',
+        'ds-lg': 'var(--radius-lg)',
+      },
       letterSpacing: {
         'caps': '0.06em', // Uppercase başlıklar için
       },
       boxShadow: {
-        // Yumuşak, gerçek bir CAD/IDE'de kullanılan tarzda
-        'panel': '0 0 0 1px rgba(255,255,255,0.02), 0 1px 3px rgba(0,0,0,0.4)',
-        'pop':   '0 4px 16px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04)',
-        'inset-line': 'inset 0 -1px 0 rgba(255,255,255,0.04)',
+        'panel':      'var(--elev-1)',
+        'pop':        'var(--elev-2)',
+        'elev-3':     'var(--elev-3)',
+        'inset-line': 'var(--elev-inset-line)',
       },
       transitionTimingFunction: {
-        'snap': 'cubic-bezier(0.2, 0.8, 0.2, 1)',
+        'snap':  'cubic-bezier(0.2, 0.8, 0.2, 1)',
+        'fluid': 'var(--ease-fluid)',
+        'flow':  'var(--ease-out)',
+      },
+      transitionDuration: {
+        'fast': '150ms',
+        'base': '200ms',
+        'slow': '250ms',
       },
     },
   },

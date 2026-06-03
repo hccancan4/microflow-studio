@@ -3,12 +3,21 @@
  * Portları canvas üzerinde görüntüler.
  * Hover: büyür + renk değişir; bağlantı çizme sırasında snap hedeflerini gösterir.
  */
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Circle, Group, Text, Line } from 'react-konva';
+import Konva from 'konva';
 import type { ChipComponent } from '../../types';
 import { getAllCanvasPorts, checkPortCompatibility, smartRoute } from '../../utils/portUtils';
 import { useDesignStore, generateId } from '../../stores/useDesignStore';
+import { useSimulationStore } from '../../stores/useSimulationStore';
 import type { PendingConnection } from '../../stores/useDesignStore';
+import { TOKENS } from '../../theme/tokens';
+
+// prefers-reduced-motion — akış animasyonunu kapatmak için (erişilebilirlik)
+const PREFERS_REDUCED_MOTION =
+  typeof window !== 'undefined' &&
+  typeof window.matchMedia === 'function' &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const PORT_R_SCREEN_PX = 9;   // port overlay dairesi ekran boyutu (piksel)
 const PORT_R_MAX_UM    = 120; // çok uzak zoom'da port overlay dünya-uzayı üst sınırı (μm)
@@ -159,7 +168,7 @@ const PortOverlay: React.FC<PortOverlayProps> = ({
           && pendingConnection?.fromPortIndex === port.index;
 
         // Bağlantı çiziliyorken uygun hedef portları vurgula
-        let portColor = port.type === 'output' ? '#66bb6a' : '#ef5350';
+        let portColor: string = port.type === 'output' ? TOKENS.ok : TOKENS.error;
         let opacity = 0.7;
         let isSnapTarget = false;  // Pending connection için uyumlu hedef mi?
 
@@ -170,14 +179,14 @@ const PortOverlay: React.FC<PortOverlayProps> = ({
             opacity = 0.2;
           } else if (port.type !== fromType) {
             opacity = 1;
-            portColor = '#ffd54f'; // sarı: snap hedefi
+            portColor = TOKENS.warn; // sarı: snap hedefi
             isSnapTarget = true;
           } else {
             opacity = 0.15; // ters tip — daha sönük (kullanıcı yanlış porta tıklamasın)
           }
         }
 
-        if (isFromPort) { portColor = '#4fc3f7'; opacity = 1; }
+        if (isFromPort) { portColor = TOKENS.dye; opacity = 1; }
         if (isHovered)  { opacity = 1; }
 
         const r = isHovered ? portRadius * 1.4 : portRadius;
@@ -191,7 +200,7 @@ const PortOverlay: React.FC<PortOverlayProps> = ({
                 y={port.canvasPos.y}
                 radius={portRadius * 2.4}
                 fill="transparent"
-                stroke="#ffd54f"
+                stroke={TOKENS.warn}
                 strokeWidth={Math.max(0.8, 1.5 / zoom)}
                 opacity={isHovered ? 0.9 : 0.45}
                 dash={[Math.max(4, 6 / zoom), Math.max(3, 4 / zoom)]}
@@ -205,7 +214,7 @@ const PortOverlay: React.FC<PortOverlayProps> = ({
                 y={port.canvasPos.y}
                 radius={portRadius * 2.0}
                 fill="transparent"
-                stroke="#4fc3f7"
+                stroke={TOKENS.dye}
                 strokeWidth={Math.max(0.8, 1.5 / zoom)}
                 opacity={0.6}
                 listening={false}
@@ -217,7 +226,7 @@ const PortOverlay: React.FC<PortOverlayProps> = ({
               radius={r}
               fill={portColor}
               opacity={opacity}
-              stroke="#1a1a2e"
+              stroke={TOKENS.bg}
               strokeWidth={Math.max(0.5, 1 / zoom)}
               onMouseEnter={() => handlePortEnter(key, port.compId, port.index, port.type, port.diameter)}
               onMouseLeave={handlePortLeave}
@@ -231,7 +240,7 @@ const PortOverlay: React.FC<PortOverlayProps> = ({
                 y={port.canvasPos.y - portRadius * 2.5}
                 text={port.label}
                 fontSize={portRadius * 1.2}
-                fill="#9e9e9e"
+                fill={TOKENS.textDim}
                 align="center"
                 offsetX={portRadius * 1.5}
                 listening={false}
@@ -266,15 +275,34 @@ const ConnectionLines: React.FC<ConnectionLinesProps> = ({ components, zoom, onC
   const setSelectedConnection = useDesignStore((s) => s.setSelectedConnection);
   const clearSelection        = useDesignStore((s) => s.clearSelection);
   const dragOffset            = useDesignStore((s) => s.dragOffset);
+  // Simülasyon sonucu varsa bağlantılarda akış-yönü animasyonu göster
+  const hasFlow = useSimulationStore((s) => s.status === 'completed' && !!s.result);
   const allPorts = getAllCanvasPorts(components);
 
   const portMap = new Map(
     allPorts.map((p) => [`${p.compId}-${p.index}`, { pos: p.canvasPos, compId: p.compId }])
   );
 
+  // Akış kesik-çizgilerini tek bir paylaşımlı Konva.Animation ile sür (performans).
+  const flowNodes = useRef<(Konva.Line | null)[]>([]);
+  useEffect(() => {
+    flowNodes.current.length = connections.length;
+    if (PREFERS_REDUCED_MOTION || !hasFlow) return;
+    const layer = flowNodes.current.find(Boolean)?.getLayer();
+    if (!layer) return;
+    const dashLen = 24 / zoom;            // dash([10,14]/zoom) toplamı
+    const anim = new Konva.Animation((frame) => {
+      if (!frame) return;
+      const off = -((frame.time / 1100) * dashLen) % dashLen; // from → to yönünde
+      for (const n of flowNodes.current) n?.dashOffset(off);
+    }, layer);
+    anim.start();
+    return () => { anim.stop(); };
+  }, [hasFlow, connections.length, zoom]);
+
   return (
     <>
-      {connections.map((conn) => {
+      {connections.map((conn, i) => {
         const fromEntry = portMap.get(`${conn.fromComponentId}-${conn.fromPortIndex}`);
         const toEntry   = portMap.get(`${conn.toComponentId}-${conn.toPortIndex}`);
         if (!fromEntry || !toEntry) return null;
@@ -291,40 +319,55 @@ const ConnectionLines: React.FC<ConnectionLinesProps> = ({ components, zoom, onC
 
         const pts = smartRoute(from, to);
         const isSelected = selectedConnectionId === conn.id;
-        const stroke = isSelected ? '#ffd54f' : '#4fc3f7';
+        const stroke = isSelected ? TOKENS.warn : TOKENS.dyeBright;
         const sw     = Math.max(isSelected ? 1.0 : 0.7, (isSelected ? 2.5 : 1.5) / zoom);
 
         return (
-          <Line
-            key={conn.id}
-            points={pts}
-            stroke={stroke}
-            strokeWidth={sw}
-            opacity={isSelected ? 1.0 : 0.85}
-            lineCap="round"
-            lineJoin="round"
-            hitStrokeWidth={Math.max(6, 10 / zoom)}
-            onClick={(e) => {
-              e.cancelBubble = true;
-              // Bileşen seçimini temizle, bağlantıyı seç
-              clearSelection();
-              setSelectedConnection(conn.id);
-            }}
-            onContextMenu={(e) => onConnectionContextMenu?.(e, conn.id)}
-            onMouseEnter={(e) => {
-              const stage = e.target.getStage();
-              if (stage) stage.container().style.cursor = 'pointer';
-            }}
-            onMouseLeave={(e) => {
-              const stage = e.target.getStage() as
-                (Konva_Stage_with_refresh) | null;
-              if (!stage) return;
-              const c = stage.container() as
-                (HTMLDivElement & { __refreshCursor?: () => void });
-              if (typeof c.__refreshCursor === 'function') c.__refreshCursor();
-              else c.style.cursor = 'default';
-            }}
-          />
+          <React.Fragment key={conn.id}>
+            <Line
+              points={pts}
+              stroke={stroke}
+              strokeWidth={sw}
+              opacity={isSelected ? 1.0 : 0.85}
+              lineCap="round"
+              lineJoin="round"
+              hitStrokeWidth={Math.max(6, 10 / zoom)}
+              onClick={(e) => {
+                e.cancelBubble = true;
+                // Bileşen seçimini temizle, bağlantıyı seç
+                clearSelection();
+                setSelectedConnection(conn.id);
+              }}
+              onContextMenu={(e) => onConnectionContextMenu?.(e, conn.id)}
+              onMouseEnter={(e) => {
+                const stage = e.target.getStage();
+                if (stage) stage.container().style.cursor = 'pointer';
+              }}
+              onMouseLeave={(e) => {
+                const stage = e.target.getStage() as
+                  (Konva_Stage_with_refresh) | null;
+                if (!stage) return;
+                const c = stage.container() as
+                  (HTMLDivElement & { __refreshCursor?: () => void });
+                if (typeof c.__refreshCursor === 'function') c.__refreshCursor();
+                else c.style.cursor = 'default';
+              }}
+            />
+            {/* Akış-yönü animasyonu — yalnız sonuç varken; üstte hareketli dash */}
+            {hasFlow && !isSelected && (
+              <Line
+                ref={(n) => { flowNodes.current[i] = n; }}
+                points={pts}
+                stroke={TOKENS.dyeBright}
+                strokeWidth={Math.max(1.2, 2.4 / zoom)}
+                dash={[10 / zoom, 14 / zoom]}
+                lineCap="round"
+                lineJoin="round"
+                listening={false}
+                opacity={0.95}
+              />
+            )}
+          </React.Fragment>
         );
       })}
     </>
@@ -350,7 +393,7 @@ const PendingWire: React.FC<PendingWireProps> = ({ pending, zoom }) => {
   return (
     <Line
       points={pts}
-      stroke="#ffd54f"
+      stroke={TOKENS.warn}
       strokeWidth={sw}
       opacity={0.9}
       dash={[10 / zoom, 6 / zoom]}
@@ -369,16 +412,21 @@ interface CompatWarningTooltipProps {
 }
 
 const CompatWarningTooltip: React.FC<CompatWarningTooltipProps> = ({ message, pos, zoom }) => {
-  const fontSize = Math.max(60, 160 / zoom);
+  // Stage layer zoom ile ölçeklendiği için ekran-sabit boyut = px / zoom.
+  // Hedef ~13px ekran yazısı (önceki 160/zoom hatası ~160px dev yazı üretiyordu).
+  const fontSize = 13 / zoom;
   return (
     <Text
-      x={pos.x + 200 / zoom}
-      y={pos.y - 200 / zoom}
+      x={pos.x + 16 / zoom}
+      y={pos.y - 16 / zoom}
       text={`⚠ ${message}`}
       fontSize={fontSize}
-      fill="#ffd54f"
-      background="#1a1a2e"
-      padding={20 / zoom}
+      fontStyle="500"
+      fill={TOKENS.warn}
+      shadowColor={TOKENS.bg}
+      shadowBlur={4 / zoom}
+      shadowOffset={{ x: 0, y: 1 / zoom }}
+      shadowOpacity={0.95}
       listening={false}
     />
   );

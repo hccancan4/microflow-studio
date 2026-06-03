@@ -153,10 +153,10 @@ const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, su
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      className="backdrop-enter fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >
-      <div className="bg-mf-panel border border-mf-border rounded-lg shadow-xl w-[640px] max-w-[96vw] max-h-[88vh] flex flex-col text-mf-text">
+      <div className="dialog-enter bg-mf-panel border border-mf-border rounded-ds-lg shadow-pop w-[640px] max-w-[96vw] max-h-[88vh] flex flex-col text-mf-text">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-mf-border flex-shrink-0">
           <div className="flex items-center gap-2">

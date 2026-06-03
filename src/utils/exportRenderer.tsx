@@ -18,6 +18,7 @@ import Konva from 'konva';
 import { ComponentShape } from '../components/Canvas/shapes/ComponentShapes';
 import { getAllCanvasPorts } from './portUtils';
 import type { ChipComponent, Connection } from '../types';
+import { TOKENS } from '../theme/tokens';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tasarım bounding-box hesaplayıcı
@@ -258,7 +259,7 @@ const ExportRenderer: React.FC<ExportRendererProps> = ({ job }) => {
               <Line
                 key={conn.id}
                 points={[from.x, from.y, to.x, to.y]}
-                stroke="#4fc3f7"
+                stroke={TOKENS.dyeBright}
                 strokeWidth={40}
                 lineCap="round"
               />

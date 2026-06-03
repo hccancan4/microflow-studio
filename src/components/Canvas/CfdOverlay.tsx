@@ -12,6 +12,7 @@ import React, { useMemo } from 'react';
 import { Image as KonvaImage, Rect } from 'react-konva';
 import type { CfdField, ChipComponent, ColormapType } from '../../types';
 import { fieldToImageData } from '../../utils/colormaps';
+import { TOKENS } from '../../theme/tokens';
 
 interface CfdOverlayProps {
   field: CfdField;
@@ -136,7 +137,7 @@ const CfdOverlay: React.FC<CfdOverlayProps> = ({
         offsetX={bbox.w / 2}
         offsetY={bbox.h / 2}
         rotation={target.rotation}
-        stroke="#ffd54f"
+        stroke={TOKENS.active}
         strokeWidth={20}
         dash={[60, 40]}
         listening={false}

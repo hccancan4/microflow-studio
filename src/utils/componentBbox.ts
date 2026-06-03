@@ -98,11 +98,12 @@ export function localBbox(comp: ChipComponent): LocalBbox {
     }
 
     case 'serpentine_mixer': {
-      const { turns = 5, pitch = 600 } = comp.params as SerpentineMixerParams;
+      const { turns = 5, pitch = 600, channelWidth = 200 } = comp.params as SerpentineMixerParams;
       const totalW = pitch * 4;
-      const totalH = (turns + 1) * pitch;
-      // Yatay çizgilerden oluşur: y=0..totalH; x=0..totalW
-      return { minX: 0, minY: 0, maxX: totalW, maxY: totalH };
+      const totalH = turns * pitch; // son yatay segment y = turns*pitch (portUtils ile aynı)
+      // Kanal kalınlığı için ±channelWidth/2 pay (stroke şekli merkez çizgiden taşar)
+      const half = channelWidth / 2;
+      return { minX: -half, minY: -half, maxX: totalW + half, maxY: totalH + half };
     }
 
     case 'port': {

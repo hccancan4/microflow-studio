@@ -67,10 +67,10 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      className="backdrop-enter fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >
-      <div className="bg-mf-panel border border-mf-border rounded-lg shadow-xl w-[480px] max-w-[94vw] text-mf-text">
+      <div className="dialog-enter bg-mf-panel border border-mf-border rounded-ds-lg shadow-pop w-[480px] max-w-[94vw] text-mf-text">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-mf-border">
           <div className="flex items-center gap-2">

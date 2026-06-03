@@ -1,0 +1,148 @@
+/* ════════════════════════════════════════════════════════════════════════
+   MicroFlow Studio — "Laminar" Tasarım Sistemi (Design Tokens)
+   ────────────────────────────────────────────────────────────────────────
+   Tek kaynak: tüm renk / boşluk / radius / gölge / hareket değerleri burada
+   CSS custom property olarak tanımlanır. Tailwind theme bunları okur
+   (tailwind.config.js), bileşenler `var(--...)` veya `bg-mf-*` ile tüketir.
+
+   KAVRAM — Laminar akış: sakin, hassas, düşük-Reynolds düzen.
+   Görsel dil: şeffaf PDMS + boyayla dolu kanallar. Teal/cyan = "kanal boyası".
+   Yeşil/kırmızı yalnız giriş/çıkış semantiği; turuncu yalnız aktif/simülasyon.
+
+   NOT: Bileşen renkleri Konva canvas'ta literal hex gerektirir (CSS var
+   okuyamaz) → kanonik kaynak `src/theme/componentColors.ts`. Buradaki
+   --comp-* değerleri onunla BİREBİR senkron kalmalı (DOM rozet/legend için).
+   ════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ────────────────────────────────────────────────────────────────────────
+     RENK TOKEN'LARI — iki formda tanımlı:
+       1. `--x-rgb`  → boşluklu RGB kanal üçlüsü (Tailwind alpha modifier'ı için:
+                       rgb(var(--x-rgb) / <alpha-value>)  →  bg-mf-red/60 çalışır)
+       2. `--x`      → tam renk (plain CSS / inline style: background: var(--x))
+     Hardcoded hex YOK — kanal üçlüsü kanonik, tam renk ondan türetilir.
+     ──────────────────────────────────────────────────────────────────────── */
+
+  /* ── Yüzeyler (z-ekseni: koyu → açık ile yükselir) ────────────────────── */
+  --mf-bg-rgb:            11 13 16;     /* #0b0d10 canvas / çalışma yüzeyi */
+  --mf-surface-rgb:       17 20 24;     /* #111418 panel gövdeleri */
+  --mf-panel-rgb:         22 26 31;     /* #161a1f toolbar / başlık */
+  --mf-elev-rgb:          29 34 40;     /* #1d2228 hover / dropdown */
+  --mf-bg:            rgb(var(--mf-bg-rgb));
+  --mf-surface:       rgb(var(--mf-surface-rgb));
+  --mf-panel:         rgb(var(--mf-panel-rgb));
+  --mf-elev:          rgb(var(--mf-elev-rgb));
+
+  /* ── Kenarlıklar ──────────────────────────────────────────────────────── */
+  --mf-border-rgb:        37 43 50;     /* #252b32 */
+  --mf-border-strong-rgb: 54 61 70;     /* #363d46 focus / seçili tab */
+  --mf-border:        rgb(var(--mf-border-rgb));
+  --mf-border-strong: rgb(var(--mf-border-strong-rgb));
+
+  /* ── Boya: ana aksan (kanal boyası teal ailesi) ──────────────────────── */
+  --mf-dye-rgb:           79 195 247;   /* #4fc3f7 birincil — akış / ölçüm */
+  --mf-dye-bright-rgb:    103 232 249;  /* #67e8f9 cyan — vurgu / bağlantı */
+  --mf-dye-dim-rgb:       37 99 166;    /* #2563a6 sönük teal — pasif */
+  --mf-dye:           rgb(var(--mf-dye-rgb));
+  --mf-dye-bright:    rgb(var(--mf-dye-bright-rgb));
+  --mf-dye-dim:       rgb(var(--mf-dye-dim-rgb));
+
+  /* ── Sinyal renkleri (SEMANTİK — değiştirme) ─────────────────────────── */
+  --mf-active-rgb:        245 158 11;   /* #f59e0b çalışıyor / simülasyon */
+  --mf-active-dim-rgb:    180 83 9;     /* #b45309 */
+  --mf-ok-rgb:            34 197 94;    /* #22c55e başarı / inlet */
+  --mf-warn-rgb:          234 179 8;    /* #eab308 uyarı */
+  --mf-error-rgb:         239 68 68;    /* #ef4444 hata / outlet / silme */
+  --mf-active:        rgb(var(--mf-active-rgb));
+  --mf-active-dim:    rgb(var(--mf-active-dim-rgb));
+  --mf-ok:            rgb(var(--mf-ok-rgb));
+  --mf-warn:          rgb(var(--mf-warn-rgb));
+  --mf-error:         rgb(var(--mf-error-rgb));
+
+  /* ── Metin (kontrast hiyerarşisi) ─────────────────────────────────────── */
+  --mf-text-rgb:          230 232 234;  /* #e6e8ea ana (~15:1 / mf-bg) */
+  --mf-text-dim-rgb:      154 163 173;  /* #9aa3ad ikincil (~5.7:1) */
+  --mf-text-dark-rgb:     92 101 113;   /* #5c6571 pasif (~3.5:1 AA Large) */
+  --mf-text:          rgb(var(--mf-text-rgb));
+  --mf-text-dim:      rgb(var(--mf-text-dim-rgb));
+  --mf-text-dark:     rgb(var(--mf-text-dark-rgb));
+
+  /* ── Bileşen paleti (TEK KAYNAK — componentColors.ts ile senkron) ────────
+     Laminar akışkan-semantiği:
+       kanal/genişleme = boya teal ailesi · mikser = koyu teal
+       junction = mor (ayrışma) · filtre = mavi (gözenekli bariyer)
+       damlacık = pembe (dağılmış faz) · rezervuar = slate (depo)
+       inlet = yeşil (kaynak) · outlet = kırmızı (drenaj) */
+  --comp-channel-rgb:     79 195 247;   /* #4fc3f7 */
+  --comp-expansion-rgb:   56 189 248;   /* #38bdf8 */
+  --comp-mixer-rgb:       20 184 166;   /* #14b8a6 */
+  --comp-junction-rgb:    167 139 250;  /* #a78bfa */
+  --comp-filter-rgb:      96 165 250;   /* #60a5fa */
+  --comp-droplet-rgb:     244 114 182;  /* #f472b6 */
+  --comp-reservoir-rgb:   148 163 184;  /* #94a3b8 */
+  --comp-port-inlet-rgb:  34 197 94;    /* #22c55e */
+  --comp-port-outlet-rgb: 239 68 68;    /* #ef4444 */
+  --comp-channel:     rgb(var(--comp-channel-rgb));
+  --comp-expansion:   rgb(var(--comp-expansion-rgb));
+  --comp-mixer:       rgb(var(--comp-mixer-rgb));
+  --comp-junction:    rgb(var(--comp-junction-rgb));
+  --comp-filter:      rgb(var(--comp-filter-rgb));
+  --comp-droplet:     rgb(var(--comp-droplet-rgb));
+  --comp-reservoir:   rgb(var(--comp-reservoir-rgb));
+  --comp-port-inlet:  rgb(var(--comp-port-inlet-rgb));
+  --comp-port-outlet: rgb(var(--comp-port-outlet-rgb));
+  --comp-port:        rgb(var(--comp-port-inlet-rgb));  /* generic = inlet */
+
+  /* ── Spacing skalası (4px tabanlı) ────────────────────────────────────── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+
+  /* ── Radius skalası ───────────────────────────────────────────────────── */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+
+  /* ── Elevation (gölge) ────────────────────────────────────────────────── */
+  --elev-1: 0 0 0 1px rgba(255, 255, 255, 0.02), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --elev-2: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.04);
+  --elev-3: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --elev-inset-line: inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+
+  /* ── Hareket — akışkan (restrained) ───────────────────────────────────── */
+  --ease-fluid: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast:   150ms;
+  --dur-base:   200ms;
+  --dur-slow:   250ms;
+
+  /* ── Grafik (recharts) — yüzey token'larıyla hizalı ───────────────────── */
+  --chart-grid:           var(--mf-border);
+  --chart-axis:           var(--mf-text-dim);
+  --chart-tooltip-bg:     var(--mf-panel);
+  --chart-tooltip-border: var(--mf-border-strong);
+
+  /* ── Tipografi ────────────────────────────────────────────────────────── */
+  --font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'JetBrains Mono', Consolas, monospace;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   prefers-reduced-motion — erişilebilirlik
+   Tüm geçiş/animasyonları efektif olarak kapat (anlık yap).
+   ════════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

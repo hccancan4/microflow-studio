@@ -68,11 +68,16 @@ export function getPortInfos(comp: ChipComponent): PortInfo[] {
 
     case 'serpentine_mixer': {
       const { channelWidth = 200, turns = 5, pitch = 600 } = p as SerpentineMixerParams;
-      const totalHeight = (turns + 1) * pitch;
-      const totalWidth  = pitch * 4;
+      const totalWidth = pitch * 4;
+      // Çıkış, son yatay segmentin (i = turns) uzak ucundadır:
+      //   turns ÇİFT → segment soldan sağa, uç x = totalWidth
+      //   turns TEK  → segment sağdan sola, uç x = 0
+      // y her durumda turns*pitch (şekil ComponentShapes.SerpentineMixer ile aynı).
+      const endX = turns % 2 === 0 ? totalWidth : 0;
+      const endY = turns * pitch;
       return [
-        { index: 0, localPos: { x: 0,          y: 0            }, type: 'input',  label: 'Giriş', diameter: channelWidth },
-        { index: 1, localPos: { x: totalWidth,  y: totalHeight  }, type: 'output', label: 'Çıkış', diameter: channelWidth },
+        { index: 0, localPos: { x: 0,    y: 0    }, type: 'input',  label: 'Giriş', diameter: channelWidth },
+        { index: 1, localPos: { x: endX, y: endY }, type: 'output', label: 'Çıkış', diameter: channelWidth },
       ];
     }
 

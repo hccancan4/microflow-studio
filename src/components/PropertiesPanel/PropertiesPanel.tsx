@@ -293,7 +293,7 @@ const PropRow: React.FC<PropRowProps> = ({ label, value, onChange, minHint }) =>
           className={clsx(
             'mf-input text-xs font-mono w-full',
             unit && 'pr-7',
-            tooLow && 'border-mf-orange'
+            tooLow && 'border-mf-yellow'
           )}
           value={value}
           onChange={(e) => onChange(e.target.value)}

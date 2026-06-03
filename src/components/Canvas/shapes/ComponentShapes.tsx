@@ -7,39 +7,46 @@ import React from 'react';
 import { Rect, Arc, Path, Circle, Group, Line, Text } from 'react-konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import type { ChipComponent } from '../../../types';
+import { COMPONENT_COLORS, PORT_COLORS, SELECTED_COLOR } from '../../../theme/componentColors';
+import { TOKENS } from '../../../theme/tokens';
 import type {
   StraightChannelParams, CurvedChannelParams, TJunctionParams, YJunctionParams,
   SerpentineMixerParams, PortParams, DropletGeneratorParams,
   FilterArrayParams, ExpansionParams, ReservoirParams,
 } from '../../../types';
 
-// ─── Renk şeması ──────────────────────────────────────────────────────────────
+// ─── Renk şeması — TEK KAYNAK: theme/componentColors.ts ─────────────────────
+// (Konva literal hex gerektirir; CSS var okuyamaz. Canvas ↔ tablo ↔ grafik
+//  ↔ sidebar renk tutarlılığı bu modülden gelir.)
 const COLORS = {
-  channel:     { stroke: '#4fc3f7', fill: 'rgba(79,195,247,0.08)'   },
-  junction:    { stroke: '#ab47bc', fill: 'rgba(171,71,188,0.08)'   },
-  mixer:       { stroke: '#26a69a', fill: 'rgba(38,166,154,0.08)'   },
-  port_inlet:  { stroke: '#66bb6a', fill: 'rgba(102,187,106,0.15)'  },
-  port_outlet: { stroke: '#ff7043', fill: 'rgba(255,112,67,0.15)'   },
-  droplet:     { stroke: '#ffa726', fill: 'rgba(255,167,38,0.08)'   },
-  filter:      { stroke: '#42a5f5', fill: 'rgba(66,165,245,0.08)'   },
-  reservoir:   { stroke: '#78909c', fill: 'rgba(120,144,156,0.12)'  },
-  selected:    { stroke: '#4fc3f7', fill: 'rgba(79,195,247,0.15)'   },
+  channel:     COMPONENT_COLORS.straight_channel,
+  expansion:   COMPONENT_COLORS.expansion,
+  junction:    COMPONENT_COLORS.t_junction,
+  mixer:       COMPONENT_COLORS.serpentine_mixer,
+  port_inlet:  PORT_COLORS.inlet,
+  port_outlet: PORT_COLORS.outlet,
+  droplet:     COMPONENT_COLORS.droplet_generator,
+  filter:      COMPONENT_COLORS.filter_array,
+  reservoir:   COMPONENT_COLORS.reservoir,
+  selected:    { stroke: SELECTED_COLOR, fill: 'rgba(79, 195, 247, 0.15)' },
 };
 
 interface ShapeProps {
   comp: ChipComponent;
   selected: boolean;
   zoom: number;
-  onClick: (e: KonvaEventObject<MouseEvent>) => void;
-  onDblClick: (e: KonvaEventObject<MouseEvent>) => void;
-  onContextMenu: (e: KonvaEventObject<PointerEvent>) => void;
+  // Handler'lar id parametresi alır → CanvasEditor stable useCallback'leri
+  // doğrudan geçebilir (inline arrow yok) → React.memo etkili olur.
+  onClick: (e: KonvaEventObject<MouseEvent>, id: string) => void;
+  onDblClick: (e: KonvaEventObject<MouseEvent>, id: string) => void;
+  onContextMenu: (e: KonvaEventObject<PointerEvent>, id: string) => void;
   // sürükleme için
-  onDragStart: (e: KonvaEventObject<DragEvent>) => void;
-  onDragMove: (e: KonvaEventObject<DragEvent>) => void;
-  onDragEnd: (e: KonvaEventObject<DragEvent>) => void;
+  onDragStart: (e: KonvaEventObject<DragEvent>, id: string) => void;
+  onDragMove: (e: KonvaEventObject<DragEvent>, id: string) => void;
+  onDragEnd: (e: KonvaEventObject<DragEvent>, id: string) => void;
 }
 
-export const ComponentShape: React.FC<ShapeProps> = ({
+const ComponentShapeBase: React.FC<ShapeProps> = ({
   comp, selected, zoom,
   onClick, onDblClick, onContextMenu,
   onDragStart, onDragMove, onDragEnd,
@@ -51,9 +58,9 @@ export const ComponentShape: React.FC<ShapeProps> = ({
   // Zoom-stable selection: çok düşük zoomda gölge kaybolmaz, ekstra outline ekle
   // Hover: subtle mavi glow (selection'dan daha hafif).
   const glow = selected
-    ? { shadowColor: '#4fc3f7', shadowBlur: Math.max(8, 12 / zoom), shadowOpacity: 0.55 }
+    ? { shadowColor: SELECTED_COLOR, shadowBlur: Math.max(8, 12 / zoom), shadowOpacity: 0.55 }
     : hovered
-    ? { shadowColor: '#4fc3f7', shadowBlur: Math.max(4, 6 / zoom), shadowOpacity: 0.35 }
+    ? { shadowColor: SELECTED_COLOR, shadowBlur: Math.max(4, 6 / zoom), shadowOpacity: 0.35 }
     : {};
 
   // Hover cursor + state — Stage container'a doğrudan yaz (panMode-aware refresh için
@@ -93,12 +100,12 @@ export const ComponentShape: React.FC<ShapeProps> = ({
       y={comp.position.y}
       rotation={comp.rotation}
       draggable
-      onClick={onClick}
-      onDblClick={onDblClick}
-      onContextMenu={onContextMenu}
-      onDragStart={onDragStart}
-      onDragMove={onDragMove}
-      onDragEnd={onDragEnd}
+      onClick={(e) => onClick(e, comp.id)}
+      onDblClick={(e) => onDblClick(e, comp.id)}
+      onContextMenu={(e) => onContextMenu(e, comp.id)}
+      onDragStart={(e) => onDragStart(e, comp.id)}
+      onDragMove={(e) => onDragMove(e, comp.id)}
+      onDragEnd={(e) => onDragEnd(e, comp.id)}
       onMouseEnter={handleEnter}
       onMouseLeave={handleLeave}
       {...glow}
@@ -119,7 +126,7 @@ export const ComponentShape: React.FC<ShapeProps> = ({
             text={comp.label}
             fontSize={fontPx}
             fontStyle="600"
-            fill={selected ? '#4fc3f7' : '#b0b4be'}
+            fill={selected ? SELECTED_COLOR : TOKENS.textDim}
             align="center"
             offsetX={textWidth / 2}
             offsetY={fontPx + gap}
@@ -130,6 +137,14 @@ export const ComponentShape: React.FC<ShapeProps> = ({
     </Group>
   );
 };
+
+/**
+ * React.memo — prop'lar (comp, selected, zoom, stable handler'lar) değişmedikçe
+ * yeniden render etme. Canvas'taki fare hareketi (mousePx state) tüm bileşenleri
+ * gereksiz re-render etmesini önler. Handler'lar CanvasEditor'de stable
+ * useCallback olduğundan default shallow karşılaştırma yeterli.
+ */
+export const ComponentShape = React.memo(ComponentShapeBase);
 
 // ─── Şekil tipleri ────────────────────────────────────────────────────────────
 
@@ -359,7 +374,7 @@ const FilterArray: React.FC<BaseProps> = ({ comp, sw, selected }) => {
 
 const ExpansionShape: React.FC<BaseProps> = ({ comp, sw, selected }) => {
   const { inletWidth = 200, outletWidth = 500, length = 1000 } = comp.params as ExpansionParams;
-  const c = selected ? COLORS.selected : COLORS.channel;
+  const c = selected ? COLORS.selected : COLORS.expansion;
 
   const pathData = [
     `M 0 ${-inletWidth / 2}`,
@@ -390,6 +405,6 @@ const ReservoirShape: React.FC<BaseProps> = ({ comp, sw, selected }) => {
 
 const FallbackShape: React.FC<{ comp: ChipComponent; sw: number }> = ({ comp, sw }) => (
   <Rect x={-300} y={-200} width={600} height={400}
-    fill="rgba(100,100,100,0.1)" stroke="#616161" strokeWidth={sw}
+    fill="rgba(100,100,100,0.1)" stroke={TOKENS.textDark} strokeWidth={sw}
     dash={[100, 50]} />
 );
