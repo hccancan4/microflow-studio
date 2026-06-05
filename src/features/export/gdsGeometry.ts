@@ -12,7 +12,7 @@
  *   layer 1 / datatype 0  → akışkan kanalı (her bileşenin aktif alanı)
  *   layer 2 / datatype 0  → rezervuar / port açıklıkları (through-holes)
  */
-import type { ChipComponent } from '../types';
+import type { ChipComponent } from '../../types';
 
 export interface GdsPolygon {
   layer: number;

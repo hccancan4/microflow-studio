@@ -10,7 +10,7 @@
 import React, { useState } from 'react';
 import { FiX, FiImage, FiFileText, FiDownload, FiLayers } from 'react-icons/fi';
 import clsx from 'clsx';
-import { useEscapeClose } from '../hooks/useEscapeClose';
+import { useEscapeClose } from '../../hooks/useEscapeClose';
 
 export type ExportFormat = 'png' | 'svg' | 'gds';
 export type ExportBackground = 'white' | 'dark' | 'transparent';

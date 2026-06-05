@@ -7,11 +7,11 @@ import { useCallback, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useDesignStore } from '../stores/useDesignStore';
 import { useProjectStore } from '../stores/useProjectStore';
-import { exportDesignAsSvg } from '../utils/svgExporter';
-import { buildGdsPolygons } from '../utils/gdsGeometry';
+import { exportDesignAsSvg } from '../features/export/svgExporter';
+import { buildGdsPolygons } from '../features/export/gdsGeometry';
 import { toast } from '../stores/useUiStore';
-import type { ExportSettings } from '../components/ExportDialog';
-import type { ExportJob } from '../utils/exportRenderer';
+import type { ExportSettings } from '../features/export/ExportDialog';
+import type { ExportJob } from '../features/export/exportRenderer';
 import type { ChipComponent, Connection } from '../types';
 
 export function useExportFlow(components: ChipComponent[], connections: Connection[]) {

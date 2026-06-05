@@ -10,11 +10,11 @@
  * yayımlanabilir vektör çizim üretmek için yeterlidir. Tam raster için
  * PNG exporter'ı (exportRenderer.tsx) kullanılmalıdır.
  */
-import type { ChipComponent, Connection } from '../types';
-import { getAllCanvasPorts } from './portUtils';
+import type { ChipComponent, Connection } from '../../types';
+import { getAllCanvasPorts } from '../../utils/portUtils';
 import { computeDesignBBox } from './exportRenderer';
-import { COMPONENT_COLORS, PORT_COLORS } from '../theme/componentColors';
-import { TOKENS } from '../theme/tokens';
+import { COMPONENT_COLORS, PORT_COLORS } from '../../theme/componentColors';
+import { TOKENS } from '../../theme/tokens';
 
 export interface SvgExportOptions {
   background: 'white' | 'dark' | 'transparent';

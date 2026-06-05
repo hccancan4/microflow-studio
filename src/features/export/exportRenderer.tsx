@@ -15,10 +15,10 @@ import { createPortal } from 'react-dom';
 import { Stage, Layer, Rect, Line, Text, Group } from 'react-konva';
 import Konva from 'konva';
 
-import { ComponentShape } from '../components/Canvas/shapes/ComponentShapes';
-import { getAllCanvasPorts } from './portUtils';
-import type { ChipComponent, Connection } from '../types';
-import { TOKENS } from '../theme/tokens';
+import { ComponentShape } from '../../components/Canvas/shapes/ComponentShapes';
+import { getAllCanvasPorts } from '../../utils/portUtils';
+import type { ChipComponent, Connection } from '../../types';
+import { TOKENS } from '../../theme/tokens';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tasarım bounding-box hesaplayıcı
