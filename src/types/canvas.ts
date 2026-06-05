@@ -3,7 +3,7 @@
 // ============================================================
 
 export interface CanvasState {
-  width: number;  // μm
+  width: number; // μm
   height: number; // μm
   unit: 'um';
   gridSize: 25 | 50 | 100; // μm

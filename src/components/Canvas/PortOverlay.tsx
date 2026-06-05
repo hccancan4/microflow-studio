@@ -19,18 +19,21 @@ const PREFERS_REDUCED_MOTION =
   typeof window.matchMedia === 'function' &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const PORT_R_SCREEN_PX = 9;   // port overlay dairesi ekran boyutu (piksel)
-const PORT_R_MAX_UM    = 120; // çok uzak zoom'da port overlay dünya-uzayı üst sınırı (μm)
-const PORT_R_MIN_UM    = 4;   // çok yakın zoom'da port overlay dünya-uzayı alt sınırı (μm)
-const SNAP_DISTANCE    = 400; // μm — bu mesafe içindeyse snap
+const PORT_R_SCREEN_PX = 9; // port overlay dairesi ekran boyutu (piksel)
+const PORT_R_MAX_UM = 120; // çok uzak zoom'da port overlay dünya-uzayı üst sınırı (μm)
+const PORT_R_MIN_UM = 4; // çok yakın zoom'da port overlay dünya-uzayı alt sınırı (μm)
+const SNAP_DISTANCE = 400; // μm — bu mesafe içindeyse snap
 
 interface PortOverlayProps {
   components: ChipComponent[];
   zoom: number;
   pendingConnection: PendingConnection | null;
-  showPorts: boolean;      // portlar görünür mü?
+  showPorts: boolean; // portlar görünür mü?
   /** Bağlantı çizgisinde sağ tık → CanvasEditor context menu'sünü açar. */
-  onConnectionContextMenu?: (e: import('konva/lib/Node').KonvaEventObject<PointerEvent>, connectionId: string) => void;
+  onConnectionContextMenu?: (
+    e: import('konva/lib/Node').KonvaEventObject<PointerEvent>,
+    connectionId: string,
+  ) => void;
   /** Z-order: 'below' = sadece bağlantı çizgileri (component'lerin altında render);
    *  'above' = port circles + pending wire + uyarı (component'lerin üstünde).
    *  CanvasEditor her iki modda da çağırır. */
@@ -45,23 +48,36 @@ const PortOverlay: React.FC<PortOverlayProps> = ({
   onConnectionContextMenu,
   layer = 'above',
 }) => {
-  const { startConnection, cancelConnection, addConnection, updateConnectionMouse } = useDesignStore();
+  const { startConnection, cancelConnection, addConnection, updateConnectionMouse } =
+    useDesignStore();
   const [hoveredPort, setHoveredPort] = useState<string | null>(null);
   const [compatWarning, setCompatWarning] = useState<string | null>(null);
 
   const allPorts = getAllCanvasPorts(components);
 
   /** Port üzerine fare gelince */
-  const handlePortEnter = (portKey: string, compId: string, portIndex: number, type: 'input' | 'output', diameter: number) => {
+  const handlePortEnter = (
+    portKey: string,
+    compId: string,
+    portIndex: number,
+    type: 'input' | 'output',
+    diameter: number,
+  ) => {
     setHoveredPort(portKey);
 
     if (pendingConnection) {
-      const fromComp = components.find(c => c.id === pendingConnection.fromComponentId);
+      const fromComp = components.find((c) => c.id === pendingConnection.fromComponentId);
       if (!fromComp || compId === pendingConnection.fromComponentId) return;
 
       // Uyumluluk kontrolü
       const { compatible, warning } = checkPortCompatibility(
-        pendingConnection ? getPortDiameter(pendingConnection.fromComponentId, pendingConnection.fromPortIndex, components) : 0,
+        pendingConnection
+          ? getPortDiameter(
+              pendingConnection.fromComponentId,
+              pendingConnection.fromPortIndex,
+              components,
+            )
+          : 0,
         diameter,
         getPortType(pendingConnection.fromComponentId, pendingConnection.fromPortIndex, components),
         type,
@@ -106,7 +122,11 @@ const PortOverlay: React.FC<PortOverlayProps> = ({
     }
 
     const { compatible, warning } = checkPortCompatibility(
-      getPortDiameter(pendingConnection.fromComponentId, pendingConnection.fromPortIndex, components),
+      getPortDiameter(
+        pendingConnection.fromComponentId,
+        pendingConnection.fromPortIndex,
+        components,
+      ),
       diameter,
       getPortType(pendingConnection.fromComponentId, pendingConnection.fromPortIndex, components),
       type,
@@ -136,10 +156,7 @@ const PortOverlay: React.FC<PortOverlayProps> = ({
   // Dünya-uzayı boyutu: screen_px / zoom. Zoom out → küçük dünya değeri değil,
   // büyük dünya değeri olur; bu yüzden üst sınırı PORT_R_MAX_UM ile kesiyoruz,
   // böylece çok uzakta küçücük bileşenlerin üstünde devasa çemberler oluşmaz.
-  const portRadius = Math.min(
-    PORT_R_MAX_UM,
-    Math.max(PORT_R_MIN_UM, PORT_R_SCREEN_PX / zoom),
-  );
+  const portRadius = Math.min(PORT_R_MAX_UM, Math.max(PORT_R_MIN_UM, PORT_R_SCREEN_PX / zoom));
 
   // ── Z-order: 'below' modu yalnızca bağlantı çizgilerini render eder ─────
   if (layer === 'below') {
@@ -156,99 +173,119 @@ const PortOverlay: React.FC<PortOverlayProps> = ({
   return (
     <>
       {/* Aktif çizilen bağlantı (pending) — port'ların altında */}
-      {pendingConnection && (
-        <PendingWire pending={pendingConnection} zoom={zoom} />
-      )}
+      {pendingConnection && <PendingWire pending={pendingConnection} zoom={zoom} />}
 
       {/* Port daireleri */}
-      {showPorts && allPorts.map((port) => {
-        const key = `${port.compId}-${port.index}`;
-        const isHovered = hoveredPort === key;
-        const isFromPort = pendingConnection?.fromComponentId === port.compId
-          && pendingConnection?.fromPortIndex === port.index;
+      {showPorts &&
+        allPorts.map((port) => {
+          const key = `${port.compId}-${port.index}`;
+          const isHovered = hoveredPort === key;
+          const isFromPort =
+            pendingConnection?.fromComponentId === port.compId &&
+            pendingConnection?.fromPortIndex === port.index;
 
-        // Bağlantı çiziliyorken uygun hedef portları vurgula
-        let portColor: string = port.type === 'output' ? TOKENS.ok : TOKENS.error;
-        let opacity = 0.7;
-        let isSnapTarget = false;  // Pending connection için uyumlu hedef mi?
+          // Bağlantı çiziliyorken uygun hedef portları vurgula
+          let portColor: string = port.type === 'output' ? TOKENS.ok : TOKENS.error;
+          let opacity = 0.7;
+          let isSnapTarget = false; // Pending connection için uyumlu hedef mi?
 
-        if (pendingConnection) {
-          const fromType = getPortType(pendingConnection.fromComponentId, pendingConnection.fromPortIndex, components);
-          // Karşı tip portları parlat, aynı bileşen portları soldur
-          if (port.compId === pendingConnection.fromComponentId) {
-            opacity = 0.2;
-          } else if (port.type !== fromType) {
-            opacity = 1;
-            portColor = TOKENS.warn; // sarı: snap hedefi
-            isSnapTarget = true;
-          } else {
-            opacity = 0.15; // ters tip — daha sönük (kullanıcı yanlış porta tıklamasın)
+          if (pendingConnection) {
+            const fromType = getPortType(
+              pendingConnection.fromComponentId,
+              pendingConnection.fromPortIndex,
+              components,
+            );
+            // Karşı tip portları parlat, aynı bileşen portları soldur
+            if (port.compId === pendingConnection.fromComponentId) {
+              opacity = 0.2;
+            } else if (port.type !== fromType) {
+              opacity = 1;
+              portColor = TOKENS.warn; // sarı: snap hedefi
+              isSnapTarget = true;
+            } else {
+              opacity = 0.15; // ters tip — daha sönük (kullanıcı yanlış porta tıklamasın)
+            }
           }
-        }
 
-        if (isFromPort) { portColor = TOKENS.dye; opacity = 1; }
-        if (isHovered)  { opacity = 1; }
+          if (isFromPort) {
+            portColor = TOKENS.dye;
+            opacity = 1;
+          }
+          if (isHovered) {
+            opacity = 1;
+          }
 
-        const r = isHovered ? portRadius * 1.4 : portRadius;
+          const r = isHovered ? portRadius * 1.4 : portRadius;
 
-        return (
-          <Group key={key}>
-            {/* Snap halo: pending bağlantıda uyumlu hedefler ekstra görünür halo */}
-            {isSnapTarget && (
+          return (
+            <Group key={key}>
+              {/* Snap halo: pending bağlantıda uyumlu hedefler ekstra görünür halo */}
+              {isSnapTarget && (
+                <Circle
+                  x={port.canvasPos.x}
+                  y={port.canvasPos.y}
+                  radius={portRadius * 2.4}
+                  fill="transparent"
+                  stroke={TOKENS.warn}
+                  strokeWidth={Math.max(0.8, 1.5 / zoom)}
+                  opacity={isHovered ? 0.9 : 0.45}
+                  dash={[Math.max(4, 6 / zoom), Math.max(3, 4 / zoom)]}
+                  listening={false}
+                />
+              )}
+              {/* From-port halo: kullanıcının tıkladığı kaynak port */}
+              {isFromPort && (
+                <Circle
+                  x={port.canvasPos.x}
+                  y={port.canvasPos.y}
+                  radius={portRadius * 2.0}
+                  fill="transparent"
+                  stroke={TOKENS.dye}
+                  strokeWidth={Math.max(0.8, 1.5 / zoom)}
+                  opacity={0.6}
+                  listening={false}
+                />
+              )}
               <Circle
                 x={port.canvasPos.x}
                 y={port.canvasPos.y}
-                radius={portRadius * 2.4}
-                fill="transparent"
-                stroke={TOKENS.warn}
-                strokeWidth={Math.max(0.8, 1.5 / zoom)}
-                opacity={isHovered ? 0.9 : 0.45}
-                dash={[Math.max(4, 6 / zoom), Math.max(3, 4 / zoom)]}
-                listening={false}
+                radius={r}
+                fill={portColor}
+                opacity={opacity}
+                stroke={TOKENS.bg}
+                strokeWidth={Math.max(0.5, 1 / zoom)}
+                onMouseEnter={() =>
+                  handlePortEnter(key, port.compId, port.index, port.type, port.diameter)
+                }
+                onMouseLeave={handlePortLeave}
+                onClick={(e) =>
+                  handlePortClick(
+                    e,
+                    port.compId,
+                    port.index,
+                    port.canvasPos,
+                    port.type,
+                    port.diameter,
+                  )
+                }
+                style={{ cursor: 'crosshair' }}
               />
-            )}
-            {/* From-port halo: kullanıcının tıkladığı kaynak port */}
-            {isFromPort && (
-              <Circle
-                x={port.canvasPos.x}
-                y={port.canvasPos.y}
-                radius={portRadius * 2.0}
-                fill="transparent"
-                stroke={TOKENS.dye}
-                strokeWidth={Math.max(0.8, 1.5 / zoom)}
-                opacity={0.6}
-                listening={false}
-              />
-            )}
-            <Circle
-              x={port.canvasPos.x}
-              y={port.canvasPos.y}
-              radius={r}
-              fill={portColor}
-              opacity={opacity}
-              stroke={TOKENS.bg}
-              strokeWidth={Math.max(0.5, 1 / zoom)}
-              onMouseEnter={() => handlePortEnter(key, port.compId, port.index, port.type, port.diameter)}
-              onMouseLeave={handlePortLeave}
-              onClick={(e) => handlePortClick(e, port.compId, port.index, port.canvasPos, port.type, port.diameter)}
-              style={{ cursor: 'crosshair' }}
-            />
-            {/* Port etiketi (yakın zoom'da göster) */}
-            {zoom > 3 && (
-              <Text
-                x={port.canvasPos.x}
-                y={port.canvasPos.y - portRadius * 2.5}
-                text={port.label}
-                fontSize={portRadius * 1.2}
-                fill={TOKENS.textDim}
-                align="center"
-                offsetX={portRadius * 1.5}
-                listening={false}
-              />
-            )}
-          </Group>
-        );
-      })}
+              {/* Port etiketi (yakın zoom'da göster) */}
+              {zoom > 3 && (
+                <Text
+                  x={port.canvasPos.x}
+                  y={port.canvasPos.y - portRadius * 2.5}
+                  text={port.label}
+                  fontSize={portRadius * 1.2}
+                  fill={TOKENS.textDim}
+                  align="center"
+                  offsetX={portRadius * 1.5}
+                  listening={false}
+                />
+              )}
+            </Group>
+          );
+        })}
 
       {/* Uyumluluk uyarısı */}
       {compatWarning && (
@@ -266,21 +303,28 @@ const PortOverlay: React.FC<PortOverlayProps> = ({
 interface ConnectionLinesProps {
   components: ChipComponent[];
   zoom: number;
-  onConnectionContextMenu?: (e: import('konva/lib/Node').KonvaEventObject<PointerEvent>, connectionId: string) => void;
+  onConnectionContextMenu?: (
+    e: import('konva/lib/Node').KonvaEventObject<PointerEvent>,
+    connectionId: string,
+  ) => void;
 }
 
-const ConnectionLines: React.FC<ConnectionLinesProps> = ({ components, zoom, onConnectionContextMenu }) => {
-  const connections          = useDesignStore((s) => s.connections);
+const ConnectionLines: React.FC<ConnectionLinesProps> = ({
+  components,
+  zoom,
+  onConnectionContextMenu,
+}) => {
+  const connections = useDesignStore((s) => s.connections);
   const selectedConnectionId = useDesignStore((s) => s.selectedConnectionId);
   const setSelectedConnection = useDesignStore((s) => s.setSelectedConnection);
-  const clearSelection        = useDesignStore((s) => s.clearSelection);
-  const dragOffset            = useDesignStore((s) => s.dragOffset);
+  const clearSelection = useDesignStore((s) => s.clearSelection);
+  const dragOffset = useDesignStore((s) => s.dragOffset);
   // Simülasyon sonucu varsa bağlantılarda akış-yönü animasyonu göster
   const hasFlow = useSimulationStore((s) => s.status === 'completed' && !!s.result);
   const allPorts = getAllCanvasPorts(components);
 
   const portMap = new Map(
-    allPorts.map((p) => [`${p.compId}-${p.index}`, { pos: p.canvasPos, compId: p.compId }])
+    allPorts.map((p) => [`${p.compId}-${p.index}`, { pos: p.canvasPos, compId: p.compId }]),
   );
 
   // Akış kesik-çizgilerini tek bir paylaşımlı Konva.Animation ile sür (performans).
@@ -290,26 +334,28 @@ const ConnectionLines: React.FC<ConnectionLinesProps> = ({ components, zoom, onC
     if (PREFERS_REDUCED_MOTION || !hasFlow) return;
     const layer = flowNodes.current.find(Boolean)?.getLayer();
     if (!layer) return;
-    const dashLen = 24 / zoom;            // dash([10,14]/zoom) toplamı
+    const dashLen = 24 / zoom; // dash([10,14]/zoom) toplamı
     const anim = new Konva.Animation((frame) => {
       if (!frame) return;
       const off = -((frame.time / 1100) * dashLen) % dashLen; // from → to yönünde
       for (const n of flowNodes.current) n?.dashOffset(off);
     }, layer);
     anim.start();
-    return () => { anim.stop(); };
+    return () => {
+      anim.stop();
+    };
   }, [hasFlow, connections.length, zoom]);
 
   return (
     <>
       {connections.map((conn, i) => {
         const fromEntry = portMap.get(`${conn.fromComponentId}-${conn.fromPortIndex}`);
-        const toEntry   = portMap.get(`${conn.toComponentId}-${conn.toPortIndex}`);
+        const toEntry = portMap.get(`${conn.toComponentId}-${conn.toPortIndex}`);
         if (!fromEntry || !toEntry) return null;
 
         // Drag esnasında bağlantı uçlarını dinamik kaydır
         const fromOff = dragOffset?.[fromEntry.compId];
-        const toOff   = dragOffset?.[toEntry.compId];
+        const toOff = dragOffset?.[toEntry.compId];
         const from = fromOff
           ? { x: fromEntry.pos.x + fromOff.dx, y: fromEntry.pos.y + fromOff.dy }
           : fromEntry.pos;
@@ -320,7 +366,7 @@ const ConnectionLines: React.FC<ConnectionLinesProps> = ({ components, zoom, onC
         const pts = smartRoute(from, to);
         const isSelected = selectedConnectionId === conn.id;
         const stroke = isSelected ? TOKENS.warn : TOKENS.dyeBright;
-        const sw     = Math.max(isSelected ? 1.0 : 0.7, (isSelected ? 2.5 : 1.5) / zoom);
+        const sw = Math.max(isSelected ? 1.0 : 0.7, (isSelected ? 2.5 : 1.5) / zoom);
 
         return (
           <React.Fragment key={conn.id}>
@@ -344,11 +390,9 @@ const ConnectionLines: React.FC<ConnectionLinesProps> = ({ components, zoom, onC
                 if (stage) stage.container().style.cursor = 'pointer';
               }}
               onMouseLeave={(e) => {
-                const stage = e.target.getStage() as
-                  (Konva_Stage_with_refresh) | null;
+                const stage = e.target.getStage() as Konva_Stage_with_refresh | null;
                 if (!stage) return;
-                const c = stage.container() as
-                  (HTMLDivElement & { __refreshCursor?: () => void });
+                const c = stage.container() as HTMLDivElement & { __refreshCursor?: () => void };
                 if (typeof c.__refreshCursor === 'function') c.__refreshCursor();
                 else c.style.cursor = 'default';
               }}
@@ -356,7 +400,9 @@ const ConnectionLines: React.FC<ConnectionLinesProps> = ({ components, zoom, onC
             {/* Akış-yönü animasyonu — yalnız sonuç varken; üstte hareketli dash */}
             {hasFlow && !isSelected && (
               <Line
-                ref={(n) => { flowNodes.current[i] = n; }}
+                ref={(n) => {
+                  flowNodes.current[i] = n;
+                }}
                 points={pts}
                 stroke={TOKENS.dyeBright}
                 strokeWidth={Math.max(1.2, 2.4 / zoom)}
@@ -388,7 +434,7 @@ interface PendingWireProps {
 const PendingWire: React.FC<PendingWireProps> = ({ pending, zoom }) => {
   const pts = smartRoute(pending.fromPortPos, pending.currentMousePos);
   // Zoom-stable: stroke 1.5px, dash 10/6px ekran biriminde sabit
-  const sw  = 1.5 / zoom;
+  const sw = 1.5 / zoom;
 
   return (
     <Line
@@ -436,13 +482,17 @@ const CompatWarningTooltip: React.FC<CompatWarningTooltipProps> = ({ message, po
 import { getPortInfos } from '../../utils/portUtils';
 
 function getPortDiameter(compId: string, portIndex: number, components: ChipComponent[]): number {
-  const comp = components.find(c => c.id === compId);
+  const comp = components.find((c) => c.id === compId);
   if (!comp) return 0;
   return getPortInfos(comp)[portIndex]?.diameter ?? 0;
 }
 
-function getPortType(compId: string, portIndex: number, components: ChipComponent[]): 'input' | 'output' {
-  const comp = components.find(c => c.id === compId);
+function getPortType(
+  compId: string,
+  portIndex: number,
+  components: ChipComponent[],
+): 'input' | 'output' {
+  const comp = components.find((c) => c.id === compId);
   if (!comp) return 'output';
   return getPortInfos(comp)[portIndex]?.type ?? 'output';
 }

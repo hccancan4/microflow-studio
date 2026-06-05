@@ -26,7 +26,11 @@ export interface StarterTemplate {
   build: () => StarterResult;
 }
 
-function mk(type: ComponentType, position: Point, paramsOverride?: Record<string, unknown>): ChipComponent {
+function mk(
+  type: ComponentType,
+  position: Point,
+  paramsOverride?: Record<string, unknown>,
+): ChipComponent {
   const base = getDefaultParams(type) as unknown as Record<string, unknown>;
   const params = { ...base, ...paramsOverride };
   return {
@@ -39,7 +43,12 @@ function mk(type: ComponentType, position: Point, paramsOverride?: Record<string
   };
 }
 
-function conn(from: ChipComponent, fromPortIndex: number, to: ChipComponent, toPortIndex: number): Connection {
+function conn(
+  from: ChipComponent,
+  fromPortIndex: number,
+  to: ChipComponent,
+  toPortIndex: number,
+): Connection {
   return {
     id: generateId('conn'),
     fromComponentId: from.id,
@@ -55,8 +64,8 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
     label: 'Tek Kanal',
     description: 'Giriş → düz kanal → çıkış',
     build: () => {
-      const inlet  = mk('port', { x: 600, y: 2000 }, { portType: 'inlet' });
-      const ch     = mk('straight_channel', { x: 1200, y: 2000 }, { length: 3000 });
+      const inlet = mk('port', { x: 600, y: 2000 }, { portType: 'inlet' });
+      const ch = mk('straight_channel', { x: 1200, y: 2000 }, { length: 3000 });
       const outlet = mk('port', { x: 4700, y: 2000 }, { portType: 'outlet' });
       return {
         components: [inlet, ch, outlet],
@@ -69,10 +78,10 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
     label: 'T-Birleşim',
     description: 'İki giriş bir dalda birleşir',
     build: () => {
-      const t      = mk('t_junction', { x: 2600, y: 2200 });
-      const inL    = mk('port', { x: 600,  y: 2200 }, { portType: 'inlet' });
-      const inR    = mk('port', { x: 4600, y: 2200 }, { portType: 'inlet' });
-      const outlet = mk('port', { x: 2600, y: 600  }, { portType: 'outlet' });
+      const t = mk('t_junction', { x: 2600, y: 2200 });
+      const inL = mk('port', { x: 600, y: 2200 }, { portType: 'inlet' });
+      const inR = mk('port', { x: 4600, y: 2200 }, { portType: 'inlet' });
+      const outlet = mk('port', { x: 2600, y: 600 }, { portType: 'outlet' });
       return {
         components: [t, inL, inR, outlet],
         connections: [conn(inL, 0, t, 0), conn(inR, 0, t, 1), conn(t, 2, outlet, 0)],
@@ -84,8 +93,8 @@ export const STARTER_TEMPLATES: StarterTemplate[] = [
     label: 'Serpantin Mikser',
     description: 'Giriş → serpantin → çıkış',
     build: () => {
-      const inlet  = mk('port', { x: 600, y: 1200 }, { portType: 'inlet' });
-      const mix    = mk('serpentine_mixer', { x: 1200, y: 1200 });
+      const inlet = mk('port', { x: 600, y: 1200 }, { portType: 'inlet' });
+      const mix = mk('serpentine_mixer', { x: 1200, y: 1200 });
       // Çıkış serpantinin bittiği köşeye (turns=5 tek → sol-alt) yakın
       const outlet = mk('port', { x: 1000, y: 3400 }, { portType: 'outlet' });
       return {

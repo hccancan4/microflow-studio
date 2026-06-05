@@ -7,8 +7,17 @@ import React, { useMemo, useState } from 'react';
 import clsx from 'clsx';
 import { FiEye, FiEyeOff, FiTrash2 } from 'react-icons/fi';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  ComposedChart, Line, ReferenceLine, Scatter,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ComposedChart,
+  Line,
+  ReferenceLine,
+  Scatter,
 } from 'recharts';
 import { useDesignStore } from '../../../stores/useDesignStore';
 import { useExperimentStore } from '../../../features/experiment/useExperimentStore';
@@ -16,7 +25,12 @@ import { computeMetrics } from '../../../features/experiment/experimentMetrics';
 import { TOKENS, CHART_SERIES } from '../../../theme/tokens';
 import { confirmAsync } from '../../../stores/useUiStore';
 import { MetricCard, MetricsCard, ChartCard, AXIS_TICK, TOOLTIP_STYLE } from '../shared';
-import type { AnalyticResult, VelocityProfile, SimulationResult, ExperimentDataSet } from '../../../types';
+import type {
+  AnalyticResult,
+  VelocityProfile,
+  SimulationResult,
+  ExperimentDataSet,
+} from '../../../types';
 
 export type TabKey = 'summary' | 'components' | 'charts' | 'profile' | 'experiment' | 'sweep';
 
@@ -45,9 +59,13 @@ export const AnalyticView: React.FC<{
   return (
     <div className="h-full px-3 py-2">
       {tab === 'summary' && <SummaryTab result={result} />}
-      {tab === 'components' && <ComponentsTab analytics={analytics} nameFor={nameFor} selectedIds={selectedIds} />}
+      {tab === 'components' && (
+        <ComponentsTab analytics={analytics} nameFor={nameFor} selectedIds={selectedIds} />
+      )}
       {tab === 'charts' && <ChartsTab analytics={meaningful} nameFor={nameFor} />}
-      {tab === 'profile' && <ProfileTab profiles={profiles} nameFor={nameFor} selectedIds={selectedIds} />}
+      {tab === 'profile' && (
+        <ProfileTab profiles={profiles} nameFor={nameFor} selectedIds={selectedIds} />
+      )}
       {tab === 'experiment' && <ExperimentTab profiles={profiles} nameFor={nameFor} />}
     </div>
   );
@@ -60,18 +78,39 @@ const SummaryTab: React.FC<{ result: SimulationResult }> = ({ result }) => {
   const mixers = analytics.filter((r) => r.mixingEfficiency !== undefined);
   const curves = analytics.filter((r) => r.deanNumber !== undefined);
   const maxRe = analytics.reduce((m, r) => Math.max(m, r.reynoldsNumber), 0);
-  const regime = maxRe < 1 ? 'Stokes akış (Re < 1)'
-    : maxRe < 100 ? 'Düşük Re laminar'
-    : maxRe < 2000 ? 'Laminar'
-    : 'Türbülanslı (!)';
-  const regimeColor = maxRe < 100 ? 'text-mf-green' : maxRe < 2000 ? 'text-mf-blue' : 'text-mf-orange';
+  const regime =
+    maxRe < 1
+      ? 'Stokes akış (Re < 1)'
+      : maxRe < 100
+        ? 'Düşük Re laminar'
+        : maxRe < 2000
+          ? 'Laminar'
+          : 'Türbülanslı (!)';
+  const regimeColor =
+    maxRe < 100 ? 'text-mf-green' : maxRe < 2000 ? 'text-mf-blue' : 'text-mf-orange';
 
   return (
     <div className="grid grid-cols-4 gap-2">
-      <MetricCard label="Maks. Hız" value={`${(result.summary.maxVelocity * 1000).toFixed(3)} mm/s`} color="blue" />
-      <MetricCard label="Toplam Debi" value={`${result.summary.totalFlowRate.toFixed(3)} μL/min`} color="green" />
-      <MetricCard label="Maks. Basınç" value={`${result.summary.maxPressure.toFixed(1)} Pa`} color="orange" />
-      <MetricCard label="Min. Basınç" value={`${result.summary.minPressure.toFixed(1)} Pa`} color="orange" />
+      <MetricCard
+        label="Maks. Hız"
+        value={`${(result.summary.maxVelocity * 1000).toFixed(3)} mm/s`}
+        color="blue"
+      />
+      <MetricCard
+        label="Toplam Debi"
+        value={`${result.summary.totalFlowRate.toFixed(3)} μL/min`}
+        color="green"
+      />
+      <MetricCard
+        label="Maks. Basınç"
+        value={`${result.summary.maxPressure.toFixed(1)} Pa`}
+        color="orange"
+      />
+      <MetricCard
+        label="Min. Basınç"
+        value={`${result.summary.minPressure.toFixed(1)} Pa`}
+        color="orange"
+      />
 
       <MetricCard label="Bileşen" value={`${analytics.length}`} color="blue" />
       <MetricCard label="Ağ Yolu" value={`${paths.length}`} color="green" />
@@ -84,16 +123,23 @@ const SummaryTab: React.FC<{ result: SimulationResult }> = ({ result }) => {
       {/* Mikser/eğri bileşen varsa ek metrikler */}
       {mixers.length > 0 && (
         <div className="col-span-4 mt-2">
-          <div className="text-xs text-mf-text-dim mb-1 font-semibold uppercase tracking-wider">Serpantin Mikserler</div>
+          <div className="text-xs text-mf-text-dim mb-1 font-semibold uppercase tracking-wider">
+            Serpantin Mikserler
+          </div>
           <div className="grid grid-cols-4 gap-2">
             {mixers.map((m) => (
               <div key={m.componentId} className="bg-mf-bg rounded border border-mf-border p-2">
-                <div className="text-xs text-mf-text-dark mb-1 truncate">{m.componentId.slice(-8)}</div>
+                <div className="text-xs text-mf-text-dark mb-1 truncate">
+                  {m.componentId.slice(-8)}
+                </div>
                 <div className="text-sm font-mono font-semibold text-mf-green">
                   η = {(m.mixingEfficiency! * 100).toFixed(1)}%
                 </div>
                 <div className="w-full h-1 bg-mf-bg mt-1 rounded overflow-hidden">
-                  <div className="h-full bg-mf-green" style={{ width: `${m.mixingEfficiency! * 100}%` }} />
+                  <div
+                    className="h-full bg-mf-green"
+                    style={{ width: `${m.mixingEfficiency! * 100}%` }}
+                  />
                 </div>
               </div>
             ))}
@@ -103,11 +149,15 @@ const SummaryTab: React.FC<{ result: SimulationResult }> = ({ result }) => {
 
       {curves.length > 0 && (
         <div className="col-span-4 mt-2">
-          <div className="text-xs text-mf-text-dim mb-1 font-semibold uppercase tracking-wider">Eğri Kanallar (Dean sayısı)</div>
+          <div className="text-xs text-mf-text-dim mb-1 font-semibold uppercase tracking-wider">
+            Eğri Kanallar (Dean sayısı)
+          </div>
           <div className="grid grid-cols-4 gap-2">
             {curves.map((c) => (
               <div key={c.componentId} className="bg-mf-bg rounded border border-mf-border p-2">
-                <div className="text-xs text-mf-text-dark mb-1 truncate">{c.componentId.slice(-8)}</div>
+                <div className="text-xs text-mf-text-dark mb-1 truncate">
+                  {c.componentId.slice(-8)}
+                </div>
                 <div className="text-sm font-mono font-semibold text-mf-blue">
                   De = {c.deanNumber!.toFixed(3)}
                 </div>
@@ -147,7 +197,7 @@ const ComponentsTab: React.FC<{
           key={r.componentId}
           className={clsx(
             'border-b border-mf-border/50',
-            selectedIds.includes(r.componentId) ? 'bg-mf-blue/10' : 'hover:bg-mf-bg/50'
+            selectedIds.includes(r.componentId) ? 'bg-mf-blue/10' : 'hover:bg-mf-bg/50',
           )}
         >
           <td className="py-1 pr-3 font-mono text-mf-text-dim">{nameFor(r.componentId)}</td>
@@ -181,7 +231,11 @@ const ChartsTab: React.FC<{
   }));
 
   if (data.length === 0) {
-    return <div className="text-xs text-mf-text-dark italic p-4 text-center">Grafik çizmek için yeterli bileşen yok.</div>;
+    return (
+      <div className="text-xs text-mf-text-dark italic p-4 text-center">
+        Grafik çizmek için yeterli bileşen yok.
+      </div>
+    );
   }
 
   return (
@@ -217,7 +271,12 @@ const ChartsTab: React.FC<{
             <XAxis dataKey="name" tick={AXIS_TICK} angle={-20} textAnchor="end" height={40} />
             <YAxis tick={AXIS_TICK} />
             <Tooltip contentStyle={TOOLTIP_STYLE} />
-            <ReferenceLine y={2000} stroke={TOKENS.active} strokeDasharray="4 2" label={{ value: 'türbülans eşiği', fill: TOKENS.active, fontSize: 9 }} />
+            <ReferenceLine
+              y={2000}
+              stroke={TOKENS.active}
+              strokeDasharray="4 2"
+              label={{ value: 'türbülans eşiği', fill: TOKENS.active, fontSize: 9 }}
+            />
             <Bar dataKey="re" fill={CHART_SERIES.reynolds} />
           </BarChart>
         </ResponsiveContainer>
@@ -231,7 +290,16 @@ const ChartsTab: React.FC<{
           >
             <CartesianGrid strokeDasharray="3 3" stroke={TOKENS.chartGrid} />
             <XAxis dataKey="name" tick={AXIS_TICK} angle={-20} textAnchor="end" height={40} />
-            <YAxis tick={AXIS_TICK} label={{ value: 'log₁₀(R)', angle: -90, position: 'insideLeft', fontSize: 10, fill: TOKENS.chartAxis }} />
+            <YAxis
+              tick={AXIS_TICK}
+              label={{
+                value: 'log₁₀(R)',
+                angle: -90,
+                position: 'insideLeft',
+                fontSize: 10,
+                fill: TOKENS.chartAxis,
+              }}
+            />
             <Tooltip
               contentStyle={TOOLTIP_STYLE}
               formatter={(v: number | string) => [`10^${Number(v).toFixed(2)}`, 'Direnç']}
@@ -250,8 +318,9 @@ const ProfileTab: React.FC<{
   nameFor: (id: string) => string;
   selectedIds: string[];
 }> = ({ profiles, nameFor, selectedIds }) => {
-  const defaultId = profiles.find((p) => selectedIds.includes(p.component_id))?.component_id
-    ?? profiles[0]?.component_id;
+  const defaultId =
+    profiles.find((p) => selectedIds.includes(p.component_id))?.component_id ??
+    profiles[0]?.component_id;
   const [activeId, setActiveId] = useState<string | undefined>(defaultId);
   const active = profiles.find((p) => p.component_id === (activeId ?? defaultId));
 
@@ -262,22 +331,29 @@ const ProfileTab: React.FC<{
 
   const linkedVelocityDatasets = useMemo(() => {
     if (!active) return [] as ExperimentDataSet[];
-    return datasets.filter((d) =>
-      d.dataType === 'velocity'
-      && visibleIds.has(d.id)
-      && linkedComponentId[d.id] === active.component_id,
+    return datasets.filter(
+      (d) =>
+        d.dataType === 'velocity' &&
+        visibleIds.has(d.id) &&
+        linkedComponentId[d.id] === active.component_id,
     );
   }, [datasets, visibleIds, linkedComponentId, active]);
 
   if (profiles.length === 0) {
-    return <div className="text-xs text-mf-text-dark italic p-4 text-center">Hız profili için geometri bilgisi yok.</div>;
+    return (
+      <div className="text-xs text-mf-text-dark italic p-4 text-center">
+        Hız profili için geometri bilgisi yok.
+      </div>
+    );
   }
 
   // Sim eğrisi — mm/s cinsinden y = y_um, v = velocity*1000
-  const simLine = active ? active.points.map((pt) => ({
-    y: Number(pt.y_um.toFixed(1)),
-    v: Number((pt.velocity * 1000).toFixed(4)),
-  })) : [];
+  const simLine = active
+    ? active.points.map((pt) => ({
+        y: Number(pt.y_um.toFixed(1)),
+        v: Number((pt.velocity * 1000).toFixed(4)),
+      }))
+    : [];
   const simX = active?.points.map((pt) => pt.y_um) ?? [];
   const simY_mm = active?.points.map((pt) => pt.velocity * 1000) ?? [];
 
@@ -299,12 +375,13 @@ const ProfileTab: React.FC<{
             onClick={() => setActiveId(p.component_id)}
             className={clsx(
               'w-full text-left px-2 py-1.5 text-xs border-b border-mf-border/50 hover:bg-mf-surface',
-              (activeId ?? defaultId) === p.component_id && 'bg-mf-blue/20 text-mf-blue'
+              (activeId ?? defaultId) === p.component_id && 'bg-mf-blue/20 text-mf-blue',
             )}
           >
             <div className="font-mono truncate">{nameFor(p.component_id)}</div>
             <div className="text-[10px] text-mf-text-dark">
-              {p.width_um.toFixed(0)}×{p.depth_um.toFixed(0)} μm · v̄={((p.mean_velocity) * 1000).toFixed(2)} mm/s
+              {p.width_um.toFixed(0)}×{p.depth_um.toFixed(0)} μm · v̄=
+              {(p.mean_velocity * 1000).toFixed(2)} mm/s
             </div>
           </button>
         ))}
@@ -319,7 +396,8 @@ const ProfileTab: React.FC<{
                 <span>
                   <span className="font-semibold">{nameFor(active.component_id)}</span>
                   <span className="text-mf-text-dark ml-2">
-                    Parabolik profil · v<sub>max</sub> = {(active.peak_velocity * 1000).toFixed(3)} mm/s
+                    Parabolik profil · v<sub>max</sub> = {(active.peak_velocity * 1000).toFixed(3)}{' '}
+                    mm/s
                   </span>
                 </span>
                 {linkedVelocityDatasets.length > 0 && (
@@ -329,26 +407,50 @@ const ProfileTab: React.FC<{
                 )}
               </div>
               <ResponsiveContainer width="100%" height="88%">
-                <ComposedChart
-                  margin={{ top: 8, right: 16, bottom: 32, left: 8 }}
-                >
+                <ComposedChart margin={{ top: 8, right: 16, bottom: 32, left: 8 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={TOKENS.chartGrid} />
                   <XAxis
                     dataKey="y"
                     type="number"
                     tick={AXIS_TICK}
-                    label={{ value: 'y (μm) — kanal kesiti', position: 'insideBottom', offset: -12, fontSize: 10, fill: TOKENS.chartAxis }}
+                    label={{
+                      value: 'y (μm) — kanal kesiti',
+                      position: 'insideBottom',
+                      offset: -12,
+                      fontSize: 10,
+                      fill: TOKENS.chartAxis,
+                    }}
                   />
                   <YAxis
                     tick={AXIS_TICK}
-                    label={{ value: 'v (mm/s)', angle: -90, position: 'insideLeft', fontSize: 10, fill: TOKENS.chartAxis }}
+                    label={{
+                      value: 'v (mm/s)',
+                      angle: -90,
+                      position: 'insideLeft',
+                      fontSize: 10,
+                      fill: TOKENS.chartAxis,
+                    }}
                   />
                   <Tooltip contentStyle={TOOLTIP_STYLE} />
-                  <Line data={simLine} type="monotone" dataKey="v" stroke={CHART_SERIES.flow} strokeWidth={2} dot={false} name="Simülasyon" />
+                  <Line
+                    data={simLine}
+                    type="monotone"
+                    dataKey="v"
+                    stroke={CHART_SERIES.flow}
+                    strokeWidth={2}
+                    dot={false}
+                    name="Simülasyon"
+                  />
                   <ReferenceLine
                     y={Number((active.mean_velocity * 1000).toFixed(4))}
-                    stroke={TOKENS.ok} strokeDasharray="4 2"
-                    label={{ value: 'v̄', fill: TOKENS.ok, fontSize: 10, position: 'insideTopRight' }}
+                    stroke={TOKENS.ok}
+                    strokeDasharray="4 2"
+                    label={{
+                      value: 'v̄',
+                      fill: TOKENS.ok,
+                      fontSize: 10,
+                      position: 'insideTopRight',
+                    }}
                   />
                   {linkedVelocityDatasets.map((d) => (
                     <Scatter
@@ -382,8 +484,8 @@ const ProfileTab: React.FC<{
         {/* Linkli dataset yok — kullanıcıya hatırlatma */}
         {active && metricsByDs.length === 0 && datasets.length > 0 && (
           <div className="flex-shrink-0 text-[11px] text-mf-text-dark italic p-2 border border-dashed border-mf-border rounded">
-            Deney verisini bu bileşene ilişkilendirmek için <b>Deney</b> sekmesinden
-            hız tipindeki dataset'i <code>{nameFor(active.component_id)}</code> bileşenine bağlayın.
+            Deney verisini bu bileşene ilişkilendirmek için <b>Deney</b> sekmesinden hız tipindeki
+            dataset'i <code>{nameFor(active.component_id)}</code> bileşenine bağlayın.
           </div>
         )}
       </div>
@@ -407,7 +509,8 @@ const ExperimentTab: React.FC<{
   if (datasets.length === 0) {
     return (
       <div className="text-xs text-mf-text-dark italic p-4 text-center">
-        Henüz deney verisi yüklenmedi. Toolbar'daki <b>Deney Verisi</b> butonundan CSV/JSON içe aktarın.
+        Henüz deney verisi yüklenmedi. Toolbar'daki <b>Deney Verisi</b> butonundan CSV/JSON içe
+        aktarın.
       </div>
     );
   }
@@ -441,7 +544,9 @@ const ExperimentTab: React.FC<{
               </td>
               <td className="py-1 pr-3 font-mono">
                 <div className="text-mf-text">{d.name}</div>
-                <div className="text-[10px] text-mf-text-dark truncate max-w-[220px]">{d.filename}</div>
+                <div className="text-[10px] text-mf-text-dark truncate max-w-[220px]">
+                  {d.filename}
+                </div>
               </td>
               <td className="py-1 pr-3 text-mf-text-dim">{d.dataType}</td>
               <td className="py-1 pr-3 text-right text-mf-text-dim">{d.points.length}</td>
@@ -465,7 +570,11 @@ const ExperimentTab: React.FC<{
                   className="btn-icon w-6 h-6"
                   title={visibleIds.has(d.id) ? 'Gizle' : 'Göster'}
                 >
-                  {visibleIds.has(d.id) ? <FiEye size={12} /> : <FiEyeOff size={12} className="opacity-40" />}
+                  {visibleIds.has(d.id) ? (
+                    <FiEye size={12} />
+                  ) : (
+                    <FiEyeOff size={12} className="opacity-40" />
+                  )}
                 </button>
               </td>
               <td className="py-1">

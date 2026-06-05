@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { getSweepableParams, getParamOption, componentDisplayLabel, withOverriddenParam } from './sweepHelpers';
+import {
+  getSweepableParams,
+  getParamOption,
+  componentDisplayLabel,
+  withOverriddenParam,
+} from './sweepHelpers';
 import { buildSweepValues } from '../stores/useSweepStore';
 import type { ChipComponent } from '../types';
 
@@ -32,7 +37,14 @@ describe('getSweepableParams / getParamOption', () => {
 });
 
 describe('componentDisplayLabel', () => {
-  const base = { id: 'c1', type: 'straight_channel', position: { x: 0, y: 0 }, rotation: 0, params: {}, ports: [] } as unknown as ChipComponent;
+  const base = {
+    id: 'c1',
+    type: 'straight_channel',
+    position: { x: 0, y: 0 },
+    rotation: 0,
+    params: {},
+    ports: [],
+  } as unknown as ChipComponent;
   it('label varsa onu + index', () => {
     expect(componentDisplayLabel({ ...base, label: 'Kanal A' }, 0)).toBe('Kanal A #1');
   });
@@ -43,7 +55,14 @@ describe('componentDisplayLabel', () => {
 
 describe('withOverriddenParam', () => {
   it('param üzerine yazar, orijinali bozmaz', () => {
-    const c = { id: 'c1', type: 'straight_channel', position: { x: 0, y: 0 }, rotation: 0, params: { width: 200, length: 5000 }, ports: [] } as unknown as ChipComponent;
+    const c = {
+      id: 'c1',
+      type: 'straight_channel',
+      position: { x: 0, y: 0 },
+      rotation: 0,
+      params: { width: 200, length: 5000 },
+      ports: [],
+    } as unknown as ChipComponent;
     const out = withOverriddenParam(c, 'width', 999);
     expect((out.params as { width: number }).width).toBe(999);
     expect((c.params as { width: number }).width).toBe(200); // immutable

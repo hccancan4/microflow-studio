@@ -78,11 +78,16 @@ function jet(t: number): RGB {
 /** Ana API: değeri [0,1]'e normalize ettikten sonra RGB üret. */
 export function colormap(t: number, type: ColormapType): RGB {
   switch (type) {
-    case 'viridis':  return interpolateStops(t, VIRIDIS_STOPS);
-    case 'plasma':   return interpolateStops(t, PLASMA_STOPS);
-    case 'coolwarm': return interpolateStops(t, COOLWARM_STOPS);
-    case 'jet':      return jet(t);
-    default:         return interpolateStops(t, VIRIDIS_STOPS);
+    case 'viridis':
+      return interpolateStops(t, VIRIDIS_STOPS);
+    case 'plasma':
+      return interpolateStops(t, PLASMA_STOPS);
+    case 'coolwarm':
+      return interpolateStops(t, COOLWARM_STOPS);
+    case 'jet':
+      return jet(t);
+    default:
+      return interpolateStops(t, VIRIDIS_STOPS);
   }
 }
 
@@ -132,7 +137,7 @@ export function fieldToImageData(
       const src = jSrc * width + i;
       const dst = (j * width + i) * 4;
       let t = (values[src] - min) * inv;
-      t = t < 0 ? 0 : t > 1 ? 1 : t;          // [0,1] clamp (LUT indeksi için)
+      t = t < 0 ? 0 : t > 1 ? 1 : t; // [0,1] clamp (LUT indeksi için)
       const li = ((t * (LUT_SIZE - 1) + 0.5) | 0) * 3;
       out[dst + 0] = lut[li];
       out[dst + 1] = lut[li + 1];

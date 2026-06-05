@@ -9,11 +9,11 @@ import clsx from 'clsx';
 import { COMPONENT_COLORS, PORT_COLORS } from '../../theme/componentColors';
 
 // Bileşen renkleri — canvas ile birebir aynı (componentColors.ts tek kaynak)
-const C_CHANNEL   = COMPONENT_COLORS.straight_channel.stroke;
-const C_JUNCTION  = COMPONENT_COLORS.t_junction.stroke;
-const C_MIXER     = COMPONENT_COLORS.serpentine_mixer.stroke;
-const C_DROPLET   = COMPONENT_COLORS.droplet_generator.stroke;
-const C_FILTER    = COMPONENT_COLORS.filter_array.stroke;
+const C_CHANNEL = COMPONENT_COLORS.straight_channel.stroke;
+const C_JUNCTION = COMPONENT_COLORS.t_junction.stroke;
+const C_MIXER = COMPONENT_COLORS.serpentine_mixer.stroke;
+const C_DROPLET = COMPONENT_COLORS.droplet_generator.stroke;
+const C_FILTER = COMPONENT_COLORS.filter_array.stroke;
 const C_EXPANSION = COMPONENT_COLORS.expansion.stroke;
 const C_RESERVOIR = COMPONENT_COLORS.reservoir.stroke;
 
@@ -34,7 +34,16 @@ interface Category {
 // SVG önizleme ikonları
 const ChannelIcon = () => (
   <svg width="32" height="20" viewBox="0 0 32 20">
-    <rect x="1" y="7" width="30" height="6" fill="none" stroke={C_CHANNEL} strokeWidth="1.5" rx="1" />
+    <rect
+      x="1"
+      y="7"
+      width="30"
+      height="6"
+      fill="none"
+      stroke={C_CHANNEL}
+      strokeWidth="1.5"
+      rx="1"
+    />
   </svg>
 );
 const CurvedIcon = () => (
@@ -51,8 +60,24 @@ const TIcon = () => (
 const YIcon = () => (
   <svg width="32" height="32" viewBox="0 0 32 32">
     <line x1="16" y1="16" x2="4" y2="4" stroke={C_JUNCTION} strokeWidth="3" strokeLinecap="round" />
-    <line x1="16" y1="16" x2="28" y2="4" stroke={C_JUNCTION} strokeWidth="3" strokeLinecap="round" />
-    <line x1="16" y1="16" x2="16" y2="31" stroke={C_JUNCTION} strokeWidth="3" strokeLinecap="round" />
+    <line
+      x1="16"
+      y1="16"
+      x2="28"
+      y2="4"
+      stroke={C_JUNCTION}
+      strokeWidth="3"
+      strokeLinecap="round"
+    />
+    <line
+      x1="16"
+      y1="16"
+      x2="16"
+      y2="31"
+      stroke={C_JUNCTION}
+      strokeWidth="3"
+      strokeLinecap="round"
+    />
   </svg>
 );
 const MixerIcon = () => (
@@ -80,10 +105,8 @@ const DropletIcon = () => (
 );
 const FilterIcon = () => (
   <svg width="32" height="32" viewBox="0 0 32 32">
-    {[8, 16, 24].map(x =>
-      [8, 16, 24].map(y => (
-        <circle key={`${x}-${y}`} cx={x} cy={y} r="2.5" fill={C_FILTER} />
-      ))
+    {[8, 16, 24].map((x) =>
+      [8, 16, 24].map((y) => <circle key={`${x}-${y}`} cx={x} cy={y} r="2.5" fill={C_FILTER} />),
     )}
   </svg>
 );
@@ -95,7 +118,16 @@ const ExpansionIcon = () => (
 );
 const ReservoirIcon = () => (
   <svg width="32" height="32" viewBox="0 0 32 32">
-    <rect x="3" y="3" width="26" height="26" fill="none" stroke={C_RESERVOIR} strokeWidth="1.5" rx="2" />
+    <rect
+      x="3"
+      y="3"
+      width="26"
+      height="26"
+      fill="none"
+      stroke={C_RESERVOIR}
+      strokeWidth="1.5"
+      rx="2"
+    />
     <rect x="7" y="7" width="18" height="18" fill={C_RESERVOIR} opacity="0.2" rx="1" />
   </svg>
 );
@@ -104,32 +136,89 @@ const CATEGORIES: Category[] = [
   {
     name: 'Kanallar',
     components: [
-      { type: 'straight_channel', label: 'Düz Kanal', icon: <ChannelIcon />, description: 'Dikdörtgen kesitli düz kanal' },
-      { type: 'curved_channel', label: 'Eğri Kanal', icon: <CurvedIcon />, description: 'Kavisli kanal segmenti' },
-      { type: 'serpentine_mixer', label: 'Serpantin Mikser', icon: <MixerIcon />, description: 'Zigzag pasif mikser' },
-      { type: 'expansion', label: 'Genişleme/Daralma', icon: <ExpansionIcon />, description: 'Trapez geçiş kanalı' },
+      {
+        type: 'straight_channel',
+        label: 'Düz Kanal',
+        icon: <ChannelIcon />,
+        description: 'Dikdörtgen kesitli düz kanal',
+      },
+      {
+        type: 'curved_channel',
+        label: 'Eğri Kanal',
+        icon: <CurvedIcon />,
+        description: 'Kavisli kanal segmenti',
+      },
+      {
+        type: 'serpentine_mixer',
+        label: 'Serpantin Mikser',
+        icon: <MixerIcon />,
+        description: 'Zigzag pasif mikser',
+      },
+      {
+        type: 'expansion',
+        label: 'Genişleme/Daralma',
+        icon: <ExpansionIcon />,
+        description: 'Trapez geçiş kanalı',
+      },
     ],
   },
   {
     name: 'Bağlantılar',
     components: [
-      { type: 't_junction', label: 'T-Bağlantı', icon: <TIcon />, description: 'T şeklinde üç yollu kavşak' },
-      { type: 'y_junction', label: 'Y-Bağlantı', icon: <YIcon />, description: 'Y şeklinde kavşak' },
-      { type: 'droplet_generator', label: 'Damla Üreteci', icon: <DropletIcon />, description: 'Cross-junction damla üreteci' },
+      {
+        type: 't_junction',
+        label: 'T-Bağlantı',
+        icon: <TIcon />,
+        description: 'T şeklinde üç yollu kavşak',
+      },
+      {
+        type: 'y_junction',
+        label: 'Y-Bağlantı',
+        icon: <YIcon />,
+        description: 'Y şeklinde kavşak',
+      },
+      {
+        type: 'droplet_generator',
+        label: 'Damla Üreteci',
+        icon: <DropletIcon />,
+        description: 'Cross-junction damla üreteci',
+      },
     ],
   },
   {
     name: 'Filtreler',
     components: [
-      { type: 'filter_array', label: 'Filtre Dizisi', icon: <FilterIcon />, description: 'Pillar array filtresi' },
+      {
+        type: 'filter_array',
+        label: 'Filtre Dizisi',
+        icon: <FilterIcon />,
+        description: 'Pillar array filtresi',
+      },
     ],
   },
   {
     name: 'Portlar & Rezervuarlar',
     components: [
-      { type: 'port', label: 'Giriş Portu', icon: <PortIcon type="inlet" />, description: 'Sıvı giriş noktası', portType: 'inlet' },
-      { type: 'port', label: 'Çıkış Portu', icon: <PortIcon type="outlet" />, description: 'Sıvı çıkış noktası', portType: 'outlet' },
-      { type: 'reservoir', label: 'Rezervuar', icon: <ReservoirIcon />, description: 'Büyük sıvı deposu' },
+      {
+        type: 'port',
+        label: 'Giriş Portu',
+        icon: <PortIcon type="inlet" />,
+        description: 'Sıvı giriş noktası',
+        portType: 'inlet',
+      },
+      {
+        type: 'port',
+        label: 'Çıkış Portu',
+        icon: <PortIcon type="outlet" />,
+        description: 'Sıvı çıkış noktası',
+        portType: 'outlet',
+      },
+      {
+        type: 'reservoir',
+        label: 'Rezervuar',
+        icon: <ReservoirIcon />,
+        description: 'Büyük sıvı deposu',
+      },
     ],
   },
 ];
@@ -140,7 +229,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ width }) => {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(CATEGORIES.map((c) => c.name))
+    new Set(CATEGORIES.map((c) => c.name)),
   );
   const [search, setSearch] = useState('');
 
@@ -159,17 +248,20 @@ const Sidebar: React.FC<SidebarProps> = ({ width }) => {
         components: cat.components.filter(
           (c) =>
             c.label.toLowerCase().includes(search.toLowerCase()) ||
-            c.description.toLowerCase().includes(search.toLowerCase())
+            c.description.toLowerCase().includes(search.toLowerCase()),
         ),
       })).filter((cat) => cat.components.length > 0)
     : CATEGORIES;
 
   const handleDragStart = (e: React.DragEvent, comp: ComponentDef) => {
-    e.dataTransfer.setData('application/microflow-component', JSON.stringify({
-      type: comp.type,
-      label: comp.label,
-      portType: comp.portType, // 'port' için inlet/outlet ayrımını taşı
-    }));
+    e.dataTransfer.setData(
+      'application/microflow-component',
+      JSON.stringify({
+        type: comp.type,
+        label: comp.label,
+        portType: comp.portType, // 'port' için inlet/outlet ayrımını taşı
+      }),
+    );
     e.dataTransfer.effectAllowed = 'copy';
   };
 
@@ -224,14 +316,14 @@ const Sidebar: React.FC<SidebarProps> = ({ width }) => {
               aria-expanded={expandedCategories.has(category.name)}
             >
               <span className="flex items-center gap-1.5">
-                {expandedCategories.has(category.name)
-                  ? <FiChevronDown size={10} />
-                  : <FiChevronRight size={10} />}
+                {expandedCategories.has(category.name) ? (
+                  <FiChevronDown size={10} />
+                ) : (
+                  <FiChevronRight size={10} />
+                )}
                 {category.name}
               </span>
-              <span className="text-mf-text-dark font-mono">
-                {category.components.length}
-              </span>
+              <span className="text-mf-text-dark font-mono">{category.components.length}</span>
             </button>
 
             {/* Bileşen listesi */}

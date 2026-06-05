@@ -18,12 +18,19 @@ describe('linearInterp', () => {
 
 describe('sortAndDedup', () => {
   it('x sıralar', () => {
-    const { xs, ys } = sortAndDedup([[2, 20], [0, 0], [1, 10]]);
+    const { xs, ys } = sortAndDedup([
+      [2, 20],
+      [0, 0],
+      [1, 10],
+    ]);
     expect(xs).toEqual([0, 1, 2]);
     expect(ys).toEqual([0, 10, 20]);
   });
   it('aynı x → ortalama', () => {
-    const { xs, ys } = sortAndDedup([[1, 10], [1, 20]]);
+    const { xs, ys } = sortAndDedup([
+      [1, 10],
+      [1, 20],
+    ]);
     expect(xs).toEqual([1]);
     expect(ys).toEqual([15]);
   });

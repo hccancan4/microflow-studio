@@ -13,22 +13,26 @@ import { RULER_SIZE } from './Ruler';
 import { TOKENS } from '../../theme/tokens';
 import type { CanvasState } from '../../types';
 
-const MAJOR_EVERY = 5;            // her 5 hücrede bir kalın (major) çizgi
-const MINOR_MIN_SPACING_PX = 7;   // minor çizgiler bu ekran-px aralığının altında gizlenir
-const MINOR_FADE_RANGE_PX = 36;   // bu aralıkta minor opaklığı 0 → max'a yükselir (fade-in)
-const MINOR_MAX_OPACITY = 0.45;   // minor çizgi üst opaklık sınırı
+const MAJOR_EVERY = 5; // her 5 hücrede bir kalın (major) çizgi
+const MINOR_MIN_SPACING_PX = 7; // minor çizgiler bu ekran-px aralığının altında gizlenir
+const MINOR_FADE_RANGE_PX = 36; // bu aralıkta minor opaklığı 0 → max'a yükselir (fade-in)
+const MINOR_MAX_OPACITY = 0.45; // minor çizgi üst opaklık sınırı
 
-export function buildGridLines(canvas: CanvasState, width: number, height: number): React.ReactNode[] {
+export function buildGridLines(
+  canvas: CanvasState,
+  width: number,
+  height: number,
+): React.ReactNode[] {
   const els: React.ReactNode[] = [];
   const { gridSize, zoom: z, panX, panY } = canvas;
 
   const startX = Math.floor(-panX / z / gridSize) * gridSize - gridSize;
   const startY = Math.floor(-panY / z / gridSize) * gridSize - gridSize;
-  const endX   = startX + (width  - RULER_SIZE) / z + gridSize * 2;
-  const endY   = startY + (height - RULER_SIZE) / z + gridSize * 2;
+  const endX = startX + (width - RULER_SIZE) / z + gridSize * 2;
+  const endY = startY + (height - RULER_SIZE) / z + gridSize * 2;
 
-  const minorSpacingPx = gridSize * z;         // minor çizgiler arası ekran-px
-  const showMinor = minorSpacingPx >= MINOR_MIN_SPACING_PX;  // çok sıkıysa minor'ı gizle (fade-out)
+  const minorSpacingPx = gridSize * z; // minor çizgiler arası ekran-px
+  const showMinor = minorSpacingPx >= MINOR_MIN_SPACING_PX; // çok sıkıysa minor'ı gizle (fade-out)
   const minorOpacity = Math.min(
     MINOR_MAX_OPACITY,
     Math.max(0, (minorSpacingPx - MINOR_MIN_SPACING_PX) / MINOR_FADE_RANGE_PX),
@@ -36,23 +40,36 @@ export function buildGridLines(canvas: CanvasState, width: number, height: numbe
   const swMinor = 0.5 / z;
   const swMajor = 0.9 / z;
 
-  const isMajor = (v: number) => (((Math.round(v / gridSize) % MAJOR_EVERY) + MAJOR_EVERY) % MAJOR_EVERY) === 0;
+  const isMajor = (v: number) =>
+    ((Math.round(v / gridSize) % MAJOR_EVERY) + MAJOR_EVERY) % MAJOR_EVERY === 0;
 
   for (let x = startX; x <= endX; x += gridSize) {
     const major = isMajor(x);
     if (!major && !showMinor) continue;
-    els.push(<Line key={`v${x}`} points={[x, startY, x, endY]}
-      stroke={major ? TOKENS.borderStrong : TOKENS.border}
-      strokeWidth={major ? swMajor : swMinor}
-      opacity={major ? 0.7 : minorOpacity} listening={false} />);
+    els.push(
+      <Line
+        key={`v${x}`}
+        points={[x, startY, x, endY]}
+        stroke={major ? TOKENS.borderStrong : TOKENS.border}
+        strokeWidth={major ? swMajor : swMinor}
+        opacity={major ? 0.7 : minorOpacity}
+        listening={false}
+      />,
+    );
   }
   for (let y = startY; y <= endY; y += gridSize) {
     const major = isMajor(y);
     if (!major && !showMinor) continue;
-    els.push(<Line key={`h${y}`} points={[startX, y, endX, y]}
-      stroke={major ? TOKENS.borderStrong : TOKENS.border}
-      strokeWidth={major ? swMajor : swMinor}
-      opacity={major ? 0.7 : minorOpacity} listening={false} />);
+    els.push(
+      <Line
+        key={`h${y}`}
+        points={[startX, y, endX, y]}
+        stroke={major ? TOKENS.borderStrong : TOKENS.border}
+        strokeWidth={major ? swMajor : swMinor}
+        opacity={major ? 0.7 : minorOpacity}
+        listening={false}
+      />,
+    );
   }
 
   // Origin (0,0) referans işareti — ince çapraz (CAD geleneği)
@@ -60,8 +77,22 @@ export function buildGridLines(canvas: CanvasState, width: number, height: numbe
     const o = gridSize * 0.6;
     const swO = 0.9 / z;
     els.push(
-      <Line key="ox" points={[-o, 0, o, 0]} stroke={TOKENS.dyeDim} strokeWidth={swO} opacity={0.55} listening={false} />,
-      <Line key="oy" points={[0, -o, 0, o]} stroke={TOKENS.dyeDim} strokeWidth={swO} opacity={0.55} listening={false} />,
+      <Line
+        key="ox"
+        points={[-o, 0, o, 0]}
+        stroke={TOKENS.dyeDim}
+        strokeWidth={swO}
+        opacity={0.55}
+        listening={false}
+      />,
+      <Line
+        key="oy"
+        points={[0, -o, 0, o]}
+        stroke={TOKENS.dyeDim}
+        strokeWidth={swO}
+        opacity={0.55}
+        listening={false}
+      />,
     );
   }
   return els;

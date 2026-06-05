@@ -12,11 +12,15 @@
 @tailwind utilities;
 
 /* ── Reset & root ──────────────────────────────────────────────────────── */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   width: 100%;
   height: 100%;
   margin: 0;
@@ -29,16 +33,21 @@ html, body, #root {
   line-height: 1.4;
   user-select: none;
   /* Tabular figures + stylistic alternates — sayılar hizalı kalsın */
-  font-feature-settings: 'tnum' 1, 'cv05' 1, 'ss03' 1;
+  font-feature-settings:
+    'tnum' 1,
+    'cv05' 1,
+    'ss03' 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* Sayısal alanlarda mono — class olarak değil, doğrudan element üstüne */
-input[type="number"],
+input[type='number'],
 .tabular {
   font-variant-numeric: tabular-nums;
-  font-feature-settings: 'tnum' 1, 'zero' 1;
+  font-feature-settings:
+    'tnum' 1,
+    'zero' 1;
 }
 
 /* ── Scrollbar — slim, dikkat çekmeyen ─────────────────────────────────── */
@@ -101,7 +110,7 @@ input[type="number"],
          text-2xs font-semibold text-mf-text-dim uppercase tracking-caps
          bg-mf-panel border-b border-mf-border;
   /* Profesyonel CAD tool'larda panel başlığında ince kontrast çizgisi */
-  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.025);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.025);
 }
 
 /* ── Status bar ────────────────────────────────────────────────────────── */
@@ -189,13 +198,21 @@ input[type="number"],
   font-family: 'IBM Plex Sans', sans-serif;
   letter-spacing: -0.05em;
   /* İnce ışıma — premium tool hissi */
-  box-shadow: 0 0 0 1px rgb(var(--mf-dye-rgb) / 0.2), 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 0 0 1px rgb(var(--mf-dye-rgb) / 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* ── Toast giriş animasyonu (sağdan kayarak) ───────────────────────────── */
 @keyframes toast-in {
-  from { opacity: 0; transform: translateX(16px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 .toast-enter {
   animation: toast-in var(--dur-base) var(--ease-out);
@@ -203,15 +220,25 @@ input[type="number"],
 
 /* ── Dialog giriş animasyonu (fade + hafif yükselme/ölçek) ─────────────── */
 @keyframes dialog-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.985); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 .dialog-enter {
   animation: dialog-in var(--dur-base) var(--ease-out);
 }
 @keyframes backdrop-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 .backdrop-enter {
   animation: backdrop-in var(--dur-fast) var(--ease-out);
@@ -233,8 +260,12 @@ input[type="number"],
   animation: progress-slide 1.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 @keyframes progress-slide {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(400%); }
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(400%);
+  }
 }
 
 /* ── Section başlık (PropertiesPanel içinde) ───────────────────────────── */
@@ -246,5 +277,5 @@ input[type="number"],
   content: '';
   flex: 1;
   height: 1px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.06), transparent);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.06), transparent);
 }

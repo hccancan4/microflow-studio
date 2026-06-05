@@ -19,35 +19,44 @@ const StatusBar: React.FC<{
   metadata: ProjectMetadata;
   isDirty: boolean;
 }> = ({ components, connections, metadata, isDirty }) => {
-  const zoom     = useDesignStore((s) => s.canvas.zoom);
+  const zoom = useDesignStore((s) => s.canvas.zoom);
   const gridSize = useDesignStore((s) => s.canvas.gridSize);
-  const cursor   = useCursorStore();
+  const cursor = useCursorStore();
   const simStatus = useSimulationStore((s) => s.status);
   const simResult = useSimulationStore((s) => s.result);
   const sweepRunning = useSweepStore((s) => s.running);
 
   const portCount = components.filter((c) => c.type === 'port').length;
-  const inletCount = components.filter((c) =>
-    c.type === 'port' && (c.params as { portType?: string }).portType === 'inlet'
+  const inletCount = components.filter(
+    (c) => c.type === 'port' && (c.params as { portType?: string }).portType === 'inlet',
   ).length;
   const outletCount = portCount - inletCount;
 
   // Sim durumu rozeti
-  const simChip = sweepRunning
-    ? <StatusChip kind="busy">SWEEP</StatusChip>
-    : simStatus === 'running' ? <StatusChip kind="busy">SIM</StatusChip>
-    : simStatus === 'completed' && simResult ? <StatusChip kind="ok">{simResult.mode === 'cfd' ? 'CFD' : 'ANL'}</StatusChip>
-    : simStatus === 'error' ? <StatusChip kind="err">HATA</StatusChip>
-    : <StatusChip kind="idle">IDLE</StatusChip>;
+  const simChip = sweepRunning ? (
+    <StatusChip kind="busy">SWEEP</StatusChip>
+  ) : simStatus === 'running' ? (
+    <StatusChip kind="busy">SIM</StatusChip>
+  ) : simStatus === 'completed' && simResult ? (
+    <StatusChip kind="ok">{simResult.mode === 'cfd' ? 'CFD' : 'ANL'}</StatusChip>
+  ) : simStatus === 'error' ? (
+    <StatusChip kind="err">HATA</StatusChip>
+  ) : (
+    <StatusChip kind="idle">IDLE</StatusChip>
+  );
 
   return (
     <div className="status-bar">
       {/* Sol: marka + proje */}
       <div className="status-cell">
-        <div className="brand-mark text-[10px]" style={{ width: 14, height: 14 }}>μ</div>
+        <div className="brand-mark text-[10px]" style={{ width: 14, height: 14 }}>
+          μ
+        </div>
         <span className="status-cell-value text-mf-text">{metadata.name}</span>
         {isDirty && (
-          <span className="text-mf-orange tabular" title="Kaydedilmemiş değişiklikler">●</span>
+          <span className="text-mf-orange tabular" title="Kaydedilmemiş değişiklikler">
+            ●
+          </span>
         )}
       </div>
 
@@ -87,14 +96,15 @@ const StatusBar: React.FC<{
       {/* Grid + zoom (zoom tıklanabilir popover) */}
       <div className="status-cell">
         <span className="status-cell-key">grid</span>
-        <span className="status-cell-value">{gridSize}<span className="text-mf-text-dark">μm</span></span>
+        <span className="status-cell-value">
+          {gridSize}
+          <span className="text-mf-text-dark">μm</span>
+        </span>
         <ZoomPopover zoom={zoom} />
       </div>
 
       {/* Sim durumu */}
-      <div className="status-cell">
-        {simChip}
-      </div>
+      <div className="status-cell">{simChip}</div>
 
       {/* Sağ taraf — boşluk + versiyon */}
       <div className="flex-1" />
@@ -107,15 +117,20 @@ const StatusBar: React.FC<{
 };
 
 // Sim durum çipi
-const StatusChip: React.FC<{ kind: 'idle' | 'busy' | 'ok' | 'err'; children: React.ReactNode }> = ({ kind, children }) => {
+const StatusChip: React.FC<{ kind: 'idle' | 'busy' | 'ok' | 'err'; children: React.ReactNode }> = ({
+  kind,
+  children,
+}) => {
   const cls = {
     idle: 'text-mf-text-dark border-mf-border',
     busy: 'text-mf-orange border-mf-orange/50 bg-mf-orange/10',
-    ok:   'text-mf-green border-mf-green/50 bg-mf-green/10',
-    err:  'text-mf-red border-mf-red/60 bg-mf-red/10',
+    ok: 'text-mf-green border-mf-green/50 bg-mf-green/10',
+    err: 'text-mf-red border-mf-red/60 bg-mf-red/10',
   }[kind];
   return (
-    <span className={`px-1.5 py-[1px] text-[9px] font-mono font-semibold uppercase tracking-caps border rounded-sm ${cls}`}>
+    <span
+      className={`px-1.5 py-[1px] text-[9px] font-mono font-semibold uppercase tracking-caps border rounded-sm ${cls}`}
+    >
       {children}
     </span>
   );
@@ -162,7 +177,8 @@ const ZoomPopover: React.FC<{ zoom: number }> = ({ zoom }) => {
         className="status-cell-value hover:text-mf-blue transition-colors cursor-pointer"
         title="Zoom seviyesini değiştir"
       >
-        {(zoom * 100).toFixed(0)}<span className="text-mf-text-dark">%</span>
+        {(zoom * 100).toFixed(0)}
+        <span className="text-mf-text-dark">%</span>
       </button>
 
       {open && (
@@ -180,7 +196,10 @@ const ZoomPopover: React.FC<{ zoom: number }> = ({ zoom }) => {
           ))}
           <div className="border-t border-mf-border my-1" />
           <button
-            onClick={() => { useDesignStore.getState().zoomReset(); setOpen(false); }}
+            onClick={() => {
+              useDesignStore.getState().zoomReset();
+              setOpen(false);
+            }}
             className="block w-full text-left px-3 py-1 text-xs hover:bg-mf-panel transition-colors text-mf-text"
           >
             Sıfırla <span className="text-mf-text-dark float-right text-2xs">Ctrl+0</span>

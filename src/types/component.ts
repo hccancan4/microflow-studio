@@ -33,37 +33,37 @@ export interface Port {
 
 // --- Bileşen parametreleri ---
 export interface StraightChannelParams {
-  width: number;   // μm
-  length: number;  // μm
-  depth: number;   // μm
+  width: number; // μm
+  length: number; // μm
+  depth: number; // μm
 }
 
 export interface CurvedChannelParams {
-  radius: number;  // μm
-  angle: number;   // derece
-  width: number;   // μm
-  depth: number;   // μm
+  radius: number; // μm
+  angle: number; // derece
+  width: number; // μm
+  depth: number; // μm
 }
 
 export interface TJunctionParams {
-  mainWidth: number;   // μm
+  mainWidth: number; // μm
   branchWidth: number; // μm
-  angle: number;       // derece
-  depth: number;       // μm
+  angle: number; // derece
+  depth: number; // μm
 }
 
 export interface YJunctionParams {
-  mainWidth: number;   // μm
+  mainWidth: number; // μm
   branchWidth: number; // μm
   branchAngle: number; // derece
-  depth: number;       // μm
+  depth: number; // μm
 }
 
 export interface SerpentineMixerParams {
   channelWidth: number; // μm
   turns: number;
-  pitch: number;        // μm
-  depth: number;        // μm
+  pitch: number; // μm
+  depth: number; // μm
 }
 
 export interface PortParams {
@@ -72,31 +72,31 @@ export interface PortParams {
 }
 
 export interface DropletGeneratorParams {
-  orificeWidth: number;        // μm
-  mainChannelWidth: number;    // μm
+  orificeWidth: number; // μm
+  mainChannelWidth: number; // μm
   dispersedChannelWidth: number; // μm
-  depth: number;               // μm
+  depth: number; // μm
 }
 
 export interface FilterArrayParams {
   pillarDiameter: number; // μm
-  spacing: number;        // μm
+  spacing: number; // μm
   rows: number;
   columns: number;
-  depth: number;          // μm
+  depth: number; // μm
 }
 
 export interface ExpansionParams {
-  inletWidth: number;  // μm
+  inletWidth: number; // μm
   outletWidth: number; // μm
-  length: number;      // μm
-  depth: number;       // μm
+  length: number; // μm
+  depth: number; // μm
 }
 
 export interface ReservoirParams {
-  width: number;  // μm
+  width: number; // μm
   height: number; // μm
-  depth: number;  // μm
+  depth: number; // μm
 }
 
 export type ComponentParams =
@@ -115,8 +115,8 @@ export type ComponentParams =
 export interface ChipComponent {
   id: string;
   type: ComponentType;
-  position: Point;     // canvas koordinatları (μm)
-  rotation: number;    // derece
+  position: Point; // canvas koordinatları (μm)
+  rotation: number; // derece
   params: ComponentParams;
   ports: Port[];
   label?: string;

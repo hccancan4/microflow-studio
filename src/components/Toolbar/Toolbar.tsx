@@ -4,11 +4,20 @@
  */
 import React from 'react';
 import {
-  FiFile, FiFolder, FiSave, FiDownload,
-  FiRotateCcw, FiRotateCw,
-  FiPlay, FiZap,
-  FiSidebar, FiCode, FiDatabase, FiSliders,
-  FiLayout, FiHelpCircle,
+  FiFile,
+  FiFolder,
+  FiSave,
+  FiDownload,
+  FiRotateCcw,
+  FiRotateCw,
+  FiPlay,
+  FiZap,
+  FiSidebar,
+  FiCode,
+  FiDatabase,
+  FiSliders,
+  FiLayout,
+  FiHelpCircle,
 } from 'react-icons/fi';
 import { useProjectStore } from '../../stores/useProjectStore';
 import { useDesignStore } from '../../stores/useDesignStore';
@@ -40,18 +49,31 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onOpenHelp,
   busy = false,
 }) => {
-  const { metadata, isDirty, leftPanelOpen, rightPanelOpen, bottomPanelOpen,
-    toggleLeftPanel, toggleRightPanel, toggleBottomPanel, activeTab, setActiveTab } = useProjectStore();
+  const {
+    metadata,
+    isDirty,
+    leftPanelOpen,
+    rightPanelOpen,
+    bottomPanelOpen,
+    toggleLeftPanel,
+    toggleRightPanel,
+    toggleBottomPanel,
+    activeTab,
+    setActiveTab,
+  } = useProjectStore();
   const { undo, redo, canUndo, canRedo, components } = useDesignStore();
   const hasComponents = components.length > 0;
   const canSimulate = hasComponents && !busy;
 
   // Project metadata artık StatusBar'da gösteriliyor — toolbar'da yer açıyor
-  void metadata; void isDirty;
+  void metadata;
+  void isDirty;
   return (
     <div className="flex items-center h-9 bg-mf-panel border-b border-mf-border px-1.5 flex-shrink-0 select-none">
       {/* Brand mark — kompakt */}
-      <div className="brand-mark mr-2" title="MicroFlow Studio">μ</div>
+      <div className="brand-mark mr-2" title="MicroFlow Studio">
+        μ
+      </div>
 
       <div className="tool-divider" />
 
@@ -60,7 +82,11 @@ const Toolbar: React.FC<ToolbarProps> = ({
       <ToolbarButton icon={<FiFolder />} label="Aç (Ctrl+O)" onClick={onOpenProject} />
       <ToolbarButton
         icon={<FiSave />}
-        label={isDirty ? 'Kaydet (Ctrl+S) — kaydedilmemiş değişiklikler var' : 'Kaydet (Ctrl+S) — değişiklik yok'}
+        label={
+          isDirty
+            ? 'Kaydet (Ctrl+S) — kaydedilmemiş değişiklikler var'
+            : 'Kaydet (Ctrl+S) — değişiklik yok'
+        }
         onClick={onSaveProject}
         accent={isDirty}
         disabled={!isDirty}
@@ -69,8 +95,18 @@ const Toolbar: React.FC<ToolbarProps> = ({
       <div className="tool-divider" />
 
       {/* Düzenleme */}
-      <ToolbarButton icon={<FiRotateCcw />} label="Geri Al (Ctrl+Z)" onClick={undo} disabled={!canUndo()} />
-      <ToolbarButton icon={<FiRotateCw />} label="İleri Al (Ctrl+Y)" onClick={redo} disabled={!canRedo()} />
+      <ToolbarButton
+        icon={<FiRotateCcw />}
+        label="Geri Al (Ctrl+Z)"
+        onClick={undo}
+        disabled={!canUndo()}
+      />
+      <ToolbarButton
+        icon={<FiRotateCw />}
+        label="İleri Al (Ctrl+Y)"
+        onClick={redo}
+        disabled={!canRedo()}
+      />
 
       <div className="tool-divider" />
 
@@ -81,7 +117,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
             'px-2.5 h-full text-2xs uppercase tracking-caps font-semibold transition-colors',
             activeTab === 'canvas'
               ? 'bg-mf-blue/15 text-mf-blue'
-              : 'text-mf-text-dim hover:text-mf-text'
+              : 'text-mf-text-dim hover:text-mf-text',
           )}
           onClick={() => setActiveTab('canvas')}
           title="Görsel tasarım — F1"
@@ -94,7 +130,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
             'px-2.5 h-full text-2xs uppercase tracking-caps font-semibold transition-colors flex items-center gap-1',
             activeTab === 'script'
               ? 'bg-mf-blue/15 text-mf-blue'
-              : 'text-mf-text-dim hover:text-mf-text'
+              : 'text-mf-text-dim hover:text-mf-text',
           )}
           onClick={() => setActiveTab('script')}
           title="Lua scripting — F2"
@@ -144,7 +180,11 @@ const Toolbar: React.FC<ToolbarProps> = ({
       <div className="flex-1" />
 
       {/* Deney verisi */}
-      <ToolbarButton icon={<FiDatabase />} label="Deney Verisi İçe Aktar" onClick={onImportExperiment} />
+      <ToolbarButton
+        icon={<FiDatabase />}
+        label="Deney Verisi İçe Aktar"
+        onClick={onImportExperiment}
+      />
       <ToolbarButton icon={<FiDownload />} label="Dışa Aktar (Ctrl+E)" onClick={onExport} />
 
       <div className="tool-divider" />
@@ -170,11 +210,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
       />
 
       <div className="tool-divider" />
-      <ToolbarButton
-        icon={<FiHelpCircle />}
-        label="Klavye Kısayolları (?)"
-        onClick={onOpenHelp}
-      />
+      <ToolbarButton icon={<FiHelpCircle />} label="Klavye Kısayolları (?)" onClick={onOpenHelp} />
     </div>
   );
 };
@@ -198,10 +234,19 @@ interface SimButtonProps {
   onClick: () => void;
   tooltip: string;
 }
-const SimButton: React.FC<SimButtonProps> = ({ icon, label, accentColor, enabled, hasComponents, busy, onClick, tooltip }) => {
+const SimButton: React.FC<SimButtonProps> = ({
+  icon,
+  label,
+  accentColor,
+  enabled,
+  hasComponents,
+  busy,
+  onClick,
+  tooltip,
+}) => {
   const colorEnabled = {
-    orange:  'text-mf-orange hover:bg-mf-orange/10',
-    blue:    'text-mf-blue hover:bg-mf-blue/10',
+    orange: 'text-mf-orange hover:bg-mf-orange/10',
+    blue: 'text-mf-blue hover:bg-mf-blue/10',
     neutral: 'text-mf-text hover:bg-mf-elev',
   }[accentColor];
   return (
@@ -209,14 +254,16 @@ const SimButton: React.FC<SimButtonProps> = ({ icon, label, accentColor, enabled
       onClick={onClick}
       disabled={!enabled}
       title={
-        !hasComponents ? `${tooltip} — önce canvas'a bileşen ekleyin`
-        : busy ? `${tooltip} — başka simülasyon çalışıyor`
-        : tooltip
+        !hasComponents
+          ? `${tooltip} — önce canvas'a bileşen ekleyin`
+          : busy
+            ? `${tooltip} — başka simülasyon çalışıyor`
+            : tooltip
       }
       aria-label={label}
       className={clsx(
         'flex items-center gap-1.5 px-2.5 h-[22px] text-2xs uppercase tracking-caps font-semibold transition-colors',
-        enabled ? colorEnabled : 'text-mf-text-dark cursor-not-allowed'
+        enabled ? colorEnabled : 'text-mf-text-dark cursor-not-allowed',
       )}
     >
       {icon}
@@ -225,7 +272,13 @@ const SimButton: React.FC<SimButtonProps> = ({ icon, label, accentColor, enabled
   );
 };
 
-const ToolbarButton: React.FC<ToolbarButtonProps> = ({ icon, label, onClick, disabled, accent }) => (
+const ToolbarButton: React.FC<ToolbarButtonProps> = ({
+  icon,
+  label,
+  onClick,
+  disabled,
+  accent,
+}) => (
   <button
     title={label}
     aria-label={label}
@@ -234,7 +287,7 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({ icon, label, onClick, dis
     className={clsx(
       'btn-icon w-[26px] h-[26px]',
       disabled && 'opacity-30 cursor-not-allowed',
-      accent && 'text-mf-blue bg-mf-blue/10'
+      accent && 'text-mf-blue bg-mf-blue/10',
     )}
   >
     {icon}

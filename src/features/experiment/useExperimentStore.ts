@@ -13,8 +13,14 @@ import { create } from 'zustand';
 import type { ExperimentDataSet, ExperimentDataPoint } from '../../types';
 
 const PALETTE = [
-  '#ff7043', '#ba68c8', '#ffd54f', '#4dd0e1',
-  '#aed581', '#f06292', '#7986cb', '#a1887f',
+  '#ff7043',
+  '#ba68c8',
+  '#ffd54f',
+  '#4dd0e1',
+  '#aed581',
+  '#f06292',
+  '#7986cb',
+  '#a1887f',
 ];
 
 interface ExperimentState {
@@ -51,8 +57,10 @@ export const useExperimentStore = create<ExperimentState>()((set, get) => ({
 
   removeDataset: (id) =>
     set((s) => {
-      const vis = new Set(s.visibleIds); vis.delete(id);
-      const lnk = { ...s.linkedComponentId }; delete lnk[id];
+      const vis = new Set(s.visibleIds);
+      vis.delete(id);
+      const lnk = { ...s.linkedComponentId };
+      delete lnk[id];
       return {
         datasets: s.datasets.filter((d) => d.id !== id),
         visibleIds: vis,
@@ -68,14 +76,16 @@ export const useExperimentStore = create<ExperimentState>()((set, get) => ({
   toggleVisible: (id) =>
     set((s) => {
       const vis = new Set(s.visibleIds);
-      if (vis.has(id)) vis.delete(id); else vis.add(id);
+      if (vis.has(id)) vis.delete(id);
+      else vis.add(id);
       return { visibleIds: vis };
     }),
 
   setVisible: (id, v) =>
     set((s) => {
       const vis = new Set(s.visibleIds);
-      if (v) vis.add(id); else vis.delete(id);
+      if (v) vis.add(id);
+      else vis.delete(id);
       return { visibleIds: vis };
     }),
 

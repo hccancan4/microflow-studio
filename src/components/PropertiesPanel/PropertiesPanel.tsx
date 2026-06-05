@@ -12,19 +12,34 @@ interface PropertiesPanelProps {
 
 // Negatif/sıfır değerlere izin verilmeyen geometrik parametreler
 const GEOMETRIC_KEYS = new Set([
-  'width','length','depth','radius','mainWidth','branchWidth',
-  'channelWidth','pitch','orificeWidth','mainChannelWidth',
-  'dispersedChannelWidth','pillarDiameter','spacing',
-  'inletWidth','outletWidth','height','diameter','turns','rows','columns',
+  'width',
+  'length',
+  'depth',
+  'radius',
+  'mainWidth',
+  'branchWidth',
+  'channelWidth',
+  'pitch',
+  'orificeWidth',
+  'mainChannelWidth',
+  'dispersedChannelWidth',
+  'pillarDiameter',
+  'spacing',
+  'inletWidth',
+  'outletWidth',
+  'height',
+  'diameter',
+  'turns',
+  'rows',
+  'columns',
 ]);
 
 const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ width }) => {
   const { components, selectedIds, updateComponent, removeComponents } = useDesignStore();
   const { params, setParams } = useSimulationStore();
 
-  const selectedComponent = selectedIds.length === 1
-    ? components.find((c) => c.id === selectedIds[0])
-    : null;
+  const selectedComponent =
+    selectedIds.length === 1 ? components.find((c) => c.id === selectedIds[0]) : null;
   const multiSelected = selectedIds.length > 1;
 
   return (
@@ -45,7 +60,9 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ width }) => {
       <div className="flex-1 overflow-y-auto px-3 py-3">
         {!selectedComponent && !multiSelected && (
           <div className="flex flex-col items-center justify-center py-10 px-3 text-center">
-            <div className="text-2xs text-mf-text-dark uppercase tracking-caps mb-1.5">Seçim yok</div>
+            <div className="text-2xs text-mf-text-dark uppercase tracking-caps mb-1.5">
+              Seçim yok
+            </div>
             <div className="text-xs text-mf-text-dim leading-relaxed max-w-[200px]">
               Canvas'tan bir bileşene tıklayın veya sol panelden sürükleyip bırakın.
             </div>
@@ -55,10 +72,12 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ width }) => {
         {multiSelected && (
           <div className="px-2 py-3 space-y-2">
             <div className="text-xs text-mf-text">
-              <span className="text-mf-blue font-semibold">{selectedIds.length}</span> bileşen seçili
+              <span className="text-mf-blue font-semibold">{selectedIds.length}</span> bileşen
+              seçili
             </div>
             <div className="text-[11px] text-mf-text-dark leading-relaxed">
-              Toplu özellik düzenleme için tek bileşen seçin. Toplu sil/çoğalt için kısayolları kullanın.
+              Toplu özellik düzenleme için tek bileşen seçin. Toplu sil/çoğalt için kısayolları
+              kullanın.
             </div>
             <div className="flex flex-col gap-1.5 pt-1">
               <button
@@ -86,16 +105,20 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ width }) => {
               <PropRow
                 label="X (μm)"
                 value={selectedComponent.position.x}
-                onChange={(v) => updateComponent(selectedComponent.id, {
-                  position: { ...selectedComponent.position, x: Number(v) }
-                })}
+                onChange={(v) =>
+                  updateComponent(selectedComponent.id, {
+                    position: { ...selectedComponent.position, x: Number(v) },
+                  })
+                }
               />
               <PropRow
                 label="Y (μm)"
                 value={selectedComponent.position.y}
-                onChange={(v) => updateComponent(selectedComponent.id, {
-                  position: { ...selectedComponent.position, y: Number(v) }
-                })}
+                onChange={(v) =>
+                  updateComponent(selectedComponent.id, {
+                    position: { ...selectedComponent.position, y: Number(v) },
+                  })
+                }
               />
               <PropRow
                 label="Açı (°)"
@@ -111,13 +134,18 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ width }) => {
                 if (key === 'portType') {
                   return (
                     <div key={key} className="flex items-center gap-2">
-                      <label className="text-xs text-mf-text-dim w-24 flex-shrink-0 truncate">Port Tipi</label>
+                      <label className="text-xs text-mf-text-dim w-24 flex-shrink-0 truncate">
+                        Port Tipi
+                      </label>
                       <select
                         className="mf-input text-xs flex-1"
                         value={String(value)}
                         onChange={(e) =>
                           updateComponent(selectedComponent.id, {
-                            params: { ...selectedComponent.params, portType: e.target.value as 'inlet' | 'outlet' },
+                            params: {
+                              ...selectedComponent.params,
+                              portType: e.target.value as 'inlet' | 'outlet',
+                            },
                           })
                         }
                       >
@@ -132,19 +160,26 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ width }) => {
                     key={key}
                     label={formatParamLabel(key)}
                     value={value as number | string}
-                    minHint={typeof value === 'number' && GEOMETRIC_KEYS.has(key) ? 0.001 : undefined}
+                    minHint={
+                      typeof value === 'number' && GEOMETRIC_KEYS.has(key) ? 0.001 : undefined
+                    }
                     onChange={(v) => {
                       // Numerik geometri parametreleri için pozitiflik zorla — negatif
                       // değerler GDS/CFD tessellation'ı bozar.
                       const numeric = Number(v);
                       if (typeof value === 'number' && !isNaN(numeric)) {
-                        const clamped = GEOMETRIC_KEYS.has(key) ? Math.max(0.001, numeric) : numeric;
+                        const clamped = GEOMETRIC_KEYS.has(key)
+                          ? Math.max(0.001, numeric)
+                          : numeric;
                         updateComponent(selectedComponent.id, {
                           params: { ...selectedComponent.params, [key]: clamped },
                         });
                       } else {
                         updateComponent(selectedComponent.id, {
-                          params: { ...selectedComponent.params, [key]: isNaN(numeric) ? v : numeric },
+                          params: {
+                            ...selectedComponent.params,
+                            [key]: isNaN(numeric) ? v : numeric,
+                          },
                         });
                       }
                     }}
@@ -175,7 +210,9 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ width }) => {
         <div className="px-3 py-3 space-y-3">
           {/* Akışkan seçimi */}
           <div>
-            <label className="text-2xs text-mf-text-dim uppercase tracking-caps block mb-1">Akışkan</label>
+            <label className="text-2xs text-mf-text-dim uppercase tracking-caps block mb-1">
+              Akışkan
+            </label>
             <select
               className="mf-input text-xs"
               value={params.fluid}
@@ -185,14 +222,18 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ width }) => {
               }}
             >
               {Object.entries(FLUID_PRESETS).map(([key, f]) => (
-                <option key={key} value={key}>{f.name}</option>
+                <option key={key} value={key}>
+                  {f.name}
+                </option>
               ))}
             </select>
           </div>
 
           {/* Giriş basıncı */}
           <div>
-            <label className="text-2xs text-mf-text-dim uppercase tracking-caps block mb-1">Giriş Basıncı</label>
+            <label className="text-2xs text-mf-text-dim uppercase tracking-caps block mb-1">
+              Giriş Basıncı
+            </label>
             <div className="relative">
               <input
                 type="number"
@@ -210,7 +251,9 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ width }) => {
 
           {/* Grid çözünürlüğü */}
           <div>
-            <label className="text-2xs text-mf-text-dim uppercase tracking-caps block mb-1">CFD Çözünürlüğü</label>
+            <label className="text-2xs text-mf-text-dim uppercase tracking-caps block mb-1">
+              CFD Çözünürlüğü
+            </label>
             <div className="flex gap-0 bg-mf-bg border border-mf-border rounded-sm overflow-hidden">
               {(['coarse', 'medium', 'fine'] as const).map((res, i) => (
                 <button
@@ -221,9 +264,15 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ width }) => {
                     i > 0 && 'border-l border-mf-border',
                     params.gridResolution === res
                       ? 'bg-mf-blue/15 text-mf-blue'
-                      : 'text-mf-text-dim hover:text-mf-text hover:bg-mf-elev'
+                      : 'text-mf-text-dim hover:text-mf-text hover:bg-mf-elev',
                   )}
-                  title={res === 'coarse' ? '60×16, 400 iter' : res === 'medium' ? '100×24, 800 iter' : '160×36, 1400 iter'}
+                  title={
+                    res === 'coarse'
+                      ? '60×16, 400 iter'
+                      : res === 'medium'
+                        ? '100×24, 800 iter'
+                        : '160×36, 1400 iter'
+                  }
                 >
                   {res === 'coarse' ? 'Kaba' : res === 'medium' ? 'Orta' : 'İnce'}
                 </button>
@@ -235,11 +284,15 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ width }) => {
           <div className="bg-mf-bg border border-mf-border rounded-sm px-2 py-1.5 space-y-0.5 font-mono">
             <div className="flex justify-between text-2xs">
               <span className="text-mf-text-dark">μ</span>
-              <span className="text-mf-text">{params.fluidProperties.viscosity} <span className="text-mf-text-dark">Pa·s</span></span>
+              <span className="text-mf-text">
+                {params.fluidProperties.viscosity} <span className="text-mf-text-dark">Pa·s</span>
+              </span>
             </div>
             <div className="flex justify-between text-2xs">
               <span className="text-mf-text-dark">ρ</span>
-              <span className="text-mf-text">{params.fluidProperties.density} <span className="text-mf-text-dark">kg/m³</span></span>
+              <span className="text-mf-text">
+                {params.fluidProperties.density} <span className="text-mf-text-dark">kg/m³</span>
+              </span>
             </div>
           </div>
         </div>
@@ -249,7 +302,11 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ width }) => {
 };
 
 // Yardımcı bileşenler
-const PropSection: React.FC<{ title: string; children: React.ReactNode; defaultOpen?: boolean }> = ({ title, children, defaultOpen = true }) => {
+const PropSection: React.FC<{
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}> = ({ title, children, defaultOpen = true }) => {
   const [open, setOpen] = React.useState(defaultOpen);
   return (
     <div>
@@ -284,7 +341,10 @@ const PropRow: React.FC<PropRowProps> = ({ label, value, onChange, minHint }) =>
   const unit = m?.[2];
   return (
     <div className="flex items-center gap-2 group">
-      <label className="text-2xs text-mf-text-dim w-20 flex-shrink-0 truncate uppercase tracking-caps" title={label}>
+      <label
+        className="text-2xs text-mf-text-dim w-20 flex-shrink-0 truncate uppercase tracking-caps"
+        title={label}
+      >
         {niceLabel}
       </label>
       <div className="relative flex-1">
@@ -293,7 +353,7 @@ const PropRow: React.FC<PropRowProps> = ({ label, value, onChange, minHint }) =>
           className={clsx(
             'mf-input text-xs font-mono w-full',
             unit && 'pr-7',
-            tooLow && 'border-mf-yellow'
+            tooLow && 'border-mf-yellow',
           )}
           value={value}
           onChange={(e) => onChange(e.target.value)}

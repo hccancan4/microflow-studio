@@ -6,22 +6,23 @@
  */
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  FiCheckCircle, FiAlertTriangle, FiXCircle, FiInfo, FiX,
-} from 'react-icons/fi';
+import { FiCheckCircle, FiAlertTriangle, FiXCircle, FiInfo, FiX } from 'react-icons/fi';
 import clsx from 'clsx';
 import { useUiStore, type Toast, type ToastKind } from '../stores/useUiStore';
 import { useEscapeClose } from '../hooks/useEscapeClose';
 
 // ── Toast ─────────────────────────────────────────────────────────────────
 const KIND: Record<ToastKind, { icon: React.ReactNode; bar: string; text: string }> = {
-  success: { icon: <FiCheckCircle size={15} />, bar: 'bg-mf-green',  text: 'text-mf-green' },
-  error:   { icon: <FiXCircle size={15} />,      bar: 'bg-mf-red',    text: 'text-mf-red' },
-  warn:    { icon: <FiAlertTriangle size={15} />,bar: 'bg-mf-yellow', text: 'text-mf-yellow' },
-  info:    { icon: <FiInfo size={15} />,          bar: 'bg-mf-blue',   text: 'text-mf-blue' },
+  success: { icon: <FiCheckCircle size={15} />, bar: 'bg-mf-green', text: 'text-mf-green' },
+  error: { icon: <FiXCircle size={15} />, bar: 'bg-mf-red', text: 'text-mf-red' },
+  warn: { icon: <FiAlertTriangle size={15} />, bar: 'bg-mf-yellow', text: 'text-mf-yellow' },
+  info: { icon: <FiInfo size={15} />, bar: 'bg-mf-blue', text: 'text-mf-blue' },
 };
 
-const ToastItem: React.FC<{ toast: Toast; onDismiss: (id: string) => void }> = ({ toast, onDismiss }) => {
+const ToastItem: React.FC<{ toast: Toast; onDismiss: (id: string) => void }> = ({
+  toast,
+  onDismiss,
+}) => {
   useEffect(() => {
     const id = setTimeout(() => onDismiss(toast.id), toast.duration);
     return () => clearTimeout(id);
@@ -36,7 +37,9 @@ const ToastItem: React.FC<{ toast: Toast; onDismiss: (id: string) => void }> = (
     >
       <div className={clsx('w-1 self-stretch flex-shrink-0', k.bar)} />
       <div className={clsx('pt-2.5 flex-shrink-0', k.text)}>{k.icon}</div>
-      <div className="flex-1 py-2.5 pr-1 text-xs text-mf-text leading-relaxed break-words">{toast.message}</div>
+      <div className="flex-1 py-2.5 pr-1 text-xs text-mf-text leading-relaxed break-words">
+        {toast.message}
+      </div>
       <button
         onClick={() => onDismiss(toast.id)}
         className="btn-icon w-6 h-6 mt-1.5 mr-1 flex-shrink-0"
@@ -77,7 +80,9 @@ const ConfirmDialog: React.FC = () => {
       role="dialog"
       aria-modal="true"
       aria-labelledby="confirm-title"
-      onMouseDown={(e) => { if (e.target === e.currentTarget) resolve(false); }}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) resolve(false);
+      }}
     >
       <div className="dialog-enter bg-mf-panel border border-mf-border-strong rounded-ds-lg shadow-pop w-[420px] max-w-[92vw]">
         <div className="px-4 py-3 border-b border-mf-border">

@@ -9,8 +9,8 @@ export type GridResolution = 'coarse' | 'medium' | 'fine';
 export type ColormapType = 'jet' | 'viridis' | 'plasma' | 'coolwarm';
 
 export interface FluidProperties {
-  viscosity: number;  // Pa·s
-  density: number;    // kg/m³
+  viscosity: number; // Pa·s
+  density: number; // kg/m³
   name: string;
 }
 
@@ -18,19 +18,19 @@ export interface SimulationParams {
   mode: SimulationMode;
   fluid: FluidPreset;
   fluidProperties: FluidProperties;
-  inletPressure?: number;   // Pa
-  inletFlowRate?: number;   // μL/min
+  inletPressure?: number; // Pa
+  inletFlowRate?: number; // μL/min
   gridResolution: GridResolution;
   maxIterations: number;
 }
 
 export interface AnalyticResult {
   componentId: string;
-  flowRate: number;       // μL/min
-  pressureDrop: number;   // Pa
+  flowRate: number; // μL/min
+  pressureDrop: number; // Pa
   reynoldsNumber: number;
-  resistance: number;     // Pa·s/m³
-  deanNumber?: number;    // eğri kanallar için
+  resistance: number; // Pa·s/m³
+  deanNumber?: number; // eğri kanallar için
   mixingEfficiency?: number; // mikserler için 0-1
 }
 
@@ -99,7 +99,7 @@ export interface CfdField {
   height: number;
   dx: number; // μm
   dy: number; // μm
-  velocityX: number[];   // düzleştirilmiş 2D dizi
+  velocityX: number[]; // düzleştirilmiş 2D dizi
   velocityY: number[];
   pressure: number[];
   magnitude: number[];
@@ -122,9 +122,9 @@ export interface SimulationResult {
   /** Her bileşen için parabolik hız profili */
   velocityProfiles?: VelocityProfile[];
   summary: {
-    maxVelocity: number;   // m/s
-    minPressure: number;   // Pa
-    maxPressure: number;   // Pa
+    maxVelocity: number; // m/s
+    minPressure: number; // Pa
+    maxPressure: number; // Pa
     totalFlowRate: number; // μL/min
   };
 }

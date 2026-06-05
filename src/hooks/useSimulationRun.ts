@@ -107,8 +107,8 @@ export function useSimulationRun(components: ChipComponent[], connections: Conne
     const selectedIds = useDesignStore.getState().selectedIds;
     const candidates = components.filter((c) => c.type === 'straight_channel');
     const target =
-      components.find((c) => selectedIds.includes(c.id) && c.type === 'straight_channel')
-      ?? candidates[0];
+      components.find((c) => selectedIds.includes(c.id) && c.type === 'straight_channel') ??
+      candidates[0];
 
     if (!target) {
       toast.warn("CFD için bir Düz Kanal bileşeni gereklidir. Canvas'a ekleyin ve seçin.");
@@ -116,8 +116,8 @@ export function useSimulationRun(components: ChipComponent[], connections: Conne
     }
 
     const p = target.params as { width: number; length: number; depth: number };
-    const channelWidth  = p.length; // akım yönü (x) uzunluğu
-    const channelHeight = p.width;  // en-kesit (y)
+    const channelWidth = p.length; // akım yönü (x) uzunluğu
+    const channelHeight = p.width; // en-kesit (y)
     const depthM = p.depth * 1e-6;
 
     // Analitik ön-çözüm: aynı geometride Hagen-Poiseuille inlet hızı
@@ -136,28 +136,28 @@ export function useSimulationRun(components: ChipComponent[], connections: Conne
 
     try {
       const resMap: Record<string, { nx: number; ny: number; iter: number }> = {
-        coarse: { nx: 60,  ny: 16, iter: 400 },
+        coarse: { nx: 60, ny: 16, iter: 400 },
         medium: { nx: 100, ny: 24, iter: 800 },
-        fine:   { nx: 160, ny: 36, iter: 1400 },
+        fine: { nx: 160, ny: 36, iter: 1400 },
       };
       const grid = resMap[params.gridResolution] ?? resMap.medium;
 
       const cfdField = await invoke<CfdField>('run_cfd_simulation', {
         req: {
-          channel_width_um:  channelWidth,
+          channel_width_um: channelWidth,
           channel_height_um: channelHeight,
-          inlet_velocity:    uAvg,
+          inlet_velocity: uAvg,
           nx: grid.nx,
           ny: grid.ny,
-          max_iterations:    Math.max(params.maxIterations, grid.iter),
-          fluid_viscosity:   params.fluidProperties.viscosity,
-          fluid_density:     params.fluidProperties.density,
+          max_iterations: Math.max(params.maxIterations, grid.iter),
+          fluid_viscosity: params.fluidProperties.viscosity,
+          fluid_density: params.fluidProperties.density,
         },
       });
 
-      const maxV = cfdField.magnitude.reduce((m: number, v: number) => v > m ? v : m, 0);
-      const minP = cfdField.pressure.reduce((m: number, v: number) => v < m ? v : m, Infinity);
-      const maxP = cfdField.pressure.reduce((m: number, v: number) => v > m ? v : m, -Infinity);
+      const maxV = cfdField.magnitude.reduce((m: number, v: number) => (v > m ? v : m), 0);
+      const minP = cfdField.pressure.reduce((m: number, v: number) => (v < m ? v : m), Infinity);
+      const maxP = cfdField.pressure.reduce((m: number, v: number) => (v > m ? v : m), -Infinity);
       // Debi (μL/min): Q = u_avg · A = u_avg · (w · depth)
       const qMicroLMin = uAvg * hM * depthM * 1e9 * 60;
 

@@ -5,7 +5,14 @@ import type { ChipComponent, Connection } from '../types';
 const S = () => useDesignStore.getState();
 
 function port(id: string): ChipComponent {
-  return { id, type: 'port', position: { x: 0, y: 0 }, rotation: 0, params: { diameter: 200, portType: 'inlet' }, ports: [] } as unknown as ChipComponent;
+  return {
+    id,
+    type: 'port',
+    position: { x: 0, y: 0 },
+    rotation: 0,
+    params: { diameter: 200, portType: 'inlet' },
+    ports: [],
+  } as unknown as ChipComponent;
 }
 function conn(id: string, from: string, fp: number, to: string, tp: number): Connection {
   return { id, fromComponentId: from, fromPortIndex: fp, toComponentId: to, toPortIndex: tp };
@@ -22,7 +29,7 @@ describe('addComponent', () => {
   });
 });
 
-describe('addConnection invariant\'ları', () => {
+describe("addConnection invariant'ları", () => {
   beforeEach(() => {
     S().addComponent(port('a'));
     S().addComponent(port('b'));
@@ -62,7 +69,7 @@ describe('moveComponents', () => {
 });
 
 describe('rotateSelected', () => {
-  it('tek seçim → kendi rotation\'ı (mod 360)', () => {
+  it("tek seçim → kendi rotation'ı (mod 360)", () => {
     S().addComponent({ ...port('a'), rotation: 350 } as ChipComponent);
     S().setSelected(['a']);
     S().rotateSelected(20);
@@ -85,13 +92,13 @@ describe('undo / redo (KARAKTERİZASYON — mevcut davranış, latent bug dahil)
     expect(S().components).toHaveLength(1); // değişmez (guard historyIndex<=0)
   });
 
-  it('iki aksiyon → undo pre-A snapshot\'a döner, redo pre-B snapshot\'a', () => {
+  it("iki aksiyon → undo pre-A snapshot'a döner, redo pre-B snapshot'a", () => {
     S().addComponent(port('a'));
     S().addComponent(port('b'));
     expect(S().components.map((c) => c.id)).toEqual(['a', 'b']);
     S().undo();
-    expect(S().components.map((c) => c.id)).toEqual([]);      // off-by-one: ikisi de gider
+    expect(S().components.map((c) => c.id)).toEqual([]); // off-by-one: ikisi de gider
     S().redo();
-    expect(S().components.map((c) => c.id)).toEqual(['a']);   // [a,b] geri gelmez
+    expect(S().components.map((c) => c.id)).toEqual(['a']); // [a,b] geri gelmez
   });
 });

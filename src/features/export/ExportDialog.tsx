@@ -34,26 +34,34 @@ interface ExportDialogProps {
 }
 
 const DPI_OPTIONS: Array<{ value: ExportSettings['dpi']; label: string }> = [
-  { value: 96,  label: '96 DPI (ekran)' },
+  { value: 96, label: '96 DPI (ekran)' },
   { value: 150, label: '150 DPI (taslak)' },
   { value: 300, label: '300 DPI (baskı)' },
   { value: 600, label: '600 DPI (yüksek)' },
 ];
 
 const BG_OPTIONS: Array<{ value: ExportBackground; label: string; color: string }> = [
-  { value: 'white',       label: 'Beyaz',    color: '#ffffff' },
-  { value: 'dark',        label: 'Koyu',     color: '#0d1117' },
-  { value: 'transparent', label: 'Şeffaf',   color: 'transparent' },
+  { value: 'white', label: 'Beyaz', color: '#ffffff' },
+  { value: 'dark', label: 'Koyu', color: '#0d1117' },
+  { value: 'transparent', label: 'Şeffaf', color: 'transparent' },
 ];
 
 const ExportDialog: React.FC<ExportDialogProps> = ({
-  open, busy, defaultSettings, onCancel, onConfirm,
+  open,
+  busy,
+  defaultSettings,
+  onCancel,
+  onConfirm,
 }) => {
-  const [format, setFormat]               = useState<ExportFormat>(defaultSettings?.format ?? 'png');
-  const [dpi, setDpi]                     = useState<ExportSettings['dpi']>(defaultSettings?.dpi ?? 300);
-  const [background, setBackground]       = useState<ExportBackground>(defaultSettings?.background ?? 'white');
-  const [includeScaleBar, setScaleBar]    = useState<boolean>(defaultSettings?.includeScaleBar ?? true);
-  const [paddingUm, setPaddingUm]         = useState<number>(defaultSettings?.paddingUm ?? 2000);
+  const [format, setFormat] = useState<ExportFormat>(defaultSettings?.format ?? 'png');
+  const [dpi, setDpi] = useState<ExportSettings['dpi']>(defaultSettings?.dpi ?? 300);
+  const [background, setBackground] = useState<ExportBackground>(
+    defaultSettings?.background ?? 'white',
+  );
+  const [includeScaleBar, setScaleBar] = useState<boolean>(
+    defaultSettings?.includeScaleBar ?? true,
+  );
+  const [paddingUm, setPaddingUm] = useState<number>(defaultSettings?.paddingUm ?? 2000);
   const [arcResolution, setArcResolution] = useState<number>(defaultSettings?.arcResolution ?? 64);
 
   // ESC ile kapat (busy iken kapatma)
@@ -68,7 +76,9 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
   return (
     <div
       className="backdrop-enter fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-      onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onCancel();
+      }}
     >
       <div className="dialog-enter bg-mf-panel border border-mf-border rounded-ds-lg shadow-pop w-[480px] max-w-[94vw] text-mf-text">
         {/* Header */}
@@ -77,12 +87,7 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
             <FiDownload className="text-mf-blue" />
             <h2 className="text-sm font-semibold">Tasarımı Dışa Aktar</h2>
           </div>
-          <button
-            className="btn-icon w-6 h-6"
-            onClick={onCancel}
-            disabled={busy}
-            title="Kapat"
-          >
+          <button className="btn-icon w-6 h-6" onClick={onCancel} disabled={busy} title="Kapat">
             <FiX size={14} />
           </button>
         </div>
@@ -126,7 +131,9 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
                 disabled={busy}
               >
                 {DPI_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
                 ))}
               </select>
             </Field>
@@ -134,42 +141,45 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
 
           {/* Background — GDS-II binary maskede anlamsız, gizle */}
           {format !== 'gds' && (
-          <Field label="Arka Plan">
-            <div className="flex gap-2">
-              {BG_OPTIONS.map((o) => (
-                <button
-                  key={o.value}
-                  onClick={() => setBackground(o.value)}
-                  disabled={busy}
-                  className={clsx(
-                    'flex-1 px-2 py-2 rounded border text-xs transition-colors',
-                    background === o.value
-                      ? 'border-mf-blue bg-mf-blue/10 text-mf-text'
-                      : 'border-mf-border text-mf-text-dim hover:text-mf-text',
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="inline-block w-4 h-4 rounded border border-mf-border"
-                      style={{
-                        background: o.value === 'transparent'
-                          ? 'repeating-conic-gradient(#888 0 25%, #ccc 0 50%) 50%/8px 8px'
-                          : o.color,
-                      }}
-                    />
-                    {o.label}
-                  </div>
-                </button>
-              ))}
-            </div>
-          </Field>
+            <Field label="Arka Plan">
+              <div className="flex gap-2">
+                {BG_OPTIONS.map((o) => (
+                  <button
+                    key={o.value}
+                    onClick={() => setBackground(o.value)}
+                    disabled={busy}
+                    className={clsx(
+                      'flex-1 px-2 py-2 rounded border text-xs transition-colors',
+                      background === o.value
+                        ? 'border-mf-blue bg-mf-blue/10 text-mf-text'
+                        : 'border-mf-border text-mf-text-dim hover:text-mf-text',
+                    )}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="inline-block w-4 h-4 rounded border border-mf-border"
+                        style={{
+                          background:
+                            o.value === 'transparent'
+                              ? 'repeating-conic-gradient(#888 0 25%, #ccc 0 50%) 50%/8px 8px'
+                              : o.color,
+                        }}
+                      />
+                      {o.label}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </Field>
           )}
 
           {/* Kenar payı */}
           <Field label={`Kenar Payı — ${paddingUm} μm`}>
             <input
               type="range"
-              min={0} max={10000} step={100}
+              min={0}
+              max={10000}
+              step={100}
               value={paddingUm}
               onChange={(e) => setPaddingUm(Number(e.target.value))}
               disabled={busy}
@@ -195,14 +205,17 @@ const ExportDialog: React.FC<ExportDialogProps> = ({
             <Field label={`Yay Çözünürlüğü — ${arcResolution} nokta (360°)`}>
               <input
                 type="range"
-                min={16} max={256} step={8}
+                min={16}
+                max={256}
+                step={8}
                 value={arcResolution}
                 onChange={(e) => setArcResolution(Number(e.target.value))}
                 disabled={busy}
                 className="w-full"
               />
               <p className="text-[10px] text-mf-text-dim mt-1">
-                Düşük = hızlı önizleme (16–32). Yüksek = litografi kalitesi (64–128). Eğri kanalların ve dairesel portların kaç doğru parçasıyla temsil edileceğini belirler.
+                Düşük = hızlı önizleme (16–32). Yüksek = litografi kalitesi (64–128). Eğri
+                kanalların ve dairesel portların kaç doğru parçasıyla temsil edileceğini belirler.
               </p>
             </Field>
           )}

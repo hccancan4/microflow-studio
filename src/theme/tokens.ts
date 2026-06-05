@@ -13,30 +13,30 @@
 /** Yüzey / kenarlık / metin / sinyal — chrome renkleri (literal hex). */
 export const TOKENS = {
   // Yüzeyler
-  bg:           '#0b0d10',
-  surface:      '#111418',
-  panel:        '#161a1f',
-  elev:         '#1d2228',
+  bg: '#0b0d10',
+  surface: '#111418',
+  panel: '#161a1f',
+  elev: '#1d2228',
   // Kenarlıklar
-  border:       '#252b32',
+  border: '#252b32',
   borderStrong: '#363d46',
   // Boya (aksan)
-  dye:          '#4fc3f7',
-  dyeBright:    '#67e8f9',
-  dyeDim:       '#2563a6',
+  dye: '#4fc3f7',
+  dyeBright: '#67e8f9',
+  dyeDim: '#2563a6',
   // Sinyal
-  active:       '#f59e0b',
-  ok:           '#22c55e',
-  warn:         '#eab308',
-  error:        '#ef4444',
+  active: '#f59e0b',
+  ok: '#22c55e',
+  warn: '#eab308',
+  error: '#ef4444',
   // Metin
-  text:         '#e6e8ea',
-  textDim:      '#9aa3ad',
-  textDark:     '#5c6571',
+  text: '#e6e8ea',
+  textDim: '#9aa3ad',
+  textDark: '#5c6571',
   // Grafik chrome
-  chartGrid:          '#252b32',
-  chartAxis:          '#9aa3ad',
-  chartTooltipBg:     '#161a1f',
+  chartGrid: '#252b32',
+  chartAxis: '#9aa3ad',
+  chartTooltipBg: '#161a1f',
   chartTooltipBorder: '#363d46',
 } as const;
 
@@ -45,9 +45,9 @@ export const TOKENS = {
  * x-ekseni bileşen adı olduğundan bu renkler "metrik" anlamı taşır.
  */
 export const CHART_SERIES = {
-  flow:       '#4fc3f7', // debi — boya teal
-  pressure:   '#a78bfa', // basınç — mor
-  reynolds:   '#14b8a6', // Re — koyu teal
+  flow: '#4fc3f7', // debi — boya teal
+  pressure: '#a78bfa', // basınç — mor
+  reynolds: '#14b8a6', // Re — koyu teal
   resistance: '#60a5fa', // direnç — mavi
-  residual:   '#eab308', // CFD yakınsama — uyarı sarısı
+  residual: '#eab308', // CFD yakınsama — uyarı sarısı
 } as const;

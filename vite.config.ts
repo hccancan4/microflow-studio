@@ -1,12 +1,12 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import { readFileSync } from "node:fs";
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { readFileSync } from 'node:fs';
 
 // package.json'ı import-attribute olmadan oku (assert/with sözdizimi
 // Node sürümleri arası uyumsuz; fs ile okumak her ortamda çalışır).
-const pkg = JSON.parse(
-  readFileSync(new URL("./package.json", import.meta.url), "utf-8"),
-) as { version: string };
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf-8')) as {
+  version: string;
+};
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
@@ -47,14 +47,14 @@ export default defineConfig(async () => ({
     host: host || false,
     hmr: host
       ? {
-          protocol: "ws",
+          protocol: 'ws',
           host,
           port: 1421,
         }
       : undefined,
     watch: {
       // 3. tell Vite to ignore watching `src-tauri`
-      ignored: ["**/src-tauri/**"],
+      ignored: ['**/src-tauri/**'],
     },
   },
 }));

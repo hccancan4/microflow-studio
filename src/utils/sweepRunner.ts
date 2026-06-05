@@ -7,7 +7,12 @@
  */
 import { invoke } from '@tauri-apps/api/core';
 import type { ChipComponent, Connection, FluidProperties } from '../types';
-import { useSweepStore, buildSweepValues, type SweepConfig, type SweepRun } from '../stores/useSweepStore';
+import {
+  useSweepStore,
+  buildSweepValues,
+  type SweepConfig,
+  type SweepRun,
+} from '../stores/useSweepStore';
 import { withOverriddenParam } from './sweepHelpers';
 
 export interface SweepRunnerArgs {
@@ -31,13 +36,18 @@ async function runOnce(
   const cfg = useSweepStore.getState().config;
   if (!cfg) {
     return {
-      paramValue, totalFlowRate: 0, totalResistance: 0, maxPressure: 0,
-      minPressure: 0, maxVelocity: 0, maxReynolds: 0,
+      paramValue,
+      totalFlowRate: 0,
+      totalResistance: 0,
+      maxPressure: 0,
+      minPressure: 0,
+      maxVelocity: 0,
+      maxReynolds: 0,
       error: 'Sweep config tanımsız',
     };
   }
   const modified = components.map((c) =>
-    c.id === targetId ? withOverriddenParam(c, cfg.paramKey, paramValue) : c
+    c.id === targetId ? withOverriddenParam(c, cfg.paramKey, paramValue) : c,
   );
 
   try {
@@ -94,7 +104,14 @@ export async function runSweep(args: SweepRunnerArgs): Promise<void> {
     for (let i = 0; i < values.length; i++) {
       if (useSweepStore.getState().cancelRequested) break;
       useSweepStore.getState().setProgress(i, values.length);
-      const run = await runOnce(components, connections, inletPressure, fluid, config.componentId, values[i]);
+      const run = await runOnce(
+        components,
+        connections,
+        inletPressure,
+        fluid,
+        config.componentId,
+        values[i],
+      );
       useSweepStore.getState().appendRun(run);
       // Yield to UI — React'ın render fırsatı bulması için (microtask yeterli, setTimeout 4ms cezası yok)
       await Promise.resolve();
@@ -132,7 +149,7 @@ export function sweepResultsToCsv(config: SweepConfig, runs: SweepRun[]): string
       r.componentPressureDrop ?? '',
       r.componentReynolds ?? '',
       r.error ? `"${r.error.replace(/"/g, '""')}"` : '',
-    ].join(',')
+    ].join(','),
   );
 
   return [header, ...lines].join('\n');

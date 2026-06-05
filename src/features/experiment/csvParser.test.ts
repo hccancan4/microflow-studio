@@ -8,7 +8,10 @@ describe('parseCsv', () => {
     const t = parseCsv('x,y\n1,2\n3,4');
     expect(t.headers).toEqual(['x', 'y']);
     expect(t.rowCount).toBe(2);
-    expect(t.rows).toEqual([{ x: '1', y: '2' }, { x: '3', y: '4' }]);
+    expect(t.rows).toEqual([
+      { x: '1', y: '2' },
+      { x: '3', y: '4' },
+    ]);
   });
 
   it('delimiter auto-detect: noktalı virgül', () => {
@@ -54,7 +57,10 @@ describe('parseJsonTable', () => {
   it('biçim A: obje dizisi', () => {
     const t = parseJsonTable('[{"x":0,"v":1.2},{"x":1,"v":0.9}]');
     expect(t.headers).toEqual(['x', 'v']);
-    expect(t.rows).toEqual([{ x: '0', v: '1.2' }, { x: '1', v: '0.9' }]);
+    expect(t.rows).toEqual([
+      { x: '0', v: '1.2' },
+      { x: '1', v: '0.9' },
+    ]);
   });
 
   it('biçim B: kolon-obje', () => {

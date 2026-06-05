@@ -6,7 +6,13 @@ import React, { useState } from 'react';
 import clsx from 'clsx';
 import { FiXCircle, FiCheckCircle, FiDownload, FiTrash2 } from 'react-icons/fi';
 import {
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
 } from 'recharts';
 import { useSweepStore } from '../../../stores/useSweepStore';
 import { sweepResultsToCsv } from '../../../utils/sweepRunner';
@@ -23,7 +29,9 @@ export const SweepTab: React.FC = () => {
   const requestCancel = useSweepStore((s) => s.requestCancel);
   const reset = useSweepStore((s) => s.reset);
 
-  const [metric, setMetric] = useState<'totalFlowRate' | 'maxPressure' | 'maxReynolds' | 'componentPressureDrop'>('totalFlowRate');
+  const [metric, setMetric] = useState<
+    'totalFlowRate' | 'maxPressure' | 'maxReynolds' | 'componentPressureDrop'
+  >('totalFlowRate');
 
   if (!config) {
     return <div className="text-mf-text-dim text-sm">Tarama verisi yok.</div>;
@@ -130,7 +138,9 @@ export const SweepTab: React.FC = () => {
       <div className="flex-1 grid grid-cols-[1.3fr_1fr] gap-2 min-h-0">
         <div className="bg-mf-bg border border-mf-border rounded flex flex-col min-h-0">
           <div className="px-2 py-1 text-xs text-mf-text-dim border-b border-mf-border flex items-center justify-between">
-            <span>{config.paramLabel} vs {metricLabel[metric]}</span>
+            <span>
+              {config.paramLabel} vs {metricLabel[metric]}
+            </span>
             <select
               value={metric}
               onChange={(e) => setMetric(e.target.value as typeof metric)}
@@ -151,17 +161,38 @@ export const SweepTab: React.FC = () => {
                   type="number"
                   domain={['auto', 'auto']}
                   tick={AXIS_TICK}
-                  label={{ value: `${config.paramLabel} (${config.unit})`, position: 'insideBottom', offset: -8, fill: TOKENS.chartAxis, fontSize: 10 }}
+                  label={{
+                    value: `${config.paramLabel} (${config.unit})`,
+                    position: 'insideBottom',
+                    offset: -8,
+                    fill: TOKENS.chartAxis,
+                    fontSize: 10,
+                  }}
                 />
                 <YAxis
                   tick={AXIS_TICK}
-                  label={{ value: metricLabel[metric], angle: -90, position: 'insideLeft', fill: TOKENS.chartAxis, fontSize: 10 }}
+                  label={{
+                    value: metricLabel[metric],
+                    angle: -90,
+                    position: 'insideLeft',
+                    fill: TOKENS.chartAxis,
+                    fontSize: 10,
+                  }}
                 />
                 <Tooltip
                   contentStyle={TOOLTIP_STYLE}
-                  labelFormatter={(v: number | string) => `${config.paramLabel}: ${Number(v).toFixed(3)} ${config.unit}`}
+                  labelFormatter={(v: number | string) =>
+                    `${config.paramLabel}: ${Number(v).toFixed(3)} ${config.unit}`
+                  }
                 />
-                <Line type="monotone" dataKey={metric} stroke={CHART_SERIES.flow} strokeWidth={2} dot={{ r: 2 }} isAnimationActive={false} />
+                <Line
+                  type="monotone"
+                  dataKey={metric}
+                  stroke={CHART_SERIES.flow}
+                  strokeWidth={2}
+                  dot={{ r: 2 }}
+                  isAnimationActive={false}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -184,11 +215,20 @@ export const SweepTab: React.FC = () => {
               </thead>
               <tbody>
                 {runs.map((r, i) => (
-                  <tr key={i} className={clsx('border-b border-mf-border/50', r.error && 'text-mf-red')}>
+                  <tr
+                    key={i}
+                    className={clsx('border-b border-mf-border/50', r.error && 'text-mf-red')}
+                  >
                     <td className="px-2 py-1 text-mf-text">{r.paramValue.toFixed(3)}</td>
-                    <td className="px-2 py-1 text-right text-mf-green">{r.totalFlowRate.toFixed(3)}</td>
-                    <td className="px-2 py-1 text-right text-mf-orange">{r.maxPressure.toFixed(1)}</td>
-                    <td className="px-2 py-1 text-right text-mf-blue">{r.maxReynolds.toFixed(3)}</td>
+                    <td className="px-2 py-1 text-right text-mf-green">
+                      {r.totalFlowRate.toFixed(3)}
+                    </td>
+                    <td className="px-2 py-1 text-right text-mf-orange">
+                      {r.maxPressure.toFixed(1)}
+                    </td>
+                    <td className="px-2 py-1 text-right text-mf-blue">
+                      {r.maxReynolds.toFixed(3)}
+                    </td>
                   </tr>
                 ))}
               </tbody>

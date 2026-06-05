@@ -31,7 +31,11 @@ interface CfdOverlayProps {
  * Not: ComponentShapes'te straight_channel (0, -w/2) noktasından (length, +w/2)'ye
  * çizildiği için anchor = (length/2, 0). Diğer "inlet'ten çizilen" bileşenler benzer.
  */
-function getComponentBbox(comp: ChipComponent): { w: number; h: number; anchor: { x: number; y: number } } {
+function getComponentBbox(comp: ChipComponent): {
+  w: number;
+  h: number;
+  anchor: { x: number; y: number };
+} {
   const p: any = comp.params;
   switch (comp.type) {
     case 'straight_channel':
@@ -39,9 +43,17 @@ function getComponentBbox(comp: ChipComponent): { w: number; h: number; anchor: 
     case 'curved_channel':
       return { w: p.radius * 2, h: p.radius * 2, anchor: { x: p.radius, y: -p.radius } };
     case 'serpentine_mixer':
-      return { w: p.pitch * (p.turns + 1), h: p.pitch, anchor: { x: p.pitch * (p.turns + 1) / 2, y: 0 } };
+      return {
+        w: p.pitch * (p.turns + 1),
+        h: p.pitch,
+        anchor: { x: (p.pitch * (p.turns + 1)) / 2, y: 0 },
+      };
     case 'expansion':
-      return { w: p.length, h: Math.max(p.inletWidth, p.outletWidth), anchor: { x: p.length / 2, y: 0 } };
+      return {
+        w: p.length,
+        h: Math.max(p.inletWidth, p.outletWidth),
+        anchor: { x: p.length / 2, y: 0 },
+      };
     case 't_junction':
       return { w: p.mainWidth * 3, h: p.mainWidth * 2.5, anchor: { x: 0, y: 0 } };
     case 'y_junction':
@@ -49,7 +61,11 @@ function getComponentBbox(comp: ChipComponent): { w: number; h: number; anchor: 
     case 'droplet_generator':
       return { w: p.mainChannelWidth * 4, h: p.mainChannelWidth * 3, anchor: { x: 0, y: 0 } };
     case 'filter_array':
-      return { w: p.columns * p.spacing, h: p.rows * p.spacing, anchor: { x: (p.columns * p.spacing) / 2, y: 0 } };
+      return {
+        w: p.columns * p.spacing,
+        h: p.rows * p.spacing,
+        anchor: { x: (p.columns * p.spacing) / 2, y: 0 },
+      };
     case 'reservoir':
       return { w: p.width, h: p.height, anchor: { x: 0, y: 0 } };
     case 'port':
@@ -60,15 +76,22 @@ function getComponentBbox(comp: ChipComponent): { w: number; h: number; anchor: 
 }
 
 const CfdOverlay: React.FC<CfdOverlayProps> = ({
-  field, target, fieldType, colormap, opacity = 0.75,
+  field,
+  target,
+  fieldType,
+  colormap,
+  opacity = 0.75,
 }) => {
   // İlgili saha dizisini seç + min/max hesapla
   const { values, min, max, unit, label } = useMemo(() => {
     const src =
-      fieldType === 'magnitude'  ? field.magnitude
-      : fieldType === 'pressure' ? field.pressure
-      :                            field.wallShear;
-    let mn = Infinity, mx = -Infinity;
+      fieldType === 'magnitude'
+        ? field.magnitude
+        : fieldType === 'pressure'
+          ? field.pressure
+          : field.wallShear;
+    let mn = Infinity,
+      mx = -Infinity;
     for (let i = 0; i < src.length; i++) {
       const v = src[i];
       if (Number.isFinite(v)) {
@@ -76,14 +99,18 @@ const CfdOverlay: React.FC<CfdOverlayProps> = ({
         if (v > mx) mx = v;
       }
     }
-    if (!Number.isFinite(mn) || !Number.isFinite(mx)) { mn = 0; mx = 1; }
+    if (!Number.isFinite(mn) || !Number.isFinite(mx)) {
+      mn = 0;
+      mx = 1;
+    }
     if (mx - mn < 1e-12) mx = mn + 1e-12;
     return {
       values: src,
       min: mn,
       max: mx,
       unit: fieldType === 'pressure' ? 'Pa' : fieldType === 'wallShear' ? 'Pa' : 'm/s',
-      label: fieldType === 'pressure' ? 'Basınç' : fieldType === 'wallShear' ? 'Duvar kesme' : '|v|',
+      label:
+        fieldType === 'pressure' ? 'Basınç' : fieldType === 'wallShear' ? 'Duvar kesme' : '|v|',
     };
   }, [field, fieldType]);
 
@@ -148,12 +175,14 @@ const CfdOverlay: React.FC<CfdOverlayProps> = ({
 };
 
 // Hafif memoizasyon: field veya target değişmediyse yeniden renderlama
-export default React.memo(CfdOverlay, (prev, next) =>
-  prev.field === next.field
-  && prev.target === next.target
-  && prev.fieldType === next.fieldType
-  && prev.colormap === next.colormap
-  && prev.opacity === next.opacity,
+export default React.memo(
+  CfdOverlay,
+  (prev, next) =>
+    prev.field === next.field &&
+    prev.target === next.target &&
+    prev.fieldType === next.fieldType &&
+    prev.colormap === next.colormap &&
+    prev.opacity === next.opacity,
 );
 
 /** Overlay konumunu hesaplama yardımcısı — CanvasEditor dışında da kullanışlı */

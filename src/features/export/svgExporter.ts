@@ -24,12 +24,12 @@ export interface SvgExportOptions {
 
 // Export paleti — canvas ile birebir aynı (componentColors.ts tek kaynak).
 // SVG export'un canvas görünümüyle tutarlı olması için.
-const COLOR_CHANNEL     = COMPONENT_COLORS.straight_channel.stroke;
+const COLOR_CHANNEL = COMPONENT_COLORS.straight_channel.stroke;
 const COLOR_CHANNEL_DRK = TOKENS.dyeDim;
-const COLOR_JUNCTION    = COMPONENT_COLORS.t_junction.stroke;
-const COLOR_RESERVOIR   = COMPONENT_COLORS.reservoir.stroke;
-const COLOR_PORT        = PORT_COLORS.inlet.stroke;
-const COLOR_FILTER      = COMPONENT_COLORS.filter_array.stroke;
+const COLOR_JUNCTION = COMPONENT_COLORS.t_junction.stroke;
+const COLOR_RESERVOIR = COMPONENT_COLORS.reservoir.stroke;
+const COLOR_PORT = PORT_COLORS.inlet.stroke;
+const COLOR_FILTER = COMPONENT_COLORS.filter_array.stroke;
 
 function escapeXml(s: string): string {
   return s
@@ -62,9 +62,11 @@ function componentSvg(c: ChipComponent): string {
       const halfW = p.width / 2;
       // Dış ve iç yaylar arasındaki şerit — path
       const rOut = r + halfW;
-      const rIn  = r - halfW;
-      const ex1 = rOut * Math.sin(ang), ey1 = rOut * (1 - Math.cos(ang));
-      const ex2 = rIn  * Math.sin(ang), ey2 = rIn  * (1 - Math.cos(ang));
+      const rIn = r - halfW;
+      const ex1 = rOut * Math.sin(ang),
+        ey1 = rOut * (1 - Math.cos(ang));
+      const ex2 = rIn * Math.sin(ang),
+        ey2 = rIn * (1 - Math.cos(ang));
       const largeArc = p.angle > 180 ? 1 : 0;
       body = `<path d="M 0 ${-halfW}
                       A ${rOut} ${rOut} 0 ${largeArc} 1 ${ex1} ${ey1 - halfW}
@@ -104,7 +106,9 @@ function componentSvg(c: ChipComponent): string {
       break;
     }
     case 'expansion': {
-      const il = p.inletWidth, ol = p.outletWidth, L = p.length;
+      const il = p.inletWidth,
+        ol = p.outletWidth,
+        L = p.length;
       body = `<polygon points="0,${-il / 2} ${L},${-ol / 2} ${L},${ol / 2} 0,${il / 2}"
               fill="${COLOR_CHANNEL}" fill-opacity="0.85" stroke="${COLOR_CHANNEL_DRK}" stroke-width="10" />`;
       break;
@@ -118,7 +122,10 @@ function componentSvg(c: ChipComponent): string {
       break;
     }
     case 'filter_array': {
-      const cols = p.columns, rows = p.rows, sp = p.spacing, d = p.pillarDiameter;
+      const cols = p.columns,
+        rows = p.rows,
+        sp = p.spacing,
+        d = p.pillarDiameter;
       let circles = '';
       for (let r = 0; r < rows; r++) {
         for (let cc = 0; cc < cols; cc++) {
@@ -156,19 +163,22 @@ function chooseScaleLengthUm(targetUm: number): { value: number; label: string }
   return { value: chosen, label };
 }
 
-function scaleBarSvg(bbox: { minX: number; minY: number; maxX: number; maxY: number }, darkBg: boolean): string {
+function scaleBarSvg(
+  bbox: { minX: number; minY: number; maxX: number; maxY: number },
+  darkBg: boolean,
+): string {
   const designWidthUm = bbox.maxX - bbox.minX;
   const target = designWidthUm * 0.2;
   const { value, label } = chooseScaleLengthUm(target);
 
   const margin = Math.max(100, designWidthUm * 0.02);
   const rightX = bbox.maxX - margin;
-  const leftX  = rightX - value;
-  const y      = bbox.maxY - margin;
-  const tick   = Math.max(60, designWidthUm * 0.01);
-  const sw     = Math.max(20, designWidthUm * 0.002);
+  const leftX = rightX - value;
+  const y = bbox.maxY - margin;
+  const tick = Math.max(60, designWidthUm * 0.01);
+  const sw = Math.max(20, designWidthUm * 0.002);
   const fontSz = Math.max(180, designWidthUm * 0.025);
-  const color  = darkBg ? '#e6edf3' : '#0d1117';
+  const color = darkBg ? '#e6edf3' : '#0d1117';
 
   return `<g data-role="scalebar" fill="none" stroke="${color}" stroke-width="${sw}">
       <line x1="${leftX}" y1="${y}" x2="${rightX}" y2="${y}" />
@@ -193,8 +203,8 @@ export function exportDesignAsSvg(
   const pad = options.paddingUm;
   const vbX = bbox.minX - pad;
   const vbY = bbox.minY - pad;
-  const vbW = (bbox.maxX - bbox.minX) + pad * 2;
-  const vbH = (bbox.maxY - bbox.minY) + pad * 2;
+  const vbW = bbox.maxX - bbox.minX + pad * 2;
+  const vbH = bbox.maxY - bbox.minY + pad * 2;
 
   // Port konum indeksi — bağlantı uçlarını dünya koordinatlarında çekmek için
   const portIndex = new Map<string, { x: number; y: number }>();
@@ -202,17 +212,20 @@ export function exportDesignAsSvg(
     for (const p of getAllCanvasPorts(components)) {
       portIndex.set(`${p.compId}:${p.index}`, p.canvasPos);
     }
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
 
-  const bgRect = options.background === 'transparent'
-    ? ''
-    : `<rect x="${vbX}" y="${vbY}" width="${vbW}" height="${vbH}"
+  const bgRect =
+    options.background === 'transparent'
+      ? ''
+      : `<rect x="${vbX}" y="${vbY}" width="${vbW}" height="${vbH}"
          fill="${options.background === 'dark' ? '#0d1117' : '#ffffff'}" />`;
 
   const connectionLines = connections
     .map((conn) => {
       const from = portIndex.get(`${conn.fromComponentId}:${conn.fromPortIndex}`);
-      const to   = portIndex.get(`${conn.toComponentId}:${conn.toPortIndex}`);
+      const to = portIndex.get(`${conn.toComponentId}:${conn.toPortIndex}`);
       if (!from || !to) return '';
       return `<line x1="${from.x}" y1="${from.y}" x2="${to.x}" y2="${to.y}"
                 stroke="${COLOR_CHANNEL}" stroke-width="40" stroke-linecap="round" opacity="0.9" />`;
@@ -230,7 +243,7 @@ export function exportDesignAsSvg(
 
   // μm birimini koru: width/height attribute'larını vermek bazı viewer'larda
   // ölçeklendirme için yardımcı olur; gerçek birim viewBox tarafından belirlenir.
-  const widthMm  = (vbW / 1000).toFixed(3);
+  const widthMm = (vbW / 1000).toFixed(3);
   const heightMm = (vbH / 1000).toFixed(3);
 
   return `<?xml version="1.0" encoding="UTF-8"?>

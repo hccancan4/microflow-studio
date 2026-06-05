@@ -36,15 +36,15 @@ function tint(hex: string, alpha: number): string {
 
 // Kanonik hex değerleri — design-system.css --comp-* ile aynı olmalı.
 const HEX = {
-  channel:     '#4fc3f7',
-  expansion:   '#38bdf8',
-  mixer:       '#14b8a6',
-  junction:    '#a78bfa',
-  filter:      '#60a5fa',
-  droplet:     '#f472b6',
-  reservoir:   '#94a3b8',
-  portInlet:   '#22c55e',
-  portOutlet:  '#ef4444',
+  channel: '#4fc3f7',
+  expansion: '#38bdf8',
+  mixer: '#14b8a6',
+  junction: '#a78bfa',
+  filter: '#60a5fa',
+  droplet: '#f472b6',
+  reservoir: '#94a3b8',
+  portInlet: '#22c55e',
+  portOutlet: '#ef4444',
 } as const;
 
 /** Seçim vurgusu rengi (boya teal). */
@@ -52,33 +52,33 @@ export const SELECTED_COLOR = '#4fc3f7';
 
 /** Bileşen tipi → { stroke, fill }. Fill alfa şekil tipine göre 0.08–0.15. */
 export const COMPONENT_COLORS: Record<ComponentType, ComponentColor> = {
-  straight_channel:  { stroke: HEX.channel,    fill: tint(HEX.channel, 0.08) },
-  curved_channel:    { stroke: HEX.channel,    fill: tint(HEX.channel, 0.08) },
-  expansion:         { stroke: HEX.expansion,  fill: tint(HEX.expansion, 0.08) },
-  serpentine_mixer:  { stroke: HEX.mixer,      fill: tint(HEX.mixer, 0.08) },
-  t_junction:        { stroke: HEX.junction,   fill: tint(HEX.junction, 0.08) },
-  y_junction:        { stroke: HEX.junction,   fill: tint(HEX.junction, 0.08) },
-  filter_array:      { stroke: HEX.filter,     fill: tint(HEX.filter, 0.08) },
-  droplet_generator: { stroke: HEX.droplet,    fill: tint(HEX.droplet, 0.08) },
-  reservoir:         { stroke: HEX.reservoir,  fill: tint(HEX.reservoir, 0.12) },
-  port:              { stroke: HEX.portInlet,  fill: tint(HEX.portInlet, 0.15) },
+  straight_channel: { stroke: HEX.channel, fill: tint(HEX.channel, 0.08) },
+  curved_channel: { stroke: HEX.channel, fill: tint(HEX.channel, 0.08) },
+  expansion: { stroke: HEX.expansion, fill: tint(HEX.expansion, 0.08) },
+  serpentine_mixer: { stroke: HEX.mixer, fill: tint(HEX.mixer, 0.08) },
+  t_junction: { stroke: HEX.junction, fill: tint(HEX.junction, 0.08) },
+  y_junction: { stroke: HEX.junction, fill: tint(HEX.junction, 0.08) },
+  filter_array: { stroke: HEX.filter, fill: tint(HEX.filter, 0.08) },
+  droplet_generator: { stroke: HEX.droplet, fill: tint(HEX.droplet, 0.08) },
+  reservoir: { stroke: HEX.reservoir, fill: tint(HEX.reservoir, 0.12) },
+  port: { stroke: HEX.portInlet, fill: tint(HEX.portInlet, 0.15) },
 };
 
 /** Port tipine göre renk (inlet/outlet ayrımı — PortShape için). */
 export const PORT_COLORS = {
-  inlet:  { stroke: HEX.portInlet,  fill: tint(HEX.portInlet, 0.15) },
+  inlet: { stroke: HEX.portInlet, fill: tint(HEX.portInlet, 0.15) },
   outlet: { stroke: HEX.portOutlet, fill: tint(HEX.portOutlet, 0.15) },
 } as const;
 
 /** StyleGuide / legend için düz palet listesi (sıralı). */
 export const COMPONENT_PALETTE: Array<{ key: string; label: string; hex: string }> = [
-  { key: 'channel',     label: 'Kanal',        hex: HEX.channel },
-  { key: 'expansion',   label: 'Genişleme',    hex: HEX.expansion },
-  { key: 'mixer',       label: 'Mikser',       hex: HEX.mixer },
-  { key: 'junction',    label: 'Birleşim',     hex: HEX.junction },
-  { key: 'filter',      label: 'Filtre',       hex: HEX.filter },
-  { key: 'droplet',     label: 'Damlacık',     hex: HEX.droplet },
-  { key: 'reservoir',   label: 'Rezervuar',    hex: HEX.reservoir },
-  { key: 'port-inlet',  label: 'Giriş Portu',  hex: HEX.portInlet },
-  { key: 'port-outlet', label: 'Çıkış Portu',  hex: HEX.portOutlet },
+  { key: 'channel', label: 'Kanal', hex: HEX.channel },
+  { key: 'expansion', label: 'Genişleme', hex: HEX.expansion },
+  { key: 'mixer', label: 'Mikser', hex: HEX.mixer },
+  { key: 'junction', label: 'Birleşim', hex: HEX.junction },
+  { key: 'filter', label: 'Filtre', hex: HEX.filter },
+  { key: 'droplet', label: 'Damlacık', hex: HEX.droplet },
+  { key: 'reservoir', label: 'Rezervuar', hex: HEX.reservoir },
+  { key: 'port-inlet', label: 'Giriş Portu', hex: HEX.portInlet },
+  { key: 'port-outlet', label: 'Çıkış Portu', hex: HEX.portOutlet },
 ];

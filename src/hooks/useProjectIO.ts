@@ -54,7 +54,10 @@ export function useProjectIO() {
 
   const handleSave = useCallback(async () => {
     const { filePath, setFilePath: _setPath, setDirty: markClean } = useProjectStore.getState();
-    if (!filePath) { handleSaveAs(); return; }
+    if (!filePath) {
+      handleSaveAs();
+      return;
+    }
     try {
       const project = buildProjectPayload();
       await invoke<void>('save_project_file', { project, path: filePath });

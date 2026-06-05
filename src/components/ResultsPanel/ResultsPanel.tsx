@@ -9,7 +9,14 @@ import { useSimulationStore } from '../../stores/useSimulationStore';
 import { useDesignStore } from '../../stores/useDesignStore';
 import { useSweepStore } from '../../stores/useSweepStore';
 import {
-  FiActivity, FiAlertCircle, FiLoader, FiGrid, FiTrendingUp, FiBarChart2, FiDatabase, FiSliders,
+  FiActivity,
+  FiAlertCircle,
+  FiLoader,
+  FiGrid,
+  FiTrendingUp,
+  FiBarChart2,
+  FiDatabase,
+  FiSliders,
 } from 'react-icons/fi';
 import type { ColormapType } from '../../types';
 import { ToggleChip, TabBtn } from './shared';
@@ -22,11 +29,23 @@ interface ResultsPanelProps {
 }
 
 const ResultsPanel: React.FC<ResultsPanelProps> = ({ height }) => {
-  const { status, progress, progressMessage, result, error, colormap, setColormap,
-    cfdFieldType, setCfdFieldType,
-    showVelocityField, toggleVelocityField,
-    showPressureField, togglePressureField,
-    showWallShear, toggleWallShear } = useSimulationStore();
+  const {
+    status,
+    progress,
+    progressMessage,
+    result,
+    error,
+    colormap,
+    setColormap,
+    cfdFieldType,
+    setCfdFieldType,
+    showVelocityField,
+    toggleVelocityField,
+    showPressureField,
+    togglePressureField,
+    showWallShear,
+    toggleWallShear,
+  } = useSimulationStore();
 
   const selectedIds = useDesignStore((s) => s.selectedIds);
   const [tab, setTab] = useState<TabKey>('summary');
@@ -37,21 +56,17 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ height }) => {
   const sweepHasData = sweepRuns.length > 0 || sweepRunning;
 
   return (
-    <div
-      className="flex flex-col bg-mf-surface border-t border-mf-border"
-      style={{ height }}
-    >
+    <div className="flex flex-col bg-mf-surface border-t border-mf-border" style={{ height }}>
       {/* Panel başlığı */}
       <div className="panel-header">
         <div className="flex items-center gap-2">
           <FiActivity size={12} />
           <span>Simülasyon Sonuçları</span>
-          {status === 'running' && (
-            <FiLoader size={12} className="animate-spin text-mf-orange" />
-          )}
+          {status === 'running' && <FiLoader size={12} className="animate-spin text-mf-orange" />}
           {result && (
             <span className="text-mf-text-dark text-xs">
-              · {result.mode.toUpperCase()} · {new Date(result.timestamp).toLocaleTimeString('tr-TR')}
+              · {result.mode.toUpperCase()} ·{' '}
+              {new Date(result.timestamp).toLocaleTimeString('tr-TR')}
             </span>
           )}
         </div>
@@ -65,9 +80,9 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ height }) => {
                 const v = e.target.value as 'magnitude' | 'pressure' | 'wallShear';
                 setCfdFieldType(v);
                 // Seçilen alana uygun görünürlük bayraklarını tek-seferlik senkronize et
-                if (v === 'magnitude'  && !showVelocityField) toggleVelocityField();
-                if (v === 'pressure'   && !showPressureField) togglePressureField();
-                if (v === 'wallShear'  && !showWallShear)     toggleWallShear();
+                if (v === 'magnitude' && !showVelocityField) toggleVelocityField();
+                if (v === 'pressure' && !showPressureField) togglePressureField();
+                if (v === 'wallShear' && !showWallShear) toggleWallShear();
               }}
               className="mf-input text-xs py-0.5"
               title="Gösterilecek saha"
@@ -76,18 +91,22 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ height }) => {
               <option value="pressure">Basınç</option>
               <option value="wallShear">Duvar kesme</option>
             </select>
-            <ToggleChip label="Göster" active={showVelocityField || showPressureField || showWallShear} onClick={() => {
-              const any = showVelocityField || showPressureField || showWallShear;
-              if (any) {
-                if (showVelocityField) toggleVelocityField();
-                if (showPressureField) togglePressureField();
-                if (showWallShear)     toggleWallShear();
-              } else {
-                if (cfdFieldType === 'magnitude') toggleVelocityField();
-                if (cfdFieldType === 'pressure')  togglePressureField();
-                if (cfdFieldType === 'wallShear') toggleWallShear();
-              }
-            }} />
+            <ToggleChip
+              label="Göster"
+              active={showVelocityField || showPressureField || showWallShear}
+              onClick={() => {
+                const any = showVelocityField || showPressureField || showWallShear;
+                if (any) {
+                  if (showVelocityField) toggleVelocityField();
+                  if (showPressureField) togglePressureField();
+                  if (showWallShear) toggleWallShear();
+                } else {
+                  if (cfdFieldType === 'magnitude') toggleVelocityField();
+                  if (cfdFieldType === 'pressure') togglePressureField();
+                  if (cfdFieldType === 'wallShear') toggleWallShear();
+                }
+              }}
+            />
             <select
               value={colormap}
               onChange={(e) => setColormap(e.target.value as ColormapType)}
@@ -105,18 +124,54 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ height }) => {
         {isAnalytic && result?.analyticResults && result.analyticResults.length > 0 && (
           <div className="flex items-center gap-1">
             {/* Analiz grubu */}
-            <TabBtn active={tab === 'summary'} onClick={() => setTab('summary')} icon={<FiActivity size={10} />}>Özet</TabBtn>
-            <TabBtn active={tab === 'components'} onClick={() => setTab('components')} icon={<FiGrid size={10} />}>Bileşenler</TabBtn>
-            <TabBtn active={tab === 'charts'} onClick={() => setTab('charts')} icon={<FiBarChart2 size={10} />}>Grafik</TabBtn>
-            <TabBtn active={tab === 'profile'} onClick={() => setTab('profile')} icon={<FiTrendingUp size={10} />}>Profil</TabBtn>
+            <TabBtn
+              active={tab === 'summary'}
+              onClick={() => setTab('summary')}
+              icon={<FiActivity size={10} />}
+            >
+              Özet
+            </TabBtn>
+            <TabBtn
+              active={tab === 'components'}
+              onClick={() => setTab('components')}
+              icon={<FiGrid size={10} />}
+            >
+              Bileşenler
+            </TabBtn>
+            <TabBtn
+              active={tab === 'charts'}
+              onClick={() => setTab('charts')}
+              icon={<FiBarChart2 size={10} />}
+            >
+              Grafik
+            </TabBtn>
+            <TabBtn
+              active={tab === 'profile'}
+              onClick={() => setTab('profile')}
+              icon={<FiTrendingUp size={10} />}
+            >
+              Profil
+            </TabBtn>
             {/* Doğrulama grubu */}
             <div className="tool-divider" />
-            <TabBtn active={tab === 'experiment'} onClick={() => setTab('experiment')} icon={<FiDatabase size={10} />}>Deney</TabBtn>
+            <TabBtn
+              active={tab === 'experiment'}
+              onClick={() => setTab('experiment')}
+              icon={<FiDatabase size={10} />}
+            >
+              Deney
+            </TabBtn>
             {/* Tarama grubu */}
             {sweepHasData && (
               <>
                 <div className="tool-divider" />
-                <TabBtn active={tab === 'sweep'} onClick={() => setTab('sweep')} icon={<FiSliders size={10} />}>Tarama</TabBtn>
+                <TabBtn
+                  active={tab === 'sweep'}
+                  onClick={() => setTab('sweep')}
+                  icon={<FiSliders size={10} />}
+                >
+                  Tarama
+                </TabBtn>
               </>
             )}
           </div>
@@ -125,7 +180,13 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ height }) => {
         {/* Analitik sonuç yoksa ama sweep varsa yalnız Tarama sekmesi */}
         {!isAnalytic && sweepHasData && (
           <div className="flex items-center gap-1">
-            <TabBtn active={tab === 'sweep'} onClick={() => setTab('sweep')} icon={<FiSliders size={10} />}>Tarama</TabBtn>
+            <TabBtn
+              active={tab === 'sweep'}
+              onClick={() => setTab('sweep')}
+              icon={<FiSliders size={10} />}
+            >
+              Tarama
+            </TabBtn>
           </div>
         )}
       </div>
@@ -180,7 +241,12 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ height }) => {
         )}
 
         {status === 'completed' && result?.mode === 'cfd' && result.cfdField && tab !== 'sweep' && (
-          <CfdView field={result.cfdField} summary={result.summary} colormap={colormap} fieldType={cfdFieldType} />
+          <CfdView
+            field={result.cfdField}
+            summary={result.summary}
+            colormap={colormap}
+            fieldType={cfdFieldType}
+          />
         )}
       </div>
     </div>

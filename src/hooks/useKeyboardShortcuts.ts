@@ -28,16 +28,31 @@ export function useKeyboardShortcuts(handlers: KeyboardShortcutHandlers) {
       const h = ref.current;
       if (e.ctrlKey || e.metaKey) {
         switch (e.key.toLowerCase()) {
-          case 'z': e.preventDefault(); useDesignStore.getState().undo(); break;
-          case 'y': e.preventDefault(); useDesignStore.getState().redo(); break;
+          case 'z':
+            e.preventDefault();
+            useDesignStore.getState().undo();
+            break;
+          case 'y':
+            e.preventDefault();
+            useDesignStore.getState().redo();
+            break;
           case 's':
             e.preventDefault();
             if (e.shiftKey) h.onSaveAs();
             else h.onSave();
             break;
-          case 'o': e.preventDefault(); h.onOpen(); break;
-          case 'n': e.preventDefault(); h.onNewProject(); break;
-          case 'e': e.preventDefault(); h.onExport(); break;
+          case 'o':
+            e.preventDefault();
+            h.onOpen();
+            break;
+          case 'n':
+            e.preventDefault();
+            h.onNewProject();
+            break;
+          case 'e':
+            e.preventDefault();
+            h.onExport();
+            break;
         }
       }
       if (e.key === 'Delete' || e.key === 'Backspace') {

@@ -5,9 +5,16 @@
 
 import type { ComponentType } from '../types';
 import type {
-  StraightChannelParams, CurvedChannelParams, TJunctionParams, YJunctionParams,
-  SerpentineMixerParams, PortParams, DropletGeneratorParams,
-  FilterArrayParams, ExpansionParams, ReservoirParams,
+  StraightChannelParams,
+  CurvedChannelParams,
+  TJunctionParams,
+  YJunctionParams,
+  SerpentineMixerParams,
+  PortParams,
+  DropletGeneratorParams,
+  FilterArrayParams,
+  ExpansionParams,
+  ReservoirParams,
 } from '../types';
 
 import type { ComponentParams } from '../types';
@@ -43,7 +50,13 @@ export function getDefaultParams(type: ComponentType): ComponentParams {
         depth: 50,
       } as DropletGeneratorParams;
     case 'filter_array':
-      return { pillarDiameter: 50, spacing: 100, rows: 5, columns: 8, depth: 50 } as FilterArrayParams;
+      return {
+        pillarDiameter: 50,
+        spacing: 100,
+        rows: 5,
+        columns: 8,
+        depth: 50,
+      } as FilterArrayParams;
     case 'expansion':
       return { inletWidth: 150, outletWidth: 400, length: 1200, depth: 50 } as ExpansionParams;
     case 'reservoir':
@@ -56,16 +69,16 @@ export function getDefaultParams(type: ComponentType): ComponentParams {
 /** Bileşen adı → Türkçe etiket */
 export function getComponentLabel(type: ComponentType): string {
   const labels: Record<ComponentType, string> = {
-    straight_channel:  'Düz Kanal',
-    curved_channel:    'Eğri Kanal',
-    t_junction:        'T-Bağlantı',
-    y_junction:        'Y-Bağlantı',
-    serpentine_mixer:  'Serpantin Mikser',
-    port:              'Port',
+    straight_channel: 'Düz Kanal',
+    curved_channel: 'Eğri Kanal',
+    t_junction: 'T-Bağlantı',
+    y_junction: 'Y-Bağlantı',
+    serpentine_mixer: 'Serpantin Mikser',
+    port: 'Port',
     droplet_generator: 'Damla Üreteci',
-    filter_array:      'Filtre Dizisi',
-    expansion:         'Genişleme',
-    reservoir:         'Rezervuar',
+    filter_array: 'Filtre Dizisi',
+    expansion: 'Genişleme',
+    reservoir: 'Rezervuar',
   };
   return labels[type] ?? type;
 }

@@ -74,9 +74,9 @@ export const useUiStore = create<UiState>()((set, get) => ({
 /** Kısa toast API'si. */
 export const toast = {
   success: (m: string) => useUiStore.getState().pushToast('success', m),
-  error:   (m: string) => useUiStore.getState().pushToast('error', m),
-  warn:    (m: string) => useUiStore.getState().pushToast('warn', m),
-  info:    (m: string) => useUiStore.getState().pushToast('info', m),
+  error: (m: string) => useUiStore.getState().pushToast('error', m),
+  warn: (m: string) => useUiStore.getState().pushToast('warn', m),
+  info: (m: string) => useUiStore.getState().pushToast('info', m),
 };
 
 /** Promise-tabanlı onay diyaloğu. `await confirmAsync({...})` → boolean. */

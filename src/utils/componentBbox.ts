@@ -13,21 +13,32 @@
  */
 import type { ChipComponent } from '../types';
 import type {
-  StraightChannelParams, CurvedChannelParams, TJunctionParams, YJunctionParams,
-  SerpentineMixerParams, PortParams, DropletGeneratorParams,
-  FilterArrayParams, ExpansionParams, ReservoirParams,
+  StraightChannelParams,
+  CurvedChannelParams,
+  TJunctionParams,
+  YJunctionParams,
+  SerpentineMixerParams,
+  PortParams,
+  DropletGeneratorParams,
+  FilterArrayParams,
+  ExpansionParams,
+  ReservoirParams,
 } from '../types';
 
 /** Yerel bbox: bileşen koordinat sisteminde min/max köşeler. */
 export interface LocalBbox {
-  minX: number; minY: number;
-  maxX: number; maxY: number;
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
 }
 
 /** Dünya bbox: world (canvas) koordinatlarında. */
 export interface WorldBbox {
-  minX: number; minY: number;
-  maxX: number; maxY: number;
+  minX: number;
+  minY: number;
+  maxX: number;
+  maxY: number;
 }
 
 /** Bileşenin LOKAL koordinat sisteminde (rotation uygulanmadan) AABB. */
@@ -50,7 +61,10 @@ export function localBbox(comp: ChipComponent): LocalBbox {
       const center = { x: 0, y: radius };
       // Hem inner hem outer yay (radius=inner ve radius=outer) için iki uç noktayı
       // ve yayda kalan eksen-aşan noktaları (90°, 180°, 270°) dahil ederek bbox topla.
-      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      let minX = Infinity,
+        minY = Infinity,
+        maxX = -Infinity,
+        maxY = -Infinity;
       const sweepAngles: number[] = [0, rad];
       // Yayın geçtiği eksen noktaları (90°, 180°, 270° gibi) — bbox extremum'u burada olabilir
       for (let k = 1; k * (Math.PI / 2) < rad; k++) sweepAngles.push(k * (Math.PI / 2));
@@ -60,8 +74,10 @@ export function localBbox(comp: ChipComponent): LocalBbox {
         for (const θ of sweepAngles) {
           const x = r * Math.sin(θ);
           const y = center.y - r * Math.cos(θ);
-          if (x < minX) minX = x; if (x > maxX) maxX = x;
-          if (y < minY) minY = y; if (y > maxY) maxY = y;
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
         }
       }
       return { minX, minY, maxX, maxY };
@@ -74,25 +90,31 @@ export function localBbox(comp: ChipComponent): LocalBbox {
       // Ana kanal: x ∈ [-arm, arm], y ∈ [-mainWidth/2, mainWidth/2]
       // Dal: x ∈ [-branchWidth/2, branchWidth/2], y ∈ [-branchLen, mainWidth/2]
       return {
-        minX: -arm, minY: -branchLen,
-        maxX:  arm, maxY:  mainWidth / 2,
+        minX: -arm,
+        minY: -branchLen,
+        maxX: arm,
+        maxY: mainWidth / 2,
       };
     }
 
     case 'y_junction': {
-      const { mainWidth = 300, branchWidth = 200, branchAngle = 45 } = comp.params as YJunctionParams;
+      const {
+        mainWidth = 300,
+        branchWidth = 200,
+        branchAngle = 45,
+      } = comp.params as YJunctionParams;
       const armLen = mainWidth * 5;
       const rad = (branchAngle * Math.PI) / 180;
       // Ana kol: 0..armLen aşağı (y pozitif). x ∈ [-mainWidth/2, mainWidth/2].
       // Sol kol (rotation=-branchAngle, kol y=0..-armLen lokalde) tip: rotate(0,-armLen) → (-armLen*sin, -armLen*cos)
       // Sağ kol simetrik. Dal'ların extent'i ±armLen*sin yatay, -armLen*cos dikey + branchWidth pay.
-      const tipX  = armLen * Math.sin(rad);
-      const tipY  = -armLen * Math.cos(rad);
-      const halfB = branchWidth / 2 + Math.abs(Math.cos(rad)) * branchWidth / 2;
+      const tipX = armLen * Math.sin(rad);
+      const tipY = -armLen * Math.cos(rad);
+      const halfB = branchWidth / 2 + (Math.abs(Math.cos(rad)) * branchWidth) / 2;
       return {
         minX: Math.min(-mainWidth / 2, -tipX - halfB),
         minY: tipY - branchWidth / 2,
-        maxX: Math.max( mainWidth / 2,  tipX + halfB),
+        maxX: Math.max(mainWidth / 2, tipX + halfB),
         maxY: armLen + branchWidth / 2,
       };
     }
@@ -113,17 +135,25 @@ export function localBbox(comp: ChipComponent): LocalBbox {
     }
 
     case 'droplet_generator': {
-      const { mainChannelWidth = 300, dispersedChannelWidth = 200 } = comp.params as DropletGeneratorParams;
+      const { mainChannelWidth = 300, dispersedChannelWidth = 200 } =
+        comp.params as DropletGeneratorParams;
       const armLen = mainChannelWidth * 6;
       const dispLen = dispersedChannelWidth * 6;
       return {
-        minX: -armLen, minY: -dispLen,
-        maxX:  armLen, maxY:  mainChannelWidth / 2,
+        minX: -armLen,
+        minY: -dispLen,
+        maxX: armLen,
+        maxY: mainChannelWidth / 2,
       };
     }
 
     case 'filter_array': {
-      const { columns = 10, rows = 5, spacing = 100, pillarDiameter = 50 } = comp.params as FilterArrayParams;
+      const {
+        columns = 10,
+        rows = 5,
+        spacing = 100,
+        pillarDiameter = 50,
+      } = comp.params as FilterArrayParams;
       const totalW = columns * (spacing + pillarDiameter);
       const totalH = rows * (spacing + pillarDiameter);
       return { minX: 0, minY: 0, maxX: totalW, maxY: totalH };
@@ -161,7 +191,10 @@ export function worldBbox(comp: ChipComponent): WorldBbox {
     x: comp.position.x + pt.x * cos - pt.y * sin,
     y: comp.position.y + pt.x * sin + pt.y * cos,
   }));
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
   for (const c of corners) {
     if (c.x < minX) minX = c.x;
     if (c.x > maxX) maxX = c.x;
@@ -173,8 +206,7 @@ export function worldBbox(comp: ChipComponent): WorldBbox {
 
 /** İki AABB kesişiyor mu? (rubber-band testi için) */
 export function bboxesIntersect(a: WorldBbox, b: WorldBbox): boolean {
-  return a.minX <= b.maxX && a.maxX >= b.minX
-      && a.minY <= b.maxY && a.maxY >= b.minY;
+  return a.minX <= b.maxX && a.maxX >= b.minX && a.minY <= b.maxY && a.maxY >= b.minY;
 }
 
 /** Açıyı [-360, 360] aralığında güvenli tutar; 0 ise minik epsilon ile değiştir. */

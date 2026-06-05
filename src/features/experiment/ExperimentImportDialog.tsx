@@ -47,25 +47,35 @@ const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, su
   // Dialog her açılışta resetle
   useEffect(() => {
     if (open) {
-      setFilename(''); setRawText(null); setTable(null); setErr(null);
-      setXCol(''); setYCol(''); setValCol('');
-      setDataType('velocity'); setName(''); setColor(suggestedColor);
+      setFilename('');
+      setRawText(null);
+      setTable(null);
+      setErr(null);
+      setXCol('');
+      setYCol('');
+      setValCol('');
+      setDataType('velocity');
+      setName('');
+      setColor(suggestedColor);
     }
   }, [open, suggestedColor]);
 
   // Tablo değişince sütunları oto-seç (sayısal skorlara göre)
   useEffect(() => {
     if (!table || table.headers.length === 0) return;
-    const scores: Array<[string, number]> = table.headers.map((h) => [h, numericScore(table.rows, h)]);
+    const scores: Array<[string, number]> = table.headers.map((h) => [
+      h,
+      numericScore(table.rows, h),
+    ]);
     const numeric = scores.filter(([, s]) => s > 0.8).map(([h]) => h);
     // İsim heuristic: "x", "y", "pos" kelimeleri
     const pickByName = (patterns: RegExp[]) =>
       numeric.find((h) => patterns.some((p) => p.test(h.toLowerCase())));
 
-    const x = pickByName([/^x$/, /pos/, /y_um/, /y\b/, /distance/, /mesafe/])
-      ?? numeric[0];
-    const v = pickByName([/vel|hız|u\b|speed/, /pres|basınç|p\b/, /conc|konsantrasyon|c\b/])
-      ?? numeric[numeric.length - 1];
+    const x = pickByName([/^x$/, /pos/, /y_um/, /y\b/, /distance/, /mesafe/]) ?? numeric[0];
+    const v =
+      pickByName([/vel|hız|u\b|speed/, /pres|basınç|p\b/, /conc|konsantrasyon|c\b/]) ??
+      numeric[numeric.length - 1];
 
     setXCol(x ?? '');
     setValCol(v ?? '');
@@ -74,9 +84,9 @@ const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, su
 
     // dataType, value sütunu adından sezilir
     const valLower = (v ?? '').toLowerCase();
-    if (/pres|basınç|\bp\b/.test(valLower))      setDataType('pressure');
+    if (/pres|basınç|\bp\b/.test(valLower)) setDataType('pressure');
     else if (/conc|konsantrasyon|\bc\b/.test(valLower)) setDataType('concentration');
-    else                                          setDataType('velocity');
+    else setDataType('velocity');
   }, [table]);
 
   // ESC ile kapat
@@ -129,7 +139,8 @@ const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, su
 
     const points: ExperimentDataPoint[] = [];
     for (let i = 0; i < xs.length; i++) {
-      const x = xs[i], v = vs[i];
+      const x = xs[i],
+        v = vs[i];
       if (!Number.isFinite(x) || !Number.isFinite(v)) continue;
       const y = ys ? ys[i] : 0;
       points.push({ x, y: Number.isFinite(y) ? y : 0, value: v });
@@ -156,7 +167,9 @@ const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, su
   return (
     <div
       className="backdrop-enter fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-      onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onCancel();
+      }}
     >
       <div className="dialog-enter bg-mf-panel border border-mf-border rounded-ds-lg shadow-pop w-[640px] max-w-[96vw] max-h-[88vh] flex flex-col text-mf-text">
         {/* Header */}
@@ -174,7 +187,9 @@ const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, su
         <div className="p-4 space-y-3 text-xs overflow-auto flex-1">
           {/* Step 1: Dosya seç */}
           <div>
-            <div className="text-mf-text-dim text-[11px] uppercase tracking-wide mb-1">1. Dosya Seç</div>
+            <div className="text-mf-text-dim text-[11px] uppercase tracking-wide mb-1">
+              1. Dosya Seç
+            </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={pickFile}
@@ -184,9 +199,16 @@ const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, su
                 Dosya Seç (CSV / TSV / JSON)
               </button>
               {filename && (
-                <span className="text-mf-text-dim font-mono truncate max-w-[320px]" title={filename}>
+                <span
+                  className="text-mf-text-dim font-mono truncate max-w-[320px]"
+                  title={filename}
+                >
                   {filename}
-                  {table && <span className="text-mf-green ml-2">· {table.rowCount} satır, {table.headers.length} sütun</span>}
+                  {table && (
+                    <span className="text-mf-green ml-2">
+                      · {table.rowCount} satır, {table.headers.length} sütun
+                    </span>
+                  )}
                 </span>
               )}
             </div>
@@ -197,13 +219,17 @@ const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, su
           {table && (
             <>
               <div>
-                <div className="text-mf-text-dim text-[11px] uppercase tracking-wide mb-1">Önizleme (ilk 5 satır)</div>
+                <div className="text-mf-text-dim text-[11px] uppercase tracking-wide mb-1">
+                  Önizleme (ilk 5 satır)
+                </div>
                 <div className="overflow-auto border border-mf-border rounded bg-mf-bg max-h-40">
                   <table className="text-xs w-full">
                     <thead className="bg-mf-panel">
                       <tr>
                         {previewCols.map((h) => (
-                          <th key={h} className="text-left px-2 py-1 text-mf-text-dim font-mono">{h}</th>
+                          <th key={h} className="text-left px-2 py-1 text-mf-text-dim font-mono">
+                            {h}
+                          </th>
                         ))}
                       </tr>
                     </thead>
@@ -211,7 +237,12 @@ const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, su
                       {table.preview.map((r, i) => (
                         <tr key={i} className="border-t border-mf-border/50">
                           {previewCols.map((h) => (
-                            <td key={h} className="px-2 py-1 font-mono text-mf-text truncate max-w-[140px]">{r[h]}</td>
+                            <td
+                              key={h}
+                              className="px-2 py-1 font-mono text-mf-text truncate max-w-[140px]"
+                            >
+                              {r[h]}
+                            </td>
                           ))}
                         </tr>
                       ))}
@@ -221,26 +252,34 @@ const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, su
               </div>
 
               <div>
-                <div className="text-mf-text-dim text-[11px] uppercase tracking-wide mb-1">2. Sütun Eşleme</div>
+                <div className="text-mf-text-dim text-[11px] uppercase tracking-wide mb-1">
+                  2. Sütun Eşleme
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <LabeledSelect
                     label="X (pozisyon / koordinat)"
-                    value={xCol} onChange={setXCol}
-                    options={table.headers} required
+                    value={xCol}
+                    onChange={setXCol}
+                    options={table.headers}
+                    required
                   />
                   <LabeledSelect
                     label="Y (ops.) — 2D veriler için"
-                    value={yCol} onChange={setYCol}
+                    value={yCol}
+                    onChange={setYCol}
                     options={['', ...table.headers]}
                   />
                   <LabeledSelect
                     label="Değer (ölçülen büyüklük)"
-                    value={valCol} onChange={setValCol}
-                    options={table.headers} required
+                    value={valCol}
+                    onChange={setValCol}
+                    options={table.headers}
+                    required
                   />
                   <LabeledSelect
                     label="Veri tipi"
-                    value={dataType} onChange={(v) => setDataType(v as DataType)}
+                    value={dataType}
+                    onChange={(v) => setDataType(v as DataType)}
                     options={Object.keys(DATA_TYPE_LABELS)}
                     renderLabel={(v) => DATA_TYPE_LABELS[v as DataType]}
                     required
@@ -249,7 +288,9 @@ const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, su
               </div>
 
               <div>
-                <div className="text-mf-text-dim text-[11px] uppercase tracking-wide mb-1">3. Dataset Bilgileri</div>
+                <div className="text-mf-text-dim text-[11px] uppercase tracking-wide mb-1">
+                  3. Dataset Bilgileri
+                </div>
                 <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
                   <label className="flex flex-col gap-1">
                     <span className="text-mf-text-dim text-[10px]">İsim</span>
@@ -312,7 +353,10 @@ const LabeledSelect: React.FC<{
   renderLabel?: (v: string) => string;
 }> = ({ label, value, onChange, options, required, renderLabel }) => (
   <label className="flex flex-col gap-1">
-    <span className="text-mf-text-dim text-[10px]">{label}{required && <span className="text-mf-red"> *</span>}</span>
+    <span className="text-mf-text-dim text-[10px]">
+      {label}
+      {required && <span className="text-mf-red"> *</span>}
+    </span>
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -320,7 +364,7 @@ const LabeledSelect: React.FC<{
     >
       {options.map((o) => (
         <option key={o || '_none'} value={o}>
-          {o === '' ? '— yok —' : (renderLabel ? renderLabel(o) : o)}
+          {o === '' ? '— yok —' : renderLabel ? renderLabel(o) : o}
         </option>
       ))}
     </select>

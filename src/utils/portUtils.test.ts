@@ -3,7 +3,14 @@ import { getPortInfos, smartRoute } from './portUtils';
 import type { ChipComponent } from '../types';
 
 function comp(type: string, params: Record<string, number | string>): ChipComponent {
-  return { id: 'c', type, position: { x: 0, y: 0 }, rotation: 0, params, ports: [] } as unknown as ChipComponent;
+  return {
+    id: 'c',
+    type,
+    position: { x: 0, y: 0 },
+    rotation: 0,
+    params,
+    ports: [],
+  } as unknown as ChipComponent;
 }
 
 describe('getPortInfos — straight_channel', () => {
@@ -18,12 +25,16 @@ describe('getPortInfos — straight_channel', () => {
 describe('getPortInfos — serpentine_mixer çıkış hizalama', () => {
   // Düzeltme: çıkış = son yatay segmentin ucu (parity'ye bağlı), y = turns*pitch
   it('turns TEK → çıkış sol (x=0), y=turns*pitch', () => {
-    const ports = getPortInfos(comp('serpentine_mixer', { turns: 5, pitch: 400, channelWidth: 150 }));
-    expect(ports[0].localPos).toEqual({ x: 0, y: 0 });           // giriş
-    expect(ports[1].localPos).toEqual({ x: 0, y: 2000 });        // çıkış (5*400)
+    const ports = getPortInfos(
+      comp('serpentine_mixer', { turns: 5, pitch: 400, channelWidth: 150 }),
+    );
+    expect(ports[0].localPos).toEqual({ x: 0, y: 0 }); // giriş
+    expect(ports[1].localPos).toEqual({ x: 0, y: 2000 }); // çıkış (5*400)
   });
   it('turns ÇİFT → çıkış sağ (x=pitch*4), y=turns*pitch', () => {
-    const ports = getPortInfos(comp('serpentine_mixer', { turns: 4, pitch: 400, channelWidth: 150 }));
+    const ports = getPortInfos(
+      comp('serpentine_mixer', { turns: 4, pitch: 400, channelWidth: 150 }),
+    );
     expect(ports[1].localPos).toEqual({ x: 1600, y: 1600 });
   });
 });

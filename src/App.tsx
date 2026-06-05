@@ -67,8 +67,12 @@ const App: React.FC = () => {
   const { handleNewProject, handleSave, handleSaveAs, handleOpen } = useProjectIO();
   const { handleRunAnalytic, handleRunCfd } = useSimulationRun(components, connections);
   const {
-    exportDialogOpen, setExportDialogOpen, exportBusy, exportJob,
-    handleExport, handleExportConfirm,
+    exportDialogOpen,
+    setExportDialogOpen,
+    exportBusy,
+    exportJob,
+    handleExport,
+    handleExportConfirm,
   } = useExportFlow(components, connections);
   const { handleRunScript, scriptStatus, scriptOutputLog } = useScriptRun();
 
@@ -77,7 +81,7 @@ const App: React.FC = () => {
   const [sweepDialogOpen, setSweepDialogOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const addExperiment = useExperimentStore((s) => s.addDataset);
-  const nextExpColor  = useExperimentStore((s) => s.nextColor);
+  const nextExpColor = useExperimentStore((s) => s.nextColor);
   const handleImportExperiment = useCallback(() => setExpDialogOpen(true), []);
 
   useKeyboardShortcuts({
@@ -92,7 +96,7 @@ const App: React.FC = () => {
   // Canvas boyutu
   const canvasHeight = Math.max(
     100,
-    centerSize.height - (bottomPanelOpen ? bottomPanelHeight : 0) - 1
+    centerSize.height - (bottomPanelOpen ? bottomPanelHeight : 0) - 1,
   );
 
   return (
@@ -145,7 +149,12 @@ const App: React.FC = () => {
       </div>
 
       {/* Status bar */}
-      <StatusBar components={components} connections={connections} metadata={metadata} isDirty={isDirty} />
+      <StatusBar
+        components={components}
+        connections={connections}
+        metadata={metadata}
+        isDirty={isDirty}
+      />
 
       {/* CFD/analitik ilerleme bildirimi (sağ alt köşe) */}
       <ProgressOverlay />
@@ -154,7 +163,9 @@ const App: React.FC = () => {
       <ExportDialog
         open={exportDialogOpen}
         busy={exportBusy}
-        onCancel={() => { if (!exportBusy) setExportDialogOpen(false); }}
+        onCancel={() => {
+          if (!exportBusy) setExportDialogOpen(false);
+        }}
         onConfirm={handleExportConfirm}
       />
 
@@ -173,10 +184,7 @@ const App: React.FC = () => {
       />
 
       {/* Parametre taraması */}
-      <SweepDialog
-        open={sweepDialogOpen}
-        onClose={() => setSweepDialogOpen(false)}
-      />
+      <SweepDialog open={sweepDialogOpen} onClose={() => setSweepDialogOpen(false)} />
 
       {/* Klavye kısayolları (? veya F1) */}
       <KeyboardHelp open={helpOpen} onClose={() => setHelpOpen(false)} />

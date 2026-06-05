@@ -1,10 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import type {
-  ChipComponent,
-  Connection,
-  CanvasState,
-} from '../types';
+import type { ChipComponent, Connection, CanvasState } from '../types';
 import { worldBbox } from '../utils/componentBbox';
 
 // ─── Undo/Redo geçmişi ───────────────────────────────────────────────────────
@@ -81,7 +77,11 @@ interface DesignState {
   // Canvas
   updateCanvas: (updates: Partial<CanvasState>) => void;
   /** Cursor (veya viewport merkezi) etrafında zoom uygula. */
-  zoomBy: (factor: number, anchorScreenPx?: { x: number; y: number }, viewport?: { w: number; h: number }) => void;
+  zoomBy: (
+    factor: number,
+    anchorScreenPx?: { x: number; y: number },
+    viewport?: { w: number; h: number },
+  ) => void;
   /** Zoom 100% + pan'ı default'a sıfırla. */
   zoomReset: () => void;
   /** Tüm bileşenleri kapsayan bbox'ı viewport'a sığdır. */
@@ -215,9 +215,7 @@ export const useDesignStore = create<DesignState>()(
 
     updateComponent: (id, updates) => {
       set((s) => ({
-        components: s.components.map((c) =>
-          c.id === id ? { ...c, ...updates } : c
-        ),
+        components: s.components.map((c) => (c.id === id ? { ...c, ...updates } : c)),
       }));
     },
 
@@ -239,7 +237,7 @@ export const useDesignStore = create<DesignState>()(
       set((s) => ({
         components: s.components.filter((c) => c.id !== id),
         connections: s.connections.filter(
-          (cn) => cn.fromComponentId !== id && cn.toComponentId !== id
+          (cn) => cn.fromComponentId !== id && cn.toComponentId !== id,
         ),
         selectedIds: s.selectedIds.filter((sid) => sid !== id),
       }));
@@ -251,7 +249,7 @@ export const useDesignStore = create<DesignState>()(
       set((s) => ({
         components: s.components.filter((c) => !idSet.has(c.id)),
         connections: s.connections.filter(
-          (cn) => !idSet.has(cn.fromComponentId) && !idSet.has(cn.toComponentId)
+          (cn) => !idSet.has(cn.fromComponentId) && !idSet.has(cn.toComponentId),
         ),
         selectedIds: s.selectedIds.filter((sid) => !idSet.has(sid)),
       }));
@@ -261,20 +259,33 @@ export const useDesignStore = create<DesignState>()(
     addConnection: (connection) => {
       // Aynı port-çifti (veya tersi) zaten bağlıysa sessizce yok say — kullanıcı
       // iki kez tıklamış olabilir. Her port tek bağlantı tutar.
-      const { fromComponentId: a, fromPortIndex: ap, toComponentId: b, toPortIndex: bp } = connection;
+      const {
+        fromComponentId: a,
+        fromPortIndex: ap,
+        toComponentId: b,
+        toPortIndex: bp,
+      } = connection;
       // Self-loop guard: bir port kendine bağlanamaz (analytic.rs'de DFS'i sonsuz dolaştırır)
       if (a === b && ap === bp) return;
-      const exists = get().connections.some((c) =>
-        (c.fromComponentId === a && c.fromPortIndex === ap && c.toComponentId === b && c.toPortIndex === bp) ||
-        (c.fromComponentId === b && c.fromPortIndex === bp && c.toComponentId === a && c.toPortIndex === ap)
+      const exists = get().connections.some(
+        (c) =>
+          (c.fromComponentId === a &&
+            c.fromPortIndex === ap &&
+            c.toComponentId === b &&
+            c.toPortIndex === bp) ||
+          (c.fromComponentId === b &&
+            c.fromPortIndex === bp &&
+            c.toComponentId === a &&
+            c.toPortIndex === ap),
       );
       if (exists) return;
       // Bir ucu zaten başka bir bağlantıda olan port'lara ek bağlantı kurmayı
       // engelle — port-başına tek bağlantı invariant'ı.
       const portBusy = (cid: string, pi: number) =>
-        get().connections.some((c) =>
-          (c.fromComponentId === cid && c.fromPortIndex === pi) ||
-          (c.toComponentId === cid && c.toPortIndex === pi)
+        get().connections.some(
+          (c) =>
+            (c.fromComponentId === cid && c.fromPortIndex === pi) ||
+            (c.toComponentId === cid && c.toPortIndex === pi),
         );
       if (portBusy(a, ap) || portBusy(b, bp)) return;
 
@@ -293,7 +304,7 @@ export const useDesignStore = create<DesignState>()(
     removeConnectionsByComponent: (compId) => {
       set((s) => ({
         connections: s.connections.filter(
-          (c) => c.fromComponentId !== compId && c.toComponentId !== compId
+          (c) => c.fromComponentId !== compId && c.toComponentId !== compId,
         ),
       }));
     },
@@ -317,12 +328,10 @@ export const useDesignStore = create<DesignState>()(
 
     clearSelection: () => set({ selectedIds: [] }),
 
-    selectAll: () =>
-      set((s) => ({ selectedIds: s.components.map((c) => c.id) })),
+    selectAll: () => set((s) => ({ selectedIds: s.components.map((c) => c.id) })),
 
     // ── Canvas ───────────────────────────────────────────────────────────────
-    updateCanvas: (updates) =>
-      set((s) => ({ canvas: { ...s.canvas, ...updates } })),
+    updateCanvas: (updates) => set((s) => ({ canvas: { ...s.canvas, ...updates } })),
 
     /** Anchor (ekran-px) etrafında zoom uygula. anchor verilmezse viewport
      *  merkezinde zoom yapar (klavye Ctrl+= / Ctrl+- için). */
@@ -346,16 +355,20 @@ export const useDesignStore = create<DesignState>()(
     },
 
     /** Zoom 100%, pan default'a sıfırla. */
-    zoomReset: () => set((s) => ({
-      canvas: { ...s.canvas, zoom: 1, panX: DEFAULT_CANVAS.panX, panY: DEFAULT_CANVAS.panY },
-    })),
+    zoomReset: () =>
+      set((s) => ({
+        canvas: { ...s.canvas, zoom: 1, panX: DEFAULT_CANVAS.panX, panY: DEFAULT_CANVAS.panY },
+      })),
 
     /** Tüm bileşenleri kapsayan bbox → viewport'a sığdır (10% padding). */
     fitAll: (viewportW, viewportH) => {
       const { components, canvas } = get();
       if (components.length === 0 || viewportW <= 0 || viewportH <= 0) return;
       // componentBbox helper'ı her tip için doğru AABB döndürür
-      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      let minX = Infinity,
+        minY = Infinity,
+        maxX = -Infinity,
+        maxY = -Infinity;
       for (const c of components) {
         const wb = worldBbox(c);
         if (wb.minX < minX) minX = wb.minX;
@@ -366,13 +379,17 @@ export const useDesignStore = create<DesignState>()(
       if (!Number.isFinite(minX)) return;
       const bboxW = Math.max(1, maxX - minX);
       const bboxH = Math.max(1, maxY - minY);
-      const padX = bboxW * 0.10;
-      const padY = bboxH * 0.10;
+      const padX = bboxW * 0.1;
+      const padY = bboxH * 0.1;
       const cx = (minX + maxX) / 2;
       const cy = (minY + maxY) / 2;
-      const zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX,
-        Math.min(viewportW / (bboxW + 2 * padX), viewportH / (bboxH + 2 * padY))
-      ));
+      const zoom = Math.max(
+        ZOOM_MIN,
+        Math.min(
+          ZOOM_MAX,
+          Math.min(viewportW / (bboxW + 2 * padX), viewportH / (bboxH + 2 * padY)),
+        ),
+      );
       set({
         canvas: {
           ...canvas,
@@ -397,16 +414,17 @@ export const useDesignStore = create<DesignState>()(
         // Tek bileşen: sadece kendi rotation
         set({
           components: components.map((c) =>
-            idSet.has(c.id)
-              ? { ...c, rotation: ((c.rotation + deltaDeg) % 360 + 360) % 360 }
-              : c
+            idSet.has(c.id) ? { ...c, rotation: (((c.rotation + deltaDeg) % 360) + 360) % 360 } : c,
           ),
         });
         return;
       }
 
       // Çoklu seçim: ortak merkez (worldBbox toplama centroid)
-      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      let minX = Infinity,
+        minY = Infinity,
+        maxX = -Infinity,
+        maxY = -Infinity;
       for (const c of components) {
         if (!idSet.has(c.id)) continue;
         const wb = worldBbox(c);
@@ -434,7 +452,7 @@ export const useDesignStore = create<DesignState>()(
               x: cx + dx * cos - dy * sin,
               y: cy + dx * sin + dy * cos,
             },
-            rotation: ((c.rotation + deltaDeg) % 360 + 360) % 360,
+            rotation: (((c.rotation + deltaDeg) % 360) + 360) % 360,
           };
         }),
       });
@@ -453,7 +471,7 @@ export const useDesignStore = create<DesignState>()(
         .map((c) => JSON.parse(JSON.stringify(c)));
       // Kopyalanan bileşenler arası iç bağlantıları da kopyala
       const copiedConnections = connections.filter(
-        (cn) => idSet.has(cn.fromComponentId) && idSet.has(cn.toComponentId)
+        (cn) => idSet.has(cn.fromComponentId) && idSet.has(cn.toComponentId),
       );
       set({ clipboard: { components: copiedComponents, connections: copiedConnections } });
     },
@@ -538,5 +556,5 @@ export const useDesignStore = create<DesignState>()(
         pendingConnection: null,
         dragOffset: null,
       }),
-  }))
+  })),
 );

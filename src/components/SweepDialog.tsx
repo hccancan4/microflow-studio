@@ -41,7 +41,8 @@ const SweepDialog: React.FC<Props> = ({ open, onClose }) => {
       setComponentId(first.id);
       const firstParam = getSweepableParams(first.type)[0];
       setParamKey(firstParam.key);
-      const cur = (first.params as unknown as Record<string, number>)[firstParam.key] ?? firstParam.min;
+      const cur =
+        (first.params as unknown as Record<string, number>)[firstParam.key] ?? firstParam.min;
       setStart(Math.max(firstParam.min, cur * 0.5));
       setEnd(Math.min(firstParam.maxHint, cur * 2));
       setSteps(10);
@@ -50,7 +51,9 @@ const SweepDialog: React.FC<Props> = ({ open, onClose }) => {
 
   const selectedComponent = components.find((c) => c.id === componentId);
   const paramOptions = selectedComponent ? getSweepableParams(selectedComponent.type) : [];
-  const selectedParam = selectedComponent ? getParamOption(selectedComponent.type, paramKey) : undefined;
+  const selectedParam = selectedComponent
+    ? getParamOption(selectedComponent.type, paramKey)
+    : undefined;
 
   // Parametre değiştiğinde varsayılan aralık
   const handleParamChange = (newKey: string) => {
@@ -58,7 +61,8 @@ const SweepDialog: React.FC<Props> = ({ open, onClose }) => {
     if (selectedComponent) {
       const opt = getParamOption(selectedComponent.type, newKey);
       if (opt) {
-        const cur = (selectedComponent.params as unknown as Record<string, number>)[newKey] ?? opt.min;
+        const cur =
+          (selectedComponent.params as unknown as Record<string, number>)[newKey] ?? opt.min;
         setStart(Math.max(opt.min, cur * 0.5));
         setEnd(Math.min(opt.maxHint, cur * 2));
       }
@@ -130,7 +134,9 @@ const SweepDialog: React.FC<Props> = ({ open, onClose }) => {
     >
       <div className="dialog-enter bg-mf-panel border border-mf-border rounded-ds-lg shadow-pop w-[560px] max-w-[92vw] max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between px-4 py-3 border-b border-mf-border">
-          <h3 id="sweep-dialog-title" className="text-mf-text text-sm font-semibold">Parametre Taraması</h3>
+          <h3 id="sweep-dialog-title" className="text-mf-text text-sm font-semibold">
+            Parametre Taraması
+          </h3>
           <button
             onClick={onClose}
             className="text-mf-text-dim hover:text-mf-text"
@@ -187,7 +193,11 @@ const SweepDialog: React.FC<Props> = ({ open, onClose }) => {
                   <div className="text-xs text-mf-text-dim mt-1">
                     Mevcut değer:{' '}
                     <span className="text-mf-text">
-                      {(selectedComponent.params as unknown as Record<string, number>)[selectedParam.key]}
+                      {
+                        (selectedComponent.params as unknown as Record<string, number>)[
+                          selectedParam.key
+                        ]
+                      }
                     </span>{' '}
                     {selectedParam.unit}
                   </div>
@@ -230,7 +240,9 @@ const SweepDialog: React.FC<Props> = ({ open, onClose }) => {
               </div>
 
               {!validRange && (
-                <div className="text-xs text-mf-orange">Bitiş değeri başlangıçtan büyük olmalı.</div>
+                <div className="text-xs text-mf-orange">
+                  Bitiş değeri başlangıçtan büyük olmalı.
+                </div>
               )}
               {!validSteps && (
                 <div className="text-xs text-mf-orange">Adım sayısı 2 ile 200 arasında olmalı.</div>
@@ -245,7 +257,10 @@ const SweepDialog: React.FC<Props> = ({ open, onClose }) => {
                   <div className="text-xs text-mf-text font-mono">
                     {preview.length <= 8
                       ? preview.map((v) => v.toFixed(2)).join(', ')
-                      : `${preview.slice(0, 3).map((v) => v.toFixed(2)).join(', ')} … ${preview
+                      : `${preview
+                          .slice(0, 3)
+                          .map((v) => v.toFixed(2))
+                          .join(', ')} … ${preview
                           .slice(-3)
                           .map((v) => v.toFixed(2))
                           .join(', ')}`}

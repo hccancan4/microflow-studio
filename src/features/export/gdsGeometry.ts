@@ -26,20 +26,18 @@ export interface GdsPolygon {
 /** Bileşen-yerel noktayı dünyaya taşı (rotation + position). */
 function toWorld(comp: ChipComponent, lx: number, ly: number): [number, number] {
   const rad = (comp.rotation * Math.PI) / 180;
-  const cos = Math.cos(rad), sin = Math.sin(rad);
-  return [
-    comp.position.x + lx * cos - ly * sin,
-    comp.position.y + lx * sin + ly * cos,
-  ];
+  const cos = Math.cos(rad),
+    sin = Math.sin(rad);
+  return [comp.position.x + lx * cos - ly * sin, comp.position.y + lx * sin + ly * cos];
 }
 
 /** Dikdörtgen (lokal): sol-alt (x,y), genişlik w, yükseklik h. */
 function rectLocal(x: number, y: number, w: number, h: number): Array<[number, number]> {
   return [
-    [x,     y    ],
-    [x + w, y    ],
+    [x, y],
+    [x + w, y],
     [x + w, y + h],
-    [x,     y + h],
+    [x, y + h],
   ];
 }
 
@@ -66,9 +64,9 @@ function arcStrip(
   arcResolution: number,
 ): Array<[number, number]> {
   const angleRad = (angleDeg * Math.PI) / 180;
-  const nArc = Math.max(4, Math.round(arcResolution * Math.abs(angleDeg) / 360));
+  const nArc = Math.max(4, Math.round((arcResolution * Math.abs(angleDeg)) / 360));
   const rOut = radius + width / 2;
-  const rIn  = radius - width / 2;
+  const rIn = radius - width / 2;
   // Merkez (0, r): dış yay saat yönünde giriş→çıkış, iç yay çıkış→giriş.
   const outer: Array<[number, number]> = [];
   const inner: Array<[number, number]> = [];
@@ -97,10 +95,7 @@ function toWorldPolygon(
 
 // ─── Bileşen-başı tessellation ──────────────────────────────────────────────
 
-function buildComponentPolygons(
-  comp: ChipComponent,
-  arcResolution: number,
-): GdsPolygon[] {
+function buildComponentPolygons(comp: ChipComponent, arcResolution: number): GdsPolygon[] {
   const p: any = comp.params;
   const out: GdsPolygon[] = [];
   const push = (local: Array<[number, number]>, layer = 1, datatype = 0) => {
@@ -148,15 +143,17 @@ function buildComponentPolygons(
         const L = armLen;
         const rectRaw = rectLocal(0, -bw / 2, L, bw);
         const a = branchAngleRad * sign;
-        const cos = Math.cos(a), sin = Math.sin(a);
+        const cos = Math.cos(a),
+          sin = Math.sin(a);
         // Ek rotasyon: şerit ekseni +y'ye çevrilmeli (şu an +x).
         // Açıyı "(-π/2) + sign·branchAngle" olarak düşün.
         const theta = -Math.PI / 2 + a;
-        const ct = Math.cos(theta), st = Math.sin(theta);
+        const ct = Math.cos(theta),
+          st = Math.sin(theta);
         const _ = [cos, sin];
         void _;
-        return rectRaw.map(([lx, ly]) =>
-          [lx * ct - ly * st, lx * st + ly * ct] as [number, number],
+        return rectRaw.map(
+          ([lx, ly]) => [lx * ct - ly * st, lx * st + ly * ct] as [number, number],
         );
       };
       push(mkAngled(-1));
@@ -175,8 +172,8 @@ function buildComponentPolygons(
       for (let i = 0; i <= turns; i++) {
         const yTop = i % 2 === 0 ? -pitch / 2 : pitch / 2 - cw;
         // Yatay şerit — sol-sağ
-        const xStart = (i === 0) ? 0 : i * pitch - pitch; // örtüşmeyi önlemek için kaba
-        const xEnd   = (i === turns) ? totalW : (i + 1) * pitch;
+        const xStart = i === 0 ? 0 : i * pitch - pitch; // örtüşmeyi önlemek için kaba
+        const xEnd = i === turns ? totalW : (i + 1) * pitch;
         const x0 = Math.min(xStart, xEnd);
         const x1 = Math.max(xStart, xEnd);
         push(rectLocal(x0, yTop, x1 - x0, cw));
@@ -190,13 +187,15 @@ function buildComponentPolygons(
     }
 
     case 'expansion': {
-      const il = p.inletWidth, ol = p.outletWidth, L = p.length;
+      const il = p.inletWidth,
+        ol = p.outletWidth,
+        L = p.length;
       // Trapezoid (ikizkenar yamuk)
       push([
         [0, -il / 2],
         [L, -ol / 2],
-        [L,  ol / 2],
-        [0,  il / 2],
+        [L, ol / 2],
+        [0, il / 2],
       ]);
       break;
     }
