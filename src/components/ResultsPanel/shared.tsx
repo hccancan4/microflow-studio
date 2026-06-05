@@ -6,7 +6,7 @@ import React from 'react';
 import clsx from 'clsx';
 import { TOKENS } from '../../theme/tokens';
 import type { ExperimentDataSet } from '../../types';
-import type { computeMetrics } from '../../utils/experimentMetrics';
+import type { computeMetrics } from '../../features/experiment/experimentMetrics';
 
 // ── Ortak recharts tema sabitleri (token-güdümlü) ─────────────────────────
 export const AXIS_TICK = { fontSize: 10, fill: TOKENS.chartAxis } as const;

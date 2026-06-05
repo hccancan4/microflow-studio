@@ -11,9 +11,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { FiX, FiUpload, FiCheck } from 'react-icons/fi';
 import clsx from 'clsx';
-import type { ExperimentDataSet, ExperimentDataPoint } from '../types';
-import { parseTable, numericScore, columnAsNumbers, type ParsedTable } from '../utils/csvParser';
-import { useEscapeClose } from '../hooks/useEscapeClose';
+import type { ExperimentDataSet, ExperimentDataPoint } from '../../types';
+import { parseTable, numericScore, columnAsNumbers, type ParsedTable } from './csvParser';
+import { useEscapeClose } from '../../hooks/useEscapeClose';
 
 interface Props {
   open: boolean;

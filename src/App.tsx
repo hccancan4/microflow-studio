@@ -15,7 +15,7 @@ import ResultsPanel from './components/ResultsPanel/ResultsPanel';
 import PropertiesPanel from './components/PropertiesPanel/PropertiesPanel';
 import ProgressOverlay from './components/ProgressOverlay';
 import ExportDialog from './components/ExportDialog';
-import ExperimentImportDialog from './components/ExperimentImportDialog';
+import ExperimentImportDialog from './features/experiment/ExperimentImportDialog';
 import SweepDialog from './components/SweepDialog';
 import KeyboardHelp from './components/KeyboardHelp';
 import StatusBar from './components/StatusBar/StatusBar';
@@ -27,7 +27,7 @@ import { useProjectStore } from './stores/useProjectStore';
 import { useDesignStore } from './stores/useDesignStore';
 import { useSimulationStore } from './stores/useSimulationStore';
 import { useSweepStore } from './stores/useSweepStore';
-import { useExperimentStore } from './stores/useExperimentStore';
+import { useExperimentStore } from './features/experiment/useExperimentStore';
 
 import { useElementSize } from './hooks/useElementSize';
 import { useProjectIO } from './hooks/useProjectIO';

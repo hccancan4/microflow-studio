@@ -11,8 +11,8 @@ import {
   ComposedChart, Line, ReferenceLine, Scatter,
 } from 'recharts';
 import { useDesignStore } from '../../../stores/useDesignStore';
-import { useExperimentStore } from '../../../stores/useExperimentStore';
-import { computeMetrics } from '../../../utils/experimentMetrics';
+import { useExperimentStore } from '../../../features/experiment/useExperimentStore';
+import { computeMetrics } from '../../../features/experiment/experimentMetrics';
 import { TOKENS, CHART_SERIES } from '../../../theme/tokens';
 import { confirmAsync } from '../../../stores/useUiStore';
 import { MetricCard, MetricsCard, ChartCard, AXIS_TICK, TOOLTIP_STYLE } from '../shared';

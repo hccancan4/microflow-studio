@@ -8,7 +8,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line,
 } from 'recharts';
 import { useSimulationStore } from '../../../stores/useSimulationStore';
-import { useExperimentStore } from '../../../stores/useExperimentStore';
+import { useExperimentStore } from '../../../features/experiment/useExperimentStore';
 import { colormapCssGradient, colormap as colormapEval } from '../../../utils/colormaps';
 import { TOKENS, CHART_SERIES } from '../../../theme/tokens';
 import { MetricCard, AXIS_TICK, TOOLTIP_STYLE } from '../shared';

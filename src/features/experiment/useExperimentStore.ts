@@ -10,7 +10,7 @@
  * içinden eklenir (Faz 6A sonunda); yükleme sırasında bu store doldurulur.
  */
 import { create } from 'zustand';
-import type { ExperimentDataSet, ExperimentDataPoint } from '../types';
+import type { ExperimentDataSet, ExperimentDataPoint } from '../../types';
 
 const PALETTE = [
   '#ff7043', '#ba68c8', '#ffd54f', '#4dd0e1',
