@@ -7,7 +7,7 @@ Her kayıt: semptom + kök neden + düzeltme planı.
 
 ## #1 — Undo/Redo off-by-one (geçmiş yönetimi)
 
-**Durum:** Açık · **Önem:** Orta · **Keşif:** Kod-düzeni refactor'ü, FAZ 1 (karakterizasyon testleri)
+**Durum:** ✅ Çözüldü — `fc4f6ba` (fix/stabilization turu) · **Önem:** Orta · **Keşif:** Kod-düzeni refactor'ü, FAZ 1 (karakterizasyon testleri)
 
 **Semptomlar:**
 - İlk aksiyondan sonra **Ctrl+Z hiçbir şey yapmaz** (ilk aksiyon geri alınamaz).
@@ -21,7 +21,9 @@ Her kayıt: semptom + kök neden + düzeltme planı.
 
 **Doğru desen:** Geçmiş, mutasyon-SONRASI durumları tutmalı; mevcut durum daima `history[historyIndex]` olmalı. Undo `history[historyIndex-1]`'e, redo `history[historyIndex+1]`'e gider ve guard'lar buna göre.
 
-**Düzeltme planı:**
-- ❌ Bu refactor turunda **düzeltilmeyecek** — turun sözü "sıfır davranış değişikliği". Undo'yu düzeltmek davranışı değiştirir.
-- Refactor tamamlandıktan sonra **ayrı bir bugfix commit'i** ile düzeltilecek; aynı commit'te `src/stores/useDesignStore.test.ts`'teki karakterizasyon testi (şu an off-by-one'ı kilitliyor) **kasıtlı olarak** doğru davranışı yansıtacak şekilde güncellenecek.
-- Bu kayıt yalnızca **dokümantasyon** — kod davranışı şu an değişmiyor.
+**Çözüm** (`fc4f6ba`, fix/stabilization turu):
+- Tek-dizi `history[]` + `historyIndex` modeli **iki-yığın** (undoStack + redoStack) ile değiştirildi. Bu, mevcut "mutasyondan ÖNCE pushHistory" çağrı desenine birebir oturur (call-site değişikliği yok).
+- `pushHistory` mevcut (mutasyon-öncesi) durumu undoStack'e iter ve redoStack'i temizler (yeni aksiyon redo dalını terk eder). `undo`/`redo` geçişten önce mevcut durumu karşı yığına kaydeder → her biri **tam bir adım** hareket eder.
+- `canUndo`/`canRedo` yığın boşluğuna bakar; sınırda no-op.
+- Korunan invariant'lar: 50-adım cap (`MAX_HISTORY`, en eski düşer), bileşik aksiyon = tek girdi (addComponents / moveComponents / paste / script batch), load/new history reset.
+- Karakterizasyon testleri **kasıtlı olarak** doğru spec'e güncellendi + 6 yeni test eklendi (tek/N-adım/redo-temizleme/sınır/50-cap/bileşik×3). vitest 66 → 72.
