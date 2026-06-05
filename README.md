@@ -2,7 +2,7 @@
 
 Mikroakışkan çip tasarımı ve simülasyonu için profesyonel masaüstü uygulaması. [Tauri v2](https://tauri.app/) (Rust backend + React frontend), AutoCAD/Fusion 360 tarzı bir CAD ergonomisiyle inşa edildi.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tauri](https://img.shields.io/badge/tauri-v2-orange) ![Tests](https://img.shields.io/badge/tests-36%20passing-brightgreen)
+![Version](https://img.shields.io/badge/version-1.0.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tauri](https://img.shields.io/badge/tauri-v2-orange) ![Tests](https://img.shields.io/badge/tests-36%20rust%20%2B%2066%20frontend-brightgreen)
 
 ---
 
@@ -212,6 +212,8 @@ MicroFlow Studio tamamen **offline** çalışan bir desktop uygulamasıdır:
 
 | Dosya | İçerik |
 |---|---|
+| [`CONVENTIONS.md`](CONVENTIONS.md) | Klasör sorumlulukları, "şu şuraya gider" kuralları, isimlendirme, pattern'ler |
+| [`docs/CODE_MAP.md`](docs/CODE_MAP.md) | "X nerede?" + uçtan uca akışlar (UI → hook → IPC → Rust domain) |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Frontend/backend katman, IPC komut listesi, veri akışı |
 | [`docs/COMPONENTS.md`](docs/COMPONENTS.md) | 10 bileşen tipi, parametreler, port topoloji, direnç formülleri |
 | [`docs/SIMULATION.md`](docs/SIMULATION.md) | Analitik ağ çözücü + CFD algoritmaları |
@@ -245,19 +247,24 @@ examples/
 
 ## Geliştirme Notları
 
+Kod tabanında gezinme için: klasör kuralları [`CONVENTIONS.md`](CONVENTIONS.md), "X nerede?" + akışlar [`docs/CODE_MAP.md`](docs/CODE_MAP.md).
+
 ```bash
-# Frontend tipo + lint
-npx tsc --noEmit
+# Frontend: lint + format + tip kontrolü + testler
+npm run lint            # eslint (0 hata hedefi; uyarılar bilgilendirici)
+npm run format          # prettier --write
+npm run typecheck       # tsc --noEmit
+npm test                # vitest (66 karakterizasyon testi)
 
-# Rust testleri (36 test, ~2 sn)
+# Rust testleri (36 test, ~2 sn) + clippy strict
 cd src-tauri && cargo test --lib
-
-# Clippy strict mode
 cd src-tauri && cargo clippy --all-targets -- -D warnings
 
 # Production build
 npm run tauri build
 ```
+
+> **pre-commit hook** (husky + lint-staged): her commit'te değişen dosyalarda `eslint --fix` + `prettier --write`, ardından proje-geneli `typecheck` + `test` çalışır; başarısızsa commit iptal olur. Acil durumda `git commit --no-verify` ile atlanabilir.
 
 ---
 
