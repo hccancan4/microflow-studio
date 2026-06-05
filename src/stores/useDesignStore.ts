@@ -10,6 +10,22 @@ interface HistoryEntry {
   label: string; // hangi eylem olduğunu açıklar (debug için)
 }
 
+/** Maksimum geri-al adımı. Aşılınca en eski undo girdisi düşer. */
+const MAX_HISTORY = 50;
+
+/** Mevcut tasarımın derin-kopya snapshot'ı (history girdisi — referans paylaşmaz). */
+function makeSnapshot(
+  components: ChipComponent[],
+  connections: Connection[],
+  label: string,
+): HistoryEntry {
+  return {
+    components: JSON.parse(JSON.stringify(components)),
+    connections: JSON.parse(JSON.stringify(connections)),
+    label,
+  };
+}
+
 // ─── Clipboard ───────────────────────────────────────────────────────────────
 interface ClipboardEntry {
   components: ChipComponent[];
@@ -36,9 +52,11 @@ interface DesignState {
    *  Line click → buraya yazılır; Delete tuşu önce bağlantıyı siler. */
   selectedConnectionId: string | null;
 
-  // ── Geçmiş (maks 50 adım) ─────────────────────────────────────────────────
-  history: HistoryEntry[];
-  historyIndex: number;
+  // ── Geçmiş — iki yığın (maks MAX_HISTORY adım) ────────────────────────────
+  /** Geri alınabilir durumlar — her biri bir mutasyondan ÖNCEki snapshot. */
+  undoStack: HistoryEntry[];
+  /** İleri alınabilir durumlar — undo ile terk edilen; yeni aksiyonda temizlenir. */
+  redoStack: HistoryEntry[];
 
   // ── Clipboard ─────────────────────────────────────────────────────────────
   clipboard: ClipboardEntry | null;
@@ -153,54 +171,57 @@ export const useDesignStore = create<DesignState>()(
     canvas: DEFAULT_CANVAS,
     selectedIds: [],
     selectedConnectionId: null,
-    history: [],
-    historyIndex: -1,
+    undoStack: [],
+    redoStack: [],
     clipboard: null,
     pendingConnection: null,
     dragOffset: null,
 
-    // ── Geçmiş ───────────────────────────────────────────────────────────────
+    // ── Geçmiş — iki yığın modeli ──────────────────────────────────────────
+    // pushHistory mutasyondan ÖNCE çağrılır: mevcut (mutasyon-öncesi) durumu
+    // undo yığınına iter ve redo dalını terk eder. undo/redo, geçişten önce
+    // mevcut durumu karşı yığına kaydeder → her ikisi de tam bir adım hareket eder.
     pushHistory: (label = '') => {
-      const { components, connections, history, historyIndex } = get();
-      const entry: HistoryEntry = {
-        components: JSON.parse(JSON.stringify(components)),
-        connections: JSON.parse(JSON.stringify(connections)),
-        label,
-      };
-      const newHistory = history.slice(0, historyIndex + 1);
-      newHistory.push(entry);
-      if (newHistory.length > 50) newHistory.shift();
-      set({ history: newHistory, historyIndex: newHistory.length - 1 });
+      const { components, connections, undoStack } = get();
+      const newUndo = [...undoStack, makeSnapshot(components, connections, label)];
+      if (newUndo.length > MAX_HISTORY) newUndo.shift(); // en eski adım düşer
+      set({ undoStack: newUndo, redoStack: [] }); // yeni aksiyon redo'yu temizler
     },
 
     undo: () => {
-      const { history, historyIndex } = get();
-      if (historyIndex <= 0) return;
-      const prev = history[historyIndex - 1];
+      const { components, connections, undoStack, redoStack } = get();
+      if (undoStack.length === 0) return; // sınırda no-op
+      const prev = undoStack[undoStack.length - 1];
+      // Mevcut durumu redo yığınına kaydet, sonra önceki duruma dön.
+      const current = makeSnapshot(components, connections, prev.label);
       set({
         components: JSON.parse(JSON.stringify(prev.components)),
         connections: JSON.parse(JSON.stringify(prev.connections)),
-        historyIndex: historyIndex - 1,
+        undoStack: undoStack.slice(0, -1),
+        redoStack: [...redoStack, current],
         selectedIds: [],
         pendingConnection: null,
       });
     },
 
     redo: () => {
-      const { history, historyIndex } = get();
-      if (historyIndex >= history.length - 1) return;
-      const next = history[historyIndex + 1];
+      const { components, connections, undoStack, redoStack } = get();
+      if (redoStack.length === 0) return; // sınırda no-op
+      const next = redoStack[redoStack.length - 1];
+      // Mevcut durumu undo yığınına geri koy, sonra ileri duruma git.
+      const current = makeSnapshot(components, connections, next.label);
       set({
         components: JSON.parse(JSON.stringify(next.components)),
         connections: JSON.parse(JSON.stringify(next.connections)),
-        historyIndex: historyIndex + 1,
+        undoStack: [...undoStack, current],
+        redoStack: redoStack.slice(0, -1),
         selectedIds: [],
         pendingConnection: null,
       });
     },
 
-    canUndo: () => get().historyIndex > 0,
-    canRedo: () => get().historyIndex < get().history.length - 1,
+    canUndo: () => get().undoStack.length > 0,
+    canRedo: () => get().redoStack.length > 0,
 
     // ── Bileşenler ───────────────────────────────────────────────────────────
     addComponent: (component) => {
@@ -537,8 +558,8 @@ export const useDesignStore = create<DesignState>()(
         connections: [],
         selectedIds: [],
         selectedConnectionId: null,
-        history: [],
-        historyIndex: -1,
+        undoStack: [],
+        redoStack: [],
         clipboard: null,
         pendingConnection: null,
         dragOffset: null,
@@ -550,8 +571,8 @@ export const useDesignStore = create<DesignState>()(
         connections,
         selectedIds: [],
         selectedConnectionId: null,
-        history: [],
-        historyIndex: -1,
+        undoStack: [],
+        redoStack: [],
         clipboard: null,
         pendingConnection: null,
         dragOffset: null,
