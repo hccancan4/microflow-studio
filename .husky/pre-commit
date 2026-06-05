@@ -1,0 +1,11 @@
+# Drift önleyici gate — herhangi biri başarısızsa commit iptal (set -e).
+set -e
+
+# 1) Değişen dosyalarda eslint --fix + prettier --write (oto-düzelt, hata varsa blokla)
+npx lint-staged
+
+# 2) Proje-geneli tip kontrolü (tsc tek dosyada anlamlı değil)
+npm run typecheck
+
+# 3) Karakterizasyon testleri — davranış güvenlik ağı
+npm test
