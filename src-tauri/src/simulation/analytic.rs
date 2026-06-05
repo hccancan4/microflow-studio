@@ -10,6 +10,21 @@ use super::FluidProperties;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
+// ─── Varsayılan kanal geometrisi & direnç modeli sabitleri ───────────────────
+// JSON parametresi verilmediğinde kullanılan standart mikrokanal kesiti ve
+// Hagen-Poiseuille aspect-ratio düzeltme katsayısı. Gelecek doğruluk/tuning
+// fazı bu değerlere dokunacağı için tek noktada isimli tutulurlar.
+
+/// Standart mikrokanal genişliği (μm) — parametre verilmediğinde fallback.
+const DEFAULT_CHANNEL_WIDTH_UM: f64 = 200.0;
+/// Standart mikrokanal derinliği/yüksekliği (μm) — fallback.
+const DEFAULT_CHANNEL_DEPTH_UM: f64 = 50.0;
+/// Standart düz kanal uzunluğu (μm) — fallback.
+const DEFAULT_CHANNEL_LENGTH_UM: f64 = 5000.0;
+/// Dikdörtgen kanal Hagen-Poiseuille direnç düzeltmesi: `1 - k·(h/w)`,
+/// k = 0.63, h < w (dar/geniş) varsayımıyla standart yaklaşıklık.
+const ASPECT_RATIO_CORRECTION: f64 = 0.63;
+
 /// Dikdörtgen kanal parametreleri (μm cinsinden)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RectChannel {
@@ -45,7 +60,7 @@ pub fn channel_resistance(channel: &RectChannel, fluid: &FluidProperties) -> f64
     let w = channel.width.max(channel.depth) * 1e-6; // geniş taraf
     let h = channel.width.min(channel.depth) * 1e-6; // dar taraf
     let l = channel.length * 1e-6;
-    let correction = 1.0 - 0.63 * (h / w);
+    let correction = 1.0 - ASPECT_RATIO_CORRECTION * (h / w);
     12.0 * fluid.viscosity * l / (w * h.powi(3) * correction)
 }
 
@@ -177,9 +192,9 @@ fn extract_channel(c: &DesignComponent) -> Option<EffectiveChannel> {
     let p = &c.params;
     match c.component_type.as_str() {
         "straight_channel" => Some(EffectiveChannel {
-            width: jf(p, "width", 200.0),
-            depth: jf(p, "depth", 50.0),
-            length: jf(p, "length", 5000.0),
+            width: jf(p, "width", DEFAULT_CHANNEL_WIDTH_UM),
+            depth: jf(p, "depth", DEFAULT_CHANNEL_DEPTH_UM),
+            length: jf(p, "length", DEFAULT_CHANNEL_LENGTH_UM),
             kind: ComponentKind::Straight,
         }),
         "curved_channel" => {
@@ -187,8 +202,8 @@ fn extract_channel(c: &DesignComponent) -> Option<EffectiveChannel> {
             let angle_deg = jf(p, "angle", 90.0);
             let arc_len = r * angle_deg.to_radians();
             Some(EffectiveChannel {
-                width: jf(p, "width", 200.0),
-                depth: jf(p, "depth", 50.0),
+                width: jf(p, "width", DEFAULT_CHANNEL_WIDTH_UM),
+                depth: jf(p, "depth", DEFAULT_CHANNEL_DEPTH_UM),
                 length: arc_len,
                 kind: ComponentKind::Curved { radius: r },
             })
@@ -196,13 +211,13 @@ fn extract_channel(c: &DesignComponent) -> Option<EffectiveChannel> {
         "serpentine_mixer" => {
             let turns = ju(p, "turns", 8) as u32;
             let pitch = jf(p, "pitch", 600.0);
-            let w = jf(p, "channelWidth", jf(p, "channel_width", 200.0));
+            let w = jf(p, "channelWidth", jf(p, "channel_width", DEFAULT_CHANNEL_WIDTH_UM));
             // Serpantin toplam uzunluk ≈ turns × (pitch + 2×pitch/2)  — dönüşler dahil
             // Basit tahmin: her dönüş ≈ 2·pitch uzunluğunda, bakl + yarım çevre
             let length = (turns as f64) * (pitch * 2.0 + std::f64::consts::PI * pitch * 0.5);
             Some(EffectiveChannel {
                 width: w,
-                depth: jf(p, "depth", 50.0),
+                depth: jf(p, "depth", DEFAULT_CHANNEL_DEPTH_UM),
                 length,
                 kind: ComponentKind::Serpentine { turns },
             })
@@ -213,28 +228,28 @@ fn extract_channel(c: &DesignComponent) -> Option<EffectiveChannel> {
             // Junction'ı kısa bir "ana kanal parçası" olarak modelle (~5×width uzunluk)
             Some(EffectiveChannel {
                 width: mw,
-                depth: jf(p, "depth", 50.0),
+                depth: jf(p, "depth", DEFAULT_CHANNEL_DEPTH_UM),
                 length: mw * 5.0,
                 kind: ComponentKind::Junction { branch_width: bw },
             })
         }
         "expansion" => {
-            let wi = jf(p, "inletWidth", jf(p, "width_in", 200.0));
+            let wi = jf(p, "inletWidth", jf(p, "width_in", DEFAULT_CHANNEL_WIDTH_UM));
             let wo = jf(p, "outletWidth", jf(p, "width_out", 600.0));
             let len = jf(p, "length", 1000.0);
             // Genişleme için ortalama genişlik kullanılır
             Some(EffectiveChannel {
                 width: (wi + wo) * 0.5,
-                depth: jf(p, "depth", 50.0),
+                depth: jf(p, "depth", DEFAULT_CHANNEL_DEPTH_UM),
                 length: len,
                 kind: ComponentKind::Expansion { w_in: wi, w_out: wo },
             })
         }
         "droplet_generator" => {
-            let mw = jf(p, "mainChannelWidth", jf(p, "continuous_width", 200.0));
+            let mw = jf(p, "mainChannelWidth", jf(p, "continuous_width", DEFAULT_CHANNEL_WIDTH_UM));
             Some(EffectiveChannel {
                 width: mw,
-                depth: jf(p, "depth", 50.0),
+                depth: jf(p, "depth", DEFAULT_CHANNEL_DEPTH_UM),
                 length: mw * 10.0, // giriş + orifice + çıkış bölgesi tahmini
                 kind: ComponentKind::Other,
             })
@@ -249,7 +264,7 @@ fn extract_channel(c: &DesignComponent) -> Option<EffectiveChannel> {
                 .clamp(0.05, 0.95);
             Some(EffectiveChannel {
                 width: w * porosity,
-                depth: jf(p, "depth", 50.0),
+                depth: jf(p, "depth", DEFAULT_CHANNEL_DEPTH_UM),
                 length: jf(p, "height", 1000.0),
                 kind: ComponentKind::Other,
             })

@@ -12,6 +12,23 @@
 use super::FluidProperties;
 use serde::{Deserialize, Serialize};
 
+// ─── Çözücü ayar sabitleri ───────────────────────────────────────────────────
+// Solver tuning değerleri. Gelecekteki doğruluk/performans fazı (ör. multigrid)
+// tam bu sabitlere dokunacak; bu yüzden tek noktada isimli tutulurlar.
+
+/// Diffusion-CFL güvenlik katsayısı: `dt = DT_DIFF_CFL · min(dx,dy)² / ν`.
+/// Re ≪ 1 (Stokes) olduğundan konvektif CFL gerekmez; bu yalnızca kararlılık marjı.
+const DT_DIFF_CFL: f64 = 0.24;
+
+/// Basınç-düzeltme Poisson denklemi için her dış iterasyondaki Gauss-Seidel
+/// alt-iterasyon sayısı. Anizotropik hücrelerde (dx ≠ dy) kondisyon kötüdür,
+/// bu yüzden bol alt-iterasyon gerekir.
+const POISSON_SUB_ITERATIONS: usize = 80;
+
+/// Gauss-Seidel SOR aşırı-gevşetme katsayısı (1 < ω < 2). Jacobi'ye göre ~5×
+/// hızlı yakınsar; 1.7 bu grid oranları için ampirik iyi değer.
+const SOR_OMEGA: f64 = 1.7;
+
 /// Çıkış sahası — frontend `CfdField` tipine doğrudan eşleşir (camelCase).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -136,7 +153,7 @@ where
     let nu = mu / rho;
 
     // Stabilite için pseudo-zaman adımı (diffusion CFL + güvenlik katsayısı)
-    let dt_diff = 0.24 * dx.min(dy).powi(2) / nu;
+    let dt_diff = DT_DIFF_CFL * dx.min(dy).powi(2) / nu;
     let dt = dt_diff; // Re<<1 olduğundan konvektif CFL'ye gerek yok
 
     // Saha dizileri
@@ -226,15 +243,13 @@ where
         apply_velocity_bc(&mut u_star, &mut v_star);
 
         // ── 2. Basınç düzeltme Poisson: ∇²φ = (ρ/dt) ∇·u* ─────────────────────
-        // Gauss-Seidel + SOR (omega=1.7) ile in-place — Jacobi'den ~5x hızlı yakınsar.
-        // Anisotropik hücrelerde (dx ≠ dy) Poisson kondisyonu kötüdür, bol sub-iter gerekir.
+        // Gauss-Seidel + SOR ile in-place — Jacobi'den ~5x hızlı yakınsar.
+        // Anizotropik hücrelerde (dx ≠ dy) Poisson kondisyonu kötüdür, bol sub-iter gerekir.
         let mut phi = vec![0.0f64; n];
-        let k_poisson = 80;
-        let omega = 1.7;
         let dx2 = dx * dx;
         let dy2 = dy * dy;
         let denom = 2.0 * (dx2 + dy2);
-        for _ in 0..k_poisson {
+        for _ in 0..POISSON_SUB_ITERATIONS {
             for j in 1..ny - 1 {
                 for i in 1..nx - 1 {
                     let k = idx(i, j, nx);
@@ -245,7 +260,7 @@ where
                             + (phi[idx(i, j + 1, nx)] + phi[idx(i, j - 1, nx)]) * dx2
                             - rhs * dx2 * dy2;
                     let gs = num / denom;
-                    phi[k] = (1.0 - omega) * phi[k] + omega * gs;
+                    phi[k] = (1.0 - SOR_OMEGA) * phi[k] + SOR_OMEGA * gs;
                 }
             }
             apply_pressure_bc(&mut phi);
