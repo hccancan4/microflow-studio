@@ -13,7 +13,10 @@ import { RULER_SIZE } from './Ruler';
 import { TOKENS } from '../../theme/tokens';
 import type { CanvasState } from '../../types';
 
-const MAJOR_EVERY = 5; // her 5 hücrede bir kalın çizgi
+const MAJOR_EVERY = 5;            // her 5 hücrede bir kalın (major) çizgi
+const MINOR_MIN_SPACING_PX = 7;   // minor çizgiler bu ekran-px aralığının altında gizlenir
+const MINOR_FADE_RANGE_PX = 36;   // bu aralıkta minor opaklığı 0 → max'a yükselir (fade-in)
+const MINOR_MAX_OPACITY = 0.45;   // minor çizgi üst opaklık sınırı
 
 export function buildGridLines(canvas: CanvasState, width: number, height: number): React.ReactNode[] {
   const els: React.ReactNode[] = [];
@@ -25,8 +28,11 @@ export function buildGridLines(canvas: CanvasState, width: number, height: numbe
   const endY   = startY + (height - RULER_SIZE) / z + gridSize * 2;
 
   const minorSpacingPx = gridSize * z;         // minor çizgiler arası ekran-px
-  const showMinor = minorSpacingPx >= 7;       // çok sıkıysa minor'ı gizle (fade-out)
-  const minorOpacity = Math.min(0.45, Math.max(0, (minorSpacingPx - 7) / 36));
+  const showMinor = minorSpacingPx >= MINOR_MIN_SPACING_PX;  // çok sıkıysa minor'ı gizle (fade-out)
+  const minorOpacity = Math.min(
+    MINOR_MAX_OPACITY,
+    Math.max(0, (minorSpacingPx - MINOR_MIN_SPACING_PX) / MINOR_FADE_RANGE_PX),
+  );
   const swMinor = 0.5 / z;
   const swMajor = 0.9 / z;
 

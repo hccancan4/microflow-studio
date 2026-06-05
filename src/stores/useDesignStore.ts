@@ -130,8 +130,10 @@ const DEFAULT_CANVAS: CanvasState = {
   panY: 40,
 };
 
-const ZOOM_MIN = 0.02;
-const ZOOM_MAX = 20;
+// Canvas zoom clamp — tek kaynak. CanvasEditor wheel-zoom da bunları kullanır
+// (önceden inline 0.02/20 olarak tekrarlanıyordu).
+export const ZOOM_MIN = 0.02;
+export const ZOOM_MAX = 20;
 
 let _nextId = 1;
 export function generateId(prefix = 'comp'): string {

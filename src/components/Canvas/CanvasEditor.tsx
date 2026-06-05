@@ -20,7 +20,7 @@ import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Stage, Layer, Rect } from 'react-konva';
 import Konva from 'konva';
 
-import { useDesignStore, generateId, snapToGrid } from '../../stores/useDesignStore';
+import { useDesignStore, generateId, snapToGrid, ZOOM_MIN, ZOOM_MAX } from '../../stores/useDesignStore';
 import { useProjectStore } from '../../stores/useProjectStore';
 import { ComponentShape } from './shapes/ComponentShapes';
 import PortOverlay from './PortOverlay';
@@ -288,7 +288,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
       const clamped = Math.max(-50, Math.min(50, deltaY));
       const zoomFactor = Math.exp(-clamped * 0.01);
       const oldZoom = canvas.zoom;
-      const newZoom = Math.max(0.02, Math.min(20, oldZoom * zoomFactor));
+      const newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, oldZoom * zoomFactor));
       if (newZoom === oldZoom) return;
 
       const pointer = stage.getPointerPosition();
