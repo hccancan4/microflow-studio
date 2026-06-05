@@ -1,3 +1,7 @@
+//! Proje dosyası IPC komutları — kaydet / yükle / yeni.
+//!
+//! İnce adapter: `.mflow` serileştirme ve şema `crate::project` içinde.
+
 use crate::project::{MFlowProject, save_project, load_project};
 use std::path::Path;
 

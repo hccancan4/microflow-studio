@@ -1,3 +1,9 @@
+//! Lua script çalıştırma IPC komutları.
+//!
+//! İnce adapter: yorumlayıcı ve DesignAction toplama `crate::scripting` içinde.
+//! `execute_script` action'ları event olarak yayar (store ile aynı undo/redo
+//! akışına düşsün diye); `execute_script_batch` tek seferde toplu liste döndürür.
+
 use crate::scripting::{run_script_collect, ScriptResult, DesignAction};
 use tauri::Emitter;
 

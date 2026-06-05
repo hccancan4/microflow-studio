@@ -1,3 +1,10 @@
+//! Dışa aktarma IPC komutları — PNG / SVG / GDS-II.
+//!
+//! İnce adapter katmanı: gerçek render/serileştirme `crate::export` içinde.
+//! Bu komutlar frontend'ten gelen veriyi (base64 PNG, SVG string, tessellated
+//! poligon listesi) ilgili domain fonksiyonuna geçirir ve hataları kullanıcıya
+//! gösterilebilir `String`'e çevirir.
+
 use crate::export::{
     ExportOptions, export_png, save_png_from_base64, save_svg,
     GdsPolygon, GdsExportParams, save_gds,

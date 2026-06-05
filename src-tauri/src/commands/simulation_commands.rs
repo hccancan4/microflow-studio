@@ -1,3 +1,9 @@
+//! Simülasyon IPC komutları — analitik ağ/kanal + CFD.
+//!
+//! İnce adapter: çözücüler `crate::simulation` (analytic/cfd) içinde. Bu dosya
+//! frontend request DTO'larını domain tiplerine eşler ve CFD'yi bloke etmeyen
+//! bir worker thread'de (`spawn_blocking`) çalıştırıp ilerleme event'i yayar.
+
 use crate::simulation::{
     analytic::{
         RectChannel, analyze_channel, AnalyticResult,
