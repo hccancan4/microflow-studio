@@ -1,6 +1,24 @@
-import { defineConfig } from 'vite';
+import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'node:fs';
+
+// @monaco-editor/loader'ın varsayılan jsDelivr CDN string'ini son bundle'dan söker.
+// Monaco yerel instance ile yüklendiği için (bkz. ScriptEditor/monacoSetup.ts) bu
+// URL runtime'da zaten kullanılmaz; ama "offline/sıfır CDN" güvencesi için dist'te
+// iz bırakmıyoruz (string literal → zararsız yerel placeholder).
+function stripMonacoCdn(): Plugin {
+  const CDN_RE = /https:\/\/cdn\.jsdelivr\.net\/npm\/monaco-editor@[\d.]+\/min\/vs/g;
+  return {
+    name: 'strip-monaco-cdn',
+    generateBundle(_options, bundle) {
+      for (const file of Object.values(bundle)) {
+        if (file.type === 'chunk' && file.code.includes('cdn.jsdelivr.net/npm/monaco-editor')) {
+          file.code = file.code.replace(CDN_RE, '/monaco-yerel-bundle');
+        }
+      }
+    },
+  };
+}
 
 // package.json'ı import-attribute olmadan oku (assert/with sözdizimi
 // Node sürümleri arası uyumsuz; fs ile okumak her ortamda çalışır).
@@ -13,7 +31,7 @@ const host = process.env.TAURI_DEV_HOST;
 
 // https://vite.dev/config/
 export default defineConfig(async () => ({
-  plugins: [react()],
+  plugins: [react(), stripMonacoCdn()],
 
   // Uygulama versiyonu package.json'dan inject edilir (tek kaynak)
   define: {
@@ -30,7 +48,7 @@ export default defineConfig(async () => ({
           'react-vendor': ['react', 'react-dom', 'zustand'],
           'konva-vendor': ['konva', 'react-konva'],
           'recharts-vendor': ['recharts'],
-          'monaco-vendor': ['@monaco-editor/react'],
+          'monaco-vendor': ['@monaco-editor/react', 'monaco-editor'],
         },
       },
     },

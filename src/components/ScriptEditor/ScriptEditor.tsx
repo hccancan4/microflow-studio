@@ -3,6 +3,7 @@
  * Lua 5.4 sözdizimi vurgulama + Chip API otomatik tamamlama; sandbox'lı çalışma.
  */
 import React, { useState } from 'react';
+import './monacoSetup'; // Monaco'yu yerel bundle'a bağla (CDN'siz / offline)
 import Editor from '@monaco-editor/react';
 import { useProjectStore } from '../../stores/useProjectStore';
 import {
