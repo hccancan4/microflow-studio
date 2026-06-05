@@ -1,0 +1,9 @@
+dist
+node_modules
+coverage
+src-tauri/target
+package-lock.json
+# Rust kaynak: cargo fmt ile biçimlendirilir
+src-tauri
+# Dokümanlar elle biçimlendirildi (reflow istenmiyor)
+*.md

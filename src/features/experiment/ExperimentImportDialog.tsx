@@ -82,6 +82,11 @@ const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, su
   // ESC ile kapat
   useEscapeClose(open, onCancel);
 
+  // Önizleme tablosu sütunları. Hook KOŞULSUZ olmalı (erken return'den önce):
+  // kapalıyken `table` null → [] döner, sonuç yalnız açık JSX'inde kullanılır,
+  // yani görünür etki yok ama hook sırası her render'da sabit kalır.
+  const previewCols = useMemo(() => (table?.headers ?? []).slice(0, 8), [table]);
+
   if (!open) return null;
 
   const pickFile = async () => {
@@ -147,9 +152,6 @@ const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, su
     };
     onConfirm(ds);
   };
-
-  // Önizleme tablosu
-  const previewCols = useMemo(() => (table?.headers ?? []).slice(0, 8), [table]);
 
   return (
     <div

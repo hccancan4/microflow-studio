@@ -440,8 +440,9 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
   const handleMouseUp = useCallback((_e?: Konva.KonvaEventObject<MouseEvent>) => {
     // Pan bitir
     if (panModeRef.current === 'panning') {
-      panModeRef.current = panStartRef.current && /* spacebar hala basılı mı? bilemeyiz; idle'a dön */ false
-        ? 'space-held' : 'idle';
+      // Mouseup'ta spacebar'ın hâlâ basılı olup olmadığını bilemeyiz; bu yüzden
+      // her zaman idle'a döneriz (space-held durumu gerekirse keydown ile yeniden kurulur).
+      panModeRef.current = 'idle';
       panStartRef.current = null;
       // Pan biraz daha emin olunsun: bir sonraki click'i bastır
       suppressNextClickRef.current = true;
