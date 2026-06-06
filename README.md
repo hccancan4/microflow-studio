@@ -2,7 +2,7 @@
 
 Mikroakışkan çip tasarımı ve simülasyonu için profesyonel masaüstü uygulaması. [Tauri v2](https://tauri.app/) (Rust backend + React frontend), AutoCAD/Fusion 360 tarzı bir CAD ergonomisiyle inşa edildi.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tauri](https://img.shields.io/badge/tauri-v2-orange) ![Tests](https://img.shields.io/badge/tests-36%20rust%20%2B%2066%20frontend-brightgreen)
+![Version](https://img.shields.io/badge/version-1.0.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tauri](https://img.shields.io/badge/tauri-v2-orange) ![Tests](https://img.shields.io/badge/tests-36%20rust%20%2B%2072%20frontend-brightgreen)
 
 ---
 
@@ -89,7 +89,7 @@ Sürükle-bırak canvas editöründe 10 tip parametrik bileşenden mikroakışka
 
 ### Script Editörü (Lua)
 
-- Monaco-tabanlı (Lua syntax highlighting)
+- Monaco-tabanlı (Lua syntax highlighting) — **yerel bundle'dan yüklenir, CDN yok (offline)**
 - Gömülü Lua 5.4 (mlua), **sandboxed** (no os/io/debug/package)
 - `Chip` API: `Chip.new`, 10 `chip:add_*`, `chip:connect`, `chip:clear`
 - `Sweep.run` parametrik batch
@@ -199,7 +199,7 @@ Projeler `.mflow` (JSON) olarak kaydedilir. Schema için [`docs/FILE_FORMAT.md`]
 MicroFlow Studio tamamen **offline** çalışan bir desktop uygulamasıdır:
 
 - **Hiçbir telemetri** gönderilmez
-- **Hiçbir ağ çağrısı** yapılmaz (yalnız Google Fonts CSS — istersen kaldırılabilir)
+- **Hiçbir ağ çağrısı** yapılmaz — fontlar (`@fontsource` ile self-hosted IBM Plex) ve **Monaco editör tamamen yerel bundle'dan** gelir; çalışma anında hiçbir CDN'e gidilmez (build çıktısı `dist/` içinde jsDelivr/CDN URL'si yoktur)
 - **Dosya erişimi**: kullanıcının seçtiği `.mflow` / export hedef klasörüne sınırlıdır (Tauri dialog)
 - **Lua sandbox**: `os`, `io`, `debug`, `package` modülleri devre dışı (kod execution attack surface yok)
 - **CSP**: Tauri config'inde XSS karşı temel `default-src 'self'` policy
@@ -254,7 +254,7 @@ Kod tabanında gezinme için: klasör kuralları [`CONVENTIONS.md`](CONVENTIONS.
 npm run lint            # eslint (0 hata hedefi; uyarılar bilgilendirici)
 npm run format          # prettier --write
 npm run typecheck       # tsc --noEmit
-npm test                # vitest (66 karakterizasyon testi)
+npm test                # vitest (72 test: karakterizasyon + undo/redo correctness)
 
 # Rust testleri (36 test, ~2 sn) + clippy strict
 cd src-tauri && cargo test --lib

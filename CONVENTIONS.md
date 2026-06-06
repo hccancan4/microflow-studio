@@ -83,4 +83,4 @@ npm test              # vitest (karakterizasyon testleri)
 
 ## Test felsefesi
 
-Mevcut testler **karakterizasyon testleri** — ŞU ANKİ davranışı kilitler (doğru olanı değil). Refactor boyunca değişmeden geçmeli. Bilinçli bir doğruluk düzeltmesi (formül/solver) bir testi "kırarsa" o test kasıtlı güncellenir. Bilinen latent bug'lar [`BUGS.md`](BUGS.md)'de.
+Testlerin çoğu **karakterizasyon testleri** — ŞU ANKİ davranışı kilitler (doğru olanı değil). Refactor boyunca değişmeden geçmeli. Bilinçli bir doğruluk düzeltmesi (formül/solver) bir testi "kırarsa" o test kasıtlı güncellenir. Bu tam olarak undo/redo'da yaşandı: stabilizasyon turunda off-by-one düzeltildi (BUGS.md #1), undo testleri kasıtlı olarak **doğru davranış** testlerine dönüştürüldü + yeni testler eklendi. Bilinen latent bug'lar [`BUGS.md`](BUGS.md)'de.

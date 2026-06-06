@@ -130,3 +130,35 @@ All notable changes are documented here, organised by development phase.
 - Unused variable prefixes (`_comp_by_id`) to silence Rust warnings
 - TypeScript: 0 errors (`tsc --noEmit`)
 - Bundle size optimised: 3 JS chunks, 1 CSS, total ≈ 1.1 MB
+
+---
+
+## Phase 7 — UI/UX Refresh ("Laminar" design system)
+
+- "Laminar" visual language: CSS custom-property design tokens using the `rgb(var(--x-rgb) / <alpha-value>)` channel pattern (enables Tailwind opacity modifiers)
+- Self-hosted IBM Plex Sans/Mono via `@fontsource` (replaces the Google Fonts CDN — no web-font network calls)
+- `theme/tokens.ts` + `theme/componentColors.ts` as the canonical JS-side colour source (Konva/SVG cannot read CSS variables)
+- CAD-style canvas ergonomics: adaptive major/minor grid with fade-out, origin cross marker, zoom-stable strokes, cursor states
+- Status-bar zoom preset popover; refined toolbar/panel chrome
+- Start-from-template UI removed for now (`templates/starters.ts` kept for future use)
+
+---
+
+## Phase 8 — Code Organization Refactor (zero behaviour change)
+
+Pure structural/readability pass, locked by a Vitest safety net so behaviour is provably unchanged.
+
+- **Safety net**: Vitest + 66 characterization tests (pure utils + store reducers); `vitest.config.ts`
+- **Split god files** (move-only): `App.tsx` 846 → 190 (handlers extracted to `hooks/useXxx`), `ResultsPanel.tsx` 1197 → 190 (per-tab modules + `shared.tsx`), `types/index.ts` 351 → per-domain files (re-export hub kept), `CanvasEditor` grid → `canvasGrid.tsx`
+- **Feature folders**: `features/experiment/` and `features/export/` (vertical slices); explicit import paths, no barrels
+- **In-code readability**: magic numbers → documented `const` (frontend zoom limits unified store↔CanvasEditor, grid thresholds; Rust `SOR_OMEGA` / `POISSON_SUB_ITERATIONS` / `DT_DIFF_CFL` / `ASPECT_RATIO_CORRECTION` / `DEFAULT_CHANNEL_*_UM`); `//!` module docs on command files; removed unused `thiserror`
+- **Mechanization**: ESLint 9 flat config + Prettier + `eslint-config-prettier`; husky + lint-staged pre-commit gate (eslint + prettier + typecheck + test)
+- **Navigation docs**: `CONVENTIONS.md`, `docs/CODE_MAP.md`, README navigation section
+- Guardrails held at every step: tsc 0, vitest 66/66 unchanged, cargo test 36/36, clippy clean, build OK
+
+---
+
+## Phase 9 — Stabilization (intentional fixes)
+
+- **Undo/redo off-by-one fixed** (BUGS.md #1): replaced the single history array + index with an undo/redo **two-stack** model. The first action is now undoable; each undo/redo moves exactly one step; redo restores the latest state. Preserves the 50-step cap (`MAX_HISTORY`) and "compound action = single entry" (multi-move / paste / script batch). Characterization tests intentionally updated to the correct spec + 6 new tests → **72** frontend tests.
+- **Monaco offline**: the Lua editor now loads from the local `monaco-editor` bundle (`loader.config({ monaco })`) with the editor web worker bundled via Vite `?worker`; a `strip-monaco-cdn` Vite plugin removes the jsDelivr default URL from `dist/`. Lazy boundary preserved (Monaco stays in its own chunk; initial app chunk unchanged ≈ 191 kB). Zero CDN references in the build output.

@@ -29,7 +29,7 @@ Store güncellenir  ──►  ilgili panel render olur
 
 | Aradığın | Yer |
 |---|---|
-| Canvas state, zoom/pan, undo/redo | `stores/useDesignStore.ts` |
+| Canvas state, zoom/pan, undo/redo (iki-yığın: `undoStack`/`redoStack`) | `stores/useDesignStore.ts` |
 | Zoom alt/üst limiti (`ZOOM_MIN`/`ZOOM_MAX`) | `stores/useDesignStore.ts` (export edilir; CanvasEditor de kullanır) |
 | Grid çizimi (adaptif major/minor) | `components/Canvas/canvasGrid.tsx` |
 | Bileşen şekilleri (Konva) | `components/Canvas/shapes/ComponentShapes.tsx` |
@@ -40,6 +40,7 @@ Store güncellenir  ──►  ilgili panel render olur
 | Direnç modeli + kanal default geometrileri | `src-tauri/src/simulation/analytic.rs` (`ASPECT_RATIO_CORRECTION`, `DEFAULT_CHANNEL_*_UM`) |
 | `.mflow` dosya şeması | `types/project.ts` + `src-tauri/src/project/mod.rs` |
 | Tipler (domain'e bölünmüş) | `types/<domain>.ts` (`component`, `canvas`, `simulation`, `project`, `experiment`, `ui`) |
+| Monaco editör offline kurulumu (yerel bundle + worker, CDN yok) | `components/ScriptEditor/monacoSetup.ts` + `vite.config.ts` (`strip-monaco-cdn`) |
 | Bilinen latent bug'lar | [`../BUGS.md`](../BUGS.md) |
 
 ---
@@ -85,7 +86,7 @@ Store güncellenir  ──►  ilgili panel render olur
 → yükleme: `RawMFlowProject` (snake_case) → store'lara dağıtılır (design + simulation + experiment + script)
 
 ### Lua Script
-`components/ScriptEditor/ScriptEditor.tsx` → `hooks/useScriptRun.handleRunScript`
+`components/ScriptEditor/ScriptEditor.tsx` (Monaco offline: `monacoSetup.ts` `loader.config({ monaco })` + yerel worker) → `hooks/useScriptRun.handleRunScript`
 → `invoke('execute_script')`
 → `commands/script_commands.rs::execute_script`
 → `scripting/` (`run_script_collect`) → her `DesignAction` `script-action` event'i olarak yayılır
