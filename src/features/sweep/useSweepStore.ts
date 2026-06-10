@@ -24,11 +24,11 @@ export interface SweepConfig {
 
 export interface SweepRun {
   paramValue: number;
-  totalFlowRate: number;  // μL/min
+  totalFlowRate: number; // μL/min
   totalResistance: number;
-  maxPressure: number;    // Pa
-  minPressure: number;    // Pa
-  maxVelocity: number;    // m/s
+  maxPressure: number; // Pa
+  minPressure: number; // Pa
+  maxVelocity: number; // m/s
   maxReynolds: number;
   /** Hedeflenen bileşenin kendi metrikleri (varsa). */
   componentFlowRate?: number;
@@ -42,7 +42,7 @@ interface SweepState {
   config: SweepConfig | null;
   runs: SweepRun[];
   running: boolean;
-  progress: number;   // 0..1
+  progress: number; // 0..1
   currentIndex: number;
   cancelRequested: boolean;
 
@@ -72,8 +72,7 @@ export const useSweepStore = create<SweepState>()((set) => ({
       cancelRequested: false,
     }),
 
-  appendRun: (run) =>
-    set((s) => ({ runs: [...s.runs, run] })),
+  appendRun: (run) => set((s) => ({ runs: [...s.runs, run] })),
 
   setProgress: (idx, total) =>
     set({

@@ -7,7 +7,7 @@
 import React, { useState } from 'react';
 import { useSimulationStore } from '../../stores/useSimulationStore';
 import { useDesignStore } from '../../stores/useDesignStore';
-import { useSweepStore } from '../../stores/useSweepStore';
+import { useSweepStore } from '../../features/sweep/useSweepStore';
 import {
   FiActivity,
   FiAlertCircle,

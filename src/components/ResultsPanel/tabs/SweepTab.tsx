@@ -14,8 +14,8 @@ import {
   LineChart,
   Line,
 } from 'recharts';
-import { useSweepStore } from '../../../stores/useSweepStore';
-import { sweepResultsToCsv } from '../../../utils/sweepRunner';
+import { useSweepStore } from '../../../features/sweep/useSweepStore';
+import { sweepResultsToCsv } from '../../../features/sweep/sweepRunner';
 import { toast } from '../../../stores/useUiStore';
 import { TOKENS, CHART_SERIES } from '../../../theme/tokens';
 import { AXIS_TICK, TOOLTIP_STYLE } from '../shared';

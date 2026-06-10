@@ -8,7 +8,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { useSimulationStore } from '../stores/useSimulationStore';
 import { useDesignStore } from '../stores/useDesignStore';
-import { useSweepStore } from '../stores/useSweepStore';
+import { useSweepStore } from '../features/sweep/useSweepStore';
 import { toast } from '../stores/useUiStore';
 import type { ChipComponent, Connection, RawAnalyticDesignResult, CfdField } from '../types';
 

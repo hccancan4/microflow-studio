@@ -6,7 +6,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDesignStore } from '../../stores/useDesignStore';
 import { useSimulationStore } from '../../stores/useSimulationStore';
-import { useSweepStore } from '../../stores/useSweepStore';
+import { useSweepStore } from '../../features/sweep/useSweepStore';
 import { useCursorStore } from '../../stores/useCursorStore';
 import type { ChipComponent, Connection, ProjectMetadata } from '../../types';
 

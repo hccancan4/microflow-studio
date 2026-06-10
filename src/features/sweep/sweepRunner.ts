@@ -6,13 +6,8 @@
  * eklenir; UI reaktif olarak ilerlemeyi gösterir.
  */
 import { invoke } from '@tauri-apps/api/core';
-import type { ChipComponent, Connection, FluidProperties } from '../types';
-import {
-  useSweepStore,
-  buildSweepValues,
-  type SweepConfig,
-  type SweepRun,
-} from '../stores/useSweepStore';
+import type { ChipComponent, Connection, FluidProperties } from '../../types';
+import { useSweepStore, buildSweepValues, type SweepConfig, type SweepRun } from './useSweepStore';
 import { withOverriddenParam } from './sweepHelpers';
 
 export interface SweepRunnerArgs {

@@ -9,13 +9,13 @@
  */
 import React, { useMemo, useState, useEffect } from 'react';
 import { FiX, FiPlay } from 'react-icons/fi';
-import { useDesignStore } from '../stores/useDesignStore';
-import { useSimulationStore } from '../stores/useSimulationStore';
-import { useSweepStore, buildSweepValues } from '../stores/useSweepStore';
-import { componentDisplayLabel, getParamOption, getSweepableParams } from '../utils/sweepHelpers';
-import { runSweep } from '../utils/sweepRunner';
-import { useEscapeClose } from '../hooks/useEscapeClose';
-import { toast } from '../stores/useUiStore';
+import { useDesignStore } from '../../stores/useDesignStore';
+import { useSimulationStore } from '../../stores/useSimulationStore';
+import { useSweepStore, buildSweepValues } from './useSweepStore';
+import { componentDisplayLabel, getParamOption, getSweepableParams } from './sweepHelpers';
+import { runSweep } from './sweepRunner';
+import { useEscapeClose } from '../../hooks/useEscapeClose';
+import { toast } from '../../stores/useUiStore';
 
 interface Props {
   open: boolean;

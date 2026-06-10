@@ -9,7 +9,7 @@ import { useProjectStore } from '../stores/useProjectStore';
 import { useDesignStore } from '../stores/useDesignStore';
 import { useSimulationStore } from '../stores/useSimulationStore';
 import { useExperimentStore } from '../features/experiment/useExperimentStore';
-import { useSweepStore } from '../stores/useSweepStore';
+import { useSweepStore } from '../features/sweep/useSweepStore';
 import { toast, confirmAsync } from '../stores/useUiStore';
 import type { RawMFlowProject } from '../types';
 

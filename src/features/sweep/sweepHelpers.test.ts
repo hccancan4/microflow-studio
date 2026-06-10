@@ -5,8 +5,8 @@ import {
   componentDisplayLabel,
   withOverriddenParam,
 } from './sweepHelpers';
-import { buildSweepValues } from '../stores/useSweepStore';
-import type { ChipComponent } from '../types';
+import { buildSweepValues } from './useSweepStore';
+import type { ChipComponent } from '../../types';
 
 describe('buildSweepValues', () => {
   it('start ve end dahil, eşit aralıklı', () => {
