@@ -1,7 +1,7 @@
 # MicroFlow Studio — Kod Haritası
 
 "X nerede?" ve "bir kullanıcı aksiyonu uçtan uca nereden geçer?" sorularının
-yanıtı. Klasör kuralları için bkz. [`../CONVENTIONS.md`](../CONVENTIONS.md).
+yanıtı. Klasör kuralları için bkz. [`CONVENTIONS.md`](CONVENTIONS.md).
 
 ---
 
@@ -43,7 +43,7 @@ Store güncellenir  ──►  ilgili panel render olur
 | Sweep feature (dialog + store + runner + helpers) | `features/sweep/` |
 | Overlay/feedback bileşenleri (toast, progress, kısayol yardımı, lazy spinner) | `components/overlays/` |
 | Monaco editör offline kurulumu (yerel bundle + worker, CDN yok) | `components/ScriptEditor/monacoSetup.ts` + `vite.config.ts` (`strip-monaco-cdn`) |
-| Bilinen latent bug'lar | [`../BUGS.md`](../BUGS.md) |
+| Bilinen latent bug'lar | [`BUGS.md`](BUGS.md) |
 
 ---
 

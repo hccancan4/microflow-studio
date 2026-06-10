@@ -177,3 +177,4 @@ Professional repo-layout pass; behavior-neutral except one flagged fix.
 - **Rust deps pruned**: unused `uuid`, `ndarray`, `rayon` removed from Cargo.toml
 - **CI added**: GitHub Actions workflow (frontend: lint/typecheck/vitest/build; rust: clippy + cargo test with webkit deps and cache)
 - **Docs trued up**: ARCHITECTURE paths (utils → features), TESTING counts (29 → 36 Rust, phantom `test_clear` removed, 72-test frontend section added), README (CI badge, real examples tree, FORMULAS row, screenshots placeholder), stale CODE_QUALITY_REPORT deleted
+- **Root decluttered**: `.prettierrc.json` and `postcss.config.js` merged into package.json keys, `vitest.config.ts` merged into vite.config.ts `test` block; `BUGS.md` + `CONVENTIONS.md` moved under `docs/`; single-file `.vscode/` and placeholder-only `docs/images/` removed (root: 18 → 13 files)

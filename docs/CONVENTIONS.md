@@ -2,7 +2,7 @@
 
 Bu belge "şu kod nereye gider?" sorusunu yapıya bakarak yanıtlamak içindir.
 Her dosyanın **tek net sorumluluğu** olmalı; bir mühendis projeyi açınca
-gezinebilmeli. Uçtan uca akışlar için bkz. [`docs/CODE_MAP.md`](docs/CODE_MAP.md).
+gezinebilmeli. Uçtan uca akışlar için bkz. [`CODE_MAP.md`](CODE_MAP.md).
 
 ---
 

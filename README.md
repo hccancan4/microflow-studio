@@ -200,7 +200,8 @@ MicroFlow Studio tamamen **offline** çalışan bir desktop uygulamasıdır:
 
 | Dosya | İçerik |
 |---|---|
-| [`CONVENTIONS.md`](CONVENTIONS.md) | Klasör sorumlulukları, "şu şuraya gider" kuralları, isimlendirme, pattern'ler |
+| [`docs/CONVENTIONS.md`](docs/CONVENTIONS.md) | Klasör sorumlulukları, "şu şuraya gider" kuralları, isimlendirme, pattern'ler |
+| [`docs/BUGS.md`](docs/BUGS.md) | Bilinen sorun kaydı (keşif + kök neden + çözüm geçmişi) |
 | [`docs/CODE_MAP.md`](docs/CODE_MAP.md) | "X nerede?" + uçtan uca akışlar (UI → hook → IPC → Rust domain) |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Frontend/backend katman, IPC komut listesi, veri akışı |
 | [`docs/COMPONENTS.md`](docs/COMPONENTS.md) | 10 bileşen tipi, parametreler, port topoloji, direnç formülleri |
@@ -239,7 +240,7 @@ examples/
 
 ## Geliştirme Notları
 
-Kod tabanında gezinme için: klasör kuralları [`CONVENTIONS.md`](CONVENTIONS.md), "X nerede?" + akışlar [`docs/CODE_MAP.md`](docs/CODE_MAP.md).
+Kod tabanında gezinme için: klasör kuralları [`docs/CONVENTIONS.md`](docs/CONVENTIONS.md), "X nerede?" + akışlar [`docs/CODE_MAP.md`](docs/CODE_MAP.md).
 
 ```bash
 # Frontend: lint + format + tip kontrolü + testler

@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'node:fs';
@@ -36,6 +37,14 @@ export default defineConfig(async () => ({
   // Uygulama versiyonu package.json'dan inject edilir (tek kaynak)
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
+  },
+
+  // Vitest — karakterizasyon + correctness testleri saf-mantık modüllerini
+  // hedefler (DOM gerekmez); Zustand store'lar node ortamında test edilir.
+  // (Eski vitest.config.ts buraya birleştirildi — tek config dosyası.)
+  test: {
+    environment: 'node',
+    include: ['src/**/*.{test,spec}.ts'],
   },
 
   // Ağır bağımlılıkları ayrı vendor chunk'larına böl → paralel yükleme +
