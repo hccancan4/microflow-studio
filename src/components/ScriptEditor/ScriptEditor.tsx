@@ -49,7 +49,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({
     theme: 'mf-dark',
     minimap: { enabled: false },
     fontSize: 13,
-    fontFamily: "'JetBrains Mono', 'Fira Code', Consolas, monospace",
+    fontFamily: "'IBM Plex Mono', Consolas, monospace",
     lineNumbers: 'on' as const,
     scrollBeyondLastLine: false,
     wordWrap: 'on' as const,

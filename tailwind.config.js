@@ -54,7 +54,7 @@ export default {
       },
       fontFamily: {
         sans: ['"IBM Plex Sans"', 'system-ui', 'sans-serif'],
-        mono: ['"IBM Plex Mono"', 'JetBrains Mono', 'Consolas', 'monospace'],
+        mono: ['"IBM Plex Mono"', 'Consolas', 'monospace'],
       },
       fontSize: {
         // CAD-friendly skala. base'den önce daha fazla küçük adım.

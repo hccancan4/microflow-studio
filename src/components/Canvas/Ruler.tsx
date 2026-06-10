@@ -71,7 +71,7 @@ const Ruler: React.FC<RulerProps> = ({ orientation, length, zoom, pan, mousePos 
     const startUm = Math.floor(-pan / zoom / tickUm) * tickUm - tickUm;
     const endUm = startUm + length / zoom + tickUm * 2;
 
-    ctx.font = `9px JetBrains Mono, monospace`;
+    ctx.font = `9px "IBM Plex Mono", monospace`;
     ctx.fillStyle = TEXT_COLOR;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'top';
