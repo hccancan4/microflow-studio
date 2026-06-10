@@ -9,8 +9,8 @@
  */
 import React, { useEffect, useRef, useState } from 'react';
 import { FiLoader, FiCheckCircle, FiAlertTriangle } from 'react-icons/fi';
-import { useSimulationStore } from '../stores/useSimulationStore';
-import { CHART_SERIES } from '../theme/tokens';
+import { useSimulationStore } from '../../stores/useSimulationStore';
+import { CHART_SERIES } from '../../theme/tokens';
 import clsx from 'clsx';
 
 /** "İterasyon 120/800 — residual=1.2e-4" mesajından residual + iterasyon ayıkla. */

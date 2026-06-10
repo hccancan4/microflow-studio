@@ -8,8 +8,8 @@ import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { FiCheckCircle, FiAlertTriangle, FiXCircle, FiInfo, FiX } from 'react-icons/fi';
 import clsx from 'clsx';
-import { useUiStore, type Toast, type ToastKind } from '../stores/useUiStore';
-import { useEscapeClose } from '../hooks/useEscapeClose';
+import { useUiStore, type Toast, type ToastKind } from '../../stores/useUiStore';
+import { useEscapeClose } from '../../hooks/useEscapeClose';
 
 // ── Toast ─────────────────────────────────────────────────────────────────
 const KIND: Record<ToastKind, { icon: React.ReactNode; bar: string; text: string }> = {

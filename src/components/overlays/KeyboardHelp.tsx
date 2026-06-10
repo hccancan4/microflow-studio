@@ -6,7 +6,7 @@
  */
 import React from 'react';
 import { FiX } from 'react-icons/fi';
-import { useEscapeClose } from '../hooks/useEscapeClose';
+import { useEscapeClose } from '../../hooks/useEscapeClose';
 
 interface Props {
   open: boolean;

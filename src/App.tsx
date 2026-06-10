@@ -13,14 +13,14 @@ import CanvasEditor from './components/Canvas/CanvasEditor';
 const ScriptEditor = lazy(() => import('./components/ScriptEditor/ScriptEditor'));
 import ResultsPanel from './components/ResultsPanel/ResultsPanel';
 import PropertiesPanel from './components/PropertiesPanel/PropertiesPanel';
-import ProgressOverlay from './components/ProgressOverlay';
+import ProgressOverlay from './components/overlays/ProgressOverlay';
 import ExportDialog from './features/export/ExportDialog';
 import ExperimentImportDialog from './features/experiment/ExperimentImportDialog';
 import SweepDialog from './components/SweepDialog';
-import KeyboardHelp from './components/KeyboardHelp';
+import KeyboardHelp from './components/overlays/KeyboardHelp';
 import StatusBar from './components/StatusBar/StatusBar';
-import EditorLoading from './components/EditorLoading';
-import Notifications from './components/Notifications';
+import EditorLoading from './components/overlays/EditorLoading';
+import Notifications from './components/overlays/Notifications';
 import ExportRenderer from './features/export/exportRenderer';
 
 import { useProjectStore } from './stores/useProjectStore';
