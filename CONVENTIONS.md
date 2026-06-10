@@ -10,12 +10,12 @@ gezinebilmeli. Uçtan uca akışlar için bkz. [`docs/CODE_MAP.md`](docs/CODE_MA
 
 | Klasör | Sorumluluk | Örnek |
 |---|---|---|
-| `components/<Alan>/` | Görsel React bileşenleri, alana göre gruplu | `Canvas/`, `ResultsPanel/`, `Toolbar/`, `Sidebar/`, `PropertiesPanel/`, `StatusBar/`, `ScriptEditor/` |
-| `features/<özellik>/` | Kendine yeten, dikey bir özelliğin tüm parçaları (UI + store + util) | `features/experiment/`, `features/export/` |
+| `components/<Alan>/` | Görsel React bileşenleri, alana göre gruplu | `Canvas/`, `ResultsPanel/`, `Toolbar/`, `Sidebar/`, `PropertiesPanel/`, `StatusBar/`, `ScriptEditor/`, `overlays/` (toast/progress/yardım) |
+| `features/<özellik>/` | Kendine yeten, dikey bir özelliğin tüm parçaları (UI + store + util) | `features/experiment/`, `features/export/`, `features/sweep/` |
 | `hooks/` | Yeniden kullanılabilir React hook'ları; App orkestrasyonu hook'lara taşınır | `useProjectIO`, `useSimulationRun`, `useExportFlow`, `useScriptRun`, `useKeyboardShortcuts` |
-| `stores/` | Zustand global state; her store tek bir alan | `useDesignStore` (tasarım+canvas), `useSimulationStore`, `useSweepStore`, `useUiStore` |
+| `stores/` | Zustand global state; her store tek bir alan (feature'a özel store ilgili `features/` klasöründe) | `useDesignStore` (tasarım+canvas), `useSimulationStore`, `useUiStore`, `useProjectStore` |
 | `types/` | Domain'e bölünmüş TypeScript tipleri + re-export hub | `component.ts`, `canvas.ts`, `simulation.ts`, `project.ts`, `experiment.ts`, `ui.ts`, `index.ts` |
-| `utils/` | Saf, framework'süz yardımcılar (paylaşılan) | `portUtils`, `componentBbox`, `colormaps`, `sweepRunner` |
+| `utils/` | Saf, framework'süz yardımcılar (paylaşılan) | `portUtils`, `componentBbox`, `colormaps`, `componentDefaults` |
 | `theme/` | Tasarım token'ları ve renk kaynakları (JS tarafı kanonik) | `tokens.ts`, `componentColors.ts` |
 | `templates/` | "Şablondan başla" başlangıç tasarımları | `starters.ts` |
 

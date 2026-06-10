@@ -124,19 +124,24 @@ Stage coordinate system: 1 Konva unit = 1 μm, scaled by `canvas.zoom` with offs
 
 - **`useScriptDispatcher`** — listens for `script-action` and `script-completed` Tauri events; batches `DesignAction` payloads and dispatches them to `useDesignStore` methods; returns `ScriptRunStatus`.
 
-### Utilities
+### Feature modules & utilities
+
+Vertical feature slices live under `src/features/<name>/` (UI + store + utils
+co-located); shared, framework-free helpers stay in `src/utils/`.
 
 | File | Purpose |
 |---|---|
-| `utils/gdsGeometry.ts` | Generate `GdsPolygon[]` from `ChipComponent[]` (265 lines) |
-| `utils/svgExporter.ts` | Build SVG string from design; optional scale bar (249 lines) |
-| `utils/experimentMetrics.ts` | R², RMSE, per-point error map computation (110 lines) |
-| `utils/sweepRunner.ts` | Batch sweep execution loop (129 lines) |
-| `utils/csvParser.ts` | CSV text → `ExperimentDataSet` (157 lines) |
+| `features/export/gdsGeometry.ts` | Generate `GdsPolygon[]` from `ChipComponent[]` |
+| `features/export/svgExporter.ts` | Build SVG string from design; optional scale bar |
+| `features/export/exportRenderer.tsx` | Off-screen Konva `<Stage>` → base64 PNG for export |
+| `features/experiment/experimentMetrics.ts` | R², RMSE, per-point error map computation |
+| `features/experiment/csvParser.ts` | CSV/JSON text → `ExperimentDataSet` |
+| `features/sweep/sweepRunner.ts` | Batch sweep execution loop |
+| `features/sweep/sweepHelpers.ts` | Sweepable parameter catalog per component type |
 | `utils/colormaps.ts` | viridis / jet / plasma / coolwarm lookup tables |
 | `utils/componentDefaults.ts` | Default parameter values per component type |
 | `utils/portUtils.ts` | Port position calculation in component-local coordinates |
-| `utils/exportRenderer.tsx` | Off-screen Konva `<Stage>` → base64 PNG for export |
+| `utils/componentBbox.ts` | Rotation-aware bounding boxes (selection, fit-all) |
 
 ---
 

@@ -162,3 +162,18 @@ Pure structural/readability pass, locked by a Vitest safety net so behaviour is 
 
 - **Undo/redo off-by-one fixed** (BUGS.md #1): replaced the single history array + index with an undo/redo **two-stack** model. The first action is now undoable; each undo/redo moves exactly one step; redo restores the latest state. Preserves the 50-step cap (`MAX_HISTORY`) and "compound action = single entry" (multi-move / paste / script batch). Characterization tests intentionally updated to the correct spec + 6 new tests → **72** frontend tests.
 - **Monaco offline**: the Lua editor now loads from the local `monaco-editor` bundle (`loader.config({ monaco })`) with the editor web worker bundled via Vite `?worker`; a `strip-monaco-cdn` Vite plugin removes the jsDelivr default URL from `dist/`. Lazy boundary preserved (Monaco stays in its own chunk; initial app chunk unchanged ≈ 191 kB). Zero CDN references in the build output.
+
+---
+
+## Phase 10 — Repository Structure & Hygiene
+
+Professional repo-layout pass; behavior-neutral except one flagged fix.
+
+- **Lint debt**: fixed all 22 `no-unused-vars` warnings (dead constants, unused destructures, vestigial `rawText` state, an entire unused icon import block); eslint warnings 45 → 23 (remaining `any`/hooks/refresh debt documented as future work)
+- **Grouping**: loose root components → `components/overlays/` (EditorLoading, KeyboardHelp, Notifications, ProgressOverlay); scattered sweep slice → `features/sweep/` (SweepDialog + useSweepStore + sweepRunner + sweepHelpers + test), matching the experiment/export pattern
+- **Google Fonts CDN removed** (flagged fix): index.html loaded Inter + JetBrains Mono from jsDelivr-adjacent Google hosts and the CSP allowed it — contradicting the zero-network guarantee. Links removed, CSP tightened, Monaco/Ruler fonts switched to the self-hosted IBM Plex Mono (consistent online/offline)
+- **Template assets dropped**: vite.svg/tauri.svg/react.svg deleted; favicon is now the real app icon (`public/icon.png` from `src-tauri/icons`)
+- **Broken examples removed**: three root-level `.mflow` files used the pre-1.0 legacy schema (`mflow_version: 1`) and could never load; the valid examples live in `examples/projects/`
+- **Rust deps pruned**: unused `uuid`, `ndarray`, `rayon` removed from Cargo.toml
+- **CI added**: GitHub Actions workflow (frontend: lint/typecheck/vitest/build; rust: clippy + cargo test with webkit deps and cache)
+- **Docs trued up**: ARCHITECTURE paths (utils → features), TESTING counts (29 → 36 Rust, phantom `test_clear` removed, 72-test frontend section added), README (CI badge, real examples tree, FORMULAS row, screenshots placeholder), stale CODE_QUALITY_REPORT deleted

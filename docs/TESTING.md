@@ -1,12 +1,16 @@
 # MicroFlow Studio — Test Coverage
 
-All tests are Rust unit tests (`#[test]`). Run with:
+Two suites:
 
 ```bash
-cargo test --manifest-path src-tauri/Cargo.toml
+# Rust unit tests (36)
+cargo test --manifest-path src-tauri/Cargo.toml --lib
+
+# Frontend Vitest tests (72)
+npm test
 ```
 
-Total: **29 tests** across 6 files.
+## Rust — **36 tests** across 7 files
 
 ---
 
@@ -33,7 +37,7 @@ Total: **29 tests** across 6 files.
 | `test_stokes_profile_shape` | Chorin solver produces parabolic shape (centre > near-wall), zero at wall, residual history recorded |
 | `test_stokes_residual_decreases` | Solver reduces max-divergence residual by ≥ 70% over 500 iterations |
 
-## `scripting/mod.rs` — 10 tests
+## `scripting/mod.rs` — 9 tests
 
 | Test name | What it verifies |
 |---|---|
@@ -46,7 +50,6 @@ Total: **29 tests** across 6 files.
 | `test_parametric_loop` | Lua `for` loop adding 5 channels emits 5 actions |
 | `test_connect` | `chip:connect(a, b)` emits one `Connect` action |
 | `test_sweep_run` | `Sweep.run({values={1,2,3}, callback=...})` executes 3 times |
-| `test_clear` | `chip:clear()` emits `ClearDesign` action |
 
 ## `export/mod.rs` — 4 tests
 
@@ -57,7 +60,7 @@ Total: **29 tests** across 6 files.
 | `test_save_png_composite_white` | White background composite: semi-transparent red over white → opaque mixed pixel |
 | `test_save_svg_writes_file` | SVG string written to disk contains `<svg` and `rect` |
 
-## `export/gds.rs` — 5 tests
+## `export/gds.rs` — 7 tests
 
 | Test name | What it verifies |
 |---|---|
@@ -84,15 +87,30 @@ Total: **29 tests** across 6 files.
 
 ---
 
+## Frontend — **72 Vitest tests** across 8 files
+
+Discovered by `vitest.config.ts` glob `src/**/*.{test,spec}.ts` (node env);
+tests are co-located next to their source files.
+
+| Test file | Tests | What it covers |
+|---|---|---|
+| `features/experiment/csvParser.test.ts` | 16 | Delimiter auto-detect, quoting/escape, JSON row/column forms |
+| `features/experiment/experimentMetrics.test.ts` | 8 | Linear interpolation, R²/RMSE/MAPE |
+| `features/sweep/sweepHelpers.test.ts` | 9 | `buildSweepValues`, sweepable-param catalog, param override |
+| `stores/useDesignStore.test.ts` | 15 | add/connect invariants, move, rotate, **undo/redo two-stack spec** (single-step, N-step, redo-clear, boundaries, 50-cap, compound = one entry) |
+| `utils/colormaps.test.ts` | 6 | Deterministic colormap/LUT output |
+| `utils/componentBbox.test.ts` | 7 | Rotation-aware AABBs incl. serpentine |
+| `utils/portUtils.test.ts` | 6 | Port positions (serpentine!), smart routing |
+| `utils/componentDefaults.test.ts` | 5 | Default parameter sets |
+
+Most are **characterization tests** (lock current behavior); the undo/redo
+suite is a **correctness spec** (intentionally updated when the off-by-one
+bug was fixed — see BUGS.md #1).
+
 ## Untested Critical Areas
 
-The following areas currently have no automated test coverage:
-
-- **TypeScript / React components** — no Jest or Vitest tests exist; all frontend logic (store reducers, canvas interactions, export dialog) is tested manually
-- **`gdsGeometry.ts`** — polygon generation for all 10 component types; visual correctness only
-- **`svgExporter.ts`** — SVG output correctness; no snapshot tests
-- **`experimentMetrics.ts`** — R², RMSE calculations; no unit tests
-- **`sweepRunner.ts`** — batch sweep execution; no unit tests
+- **React component rendering / canvas interactions** — Konva interaction logic (drag, rubber-band, pan/zoom) is manual-smoke only
+- **`gdsGeometry.ts` / `svgExporter.ts` output** — polygon/SVG generation has no snapshot tests; visual correctness only
 - **Tauri command wiring** — `lib.rs` command registration not covered by integration tests
-- **CFD convergence at production grid sizes** — tests use small grids (20×12, 30×20) for speed; full 160×36 not covered
+- **CFD convergence at production grid sizes** — tests use small grids for speed; full 160×36 not covered
 - **Network solver with complex topologies** — only simple series and 2-branch parallel tested; multi-inlet or loop topologies not covered

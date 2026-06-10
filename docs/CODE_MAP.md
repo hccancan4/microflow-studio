@@ -40,6 +40,8 @@ Store güncellenir  ──►  ilgili panel render olur
 | Direnç modeli + kanal default geometrileri | `src-tauri/src/simulation/analytic.rs` (`ASPECT_RATIO_CORRECTION`, `DEFAULT_CHANNEL_*_UM`) |
 | `.mflow` dosya şeması | `types/project.ts` + `src-tauri/src/project/mod.rs` |
 | Tipler (domain'e bölünmüş) | `types/<domain>.ts` (`component`, `canvas`, `simulation`, `project`, `experiment`, `ui`) |
+| Sweep feature (dialog + store + runner + helpers) | `features/sweep/` |
+| Overlay/feedback bileşenleri (toast, progress, kısayol yardımı, lazy spinner) | `components/overlays/` |
 | Monaco editör offline kurulumu (yerel bundle + worker, CDN yok) | `components/ScriptEditor/monacoSetup.ts` + `vite.config.ts` (`strip-monaco-cdn`) |
 | Bilinen latent bug'lar | [`../BUGS.md`](../BUGS.md) |
 
@@ -63,7 +65,7 @@ Store güncellenir  ──►  ilgili panel render olur
 → `CfdField` → `useSimulationStore` → `components/ResultsPanel/tabs/CfdView.tsx`
 
 ### Parametre Taraması (sweep)
-`SweepDialog` → `stores/useSweepStore` + `utils/sweepRunner.ts` (her adımda analitik koşu)
+`features/sweep/SweepDialog.tsx` → `features/sweep/useSweepStore.ts` + `features/sweep/sweepRunner.ts` (her adımda analitik koşu)
 → `components/ResultsPanel/tabs/SweepTab.tsx` (canlı grafik + CSV dışa aktar)
 
 ### Dışa Aktarma (PNG / SVG / GDS-II)

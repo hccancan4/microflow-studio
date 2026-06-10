@@ -2,7 +2,7 @@
 
 Mikroakışkan çip tasarımı ve simülasyonu için profesyonel masaüstü uygulaması. [Tauri v2](https://tauri.app/) (Rust backend + React frontend), AutoCAD/Fusion 360 tarzı bir CAD ergonomisiyle inşa edildi.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tauri](https://img.shields.io/badge/tauri-v2-orange) ![Tests](https://img.shields.io/badge/tests-36%20rust%20%2B%2072%20frontend-brightgreen)
+[![CI](https://github.com/hccancan4/microflow-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/hccancan4/microflow-studio/actions/workflows/ci.yml) ![Version](https://img.shields.io/badge/version-1.0.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tauri](https://img.shields.io/badge/tauri-v2-orange) ![Tests](https://img.shields.io/badge/tests-36%20rust%20%2B%2072%20frontend-brightgreen)
 
 ---
 
@@ -12,19 +12,7 @@ Sürükle-bırak canvas editöründe 10 tip parametrik bileşenden mikroakışka
 
 ---
 
-## Ekran Görüntüleri
-
-> Görseller `docs/images/` altında. (Henüz eklenmediyse `npm run tauri dev` ile çalıştırıp çekilebilir.)
-
-| Canvas editörü | CFD ısı haritası |
-|---|---|
-| ![Canvas](docs/images/canvas.png) | ![CFD](docs/images/cfd.png) |
-
-| Sonuç panelleri | Parametre taraması |
-|---|---|
-| ![Sonuçlar](docs/images/results.png) | ![Tarama](docs/images/sweep.png) |
-
-![Lua script editörü](docs/images/script.png)
+> **Ekran görüntüleri:** henüz eklenmedi — `npm run tauri dev` ile çekilip `docs/images/` altına konacak.
 
 ---
 
@@ -217,6 +205,7 @@ MicroFlow Studio tamamen **offline** çalışan bir desktop uygulamasıdır:
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Frontend/backend katman, IPC komut listesi, veri akışı |
 | [`docs/COMPONENTS.md`](docs/COMPONENTS.md) | 10 bileşen tipi, parametreler, port topoloji, direnç formülleri |
 | [`docs/SIMULATION.md`](docs/SIMULATION.md) | Analitik ağ çözücü + CFD algoritmaları |
+| [`docs/FORMULAS.md`](docs/FORMULAS.md) | Tüm fizik formülleri (direnç, Re, Dean, karıştırma) türetimleriyle |
 | [`docs/SCRIPTING.md`](docs/SCRIPTING.md) | Lua API referansı + örnekler |
 | [`docs/FILE_FORMAT.md`](docs/FILE_FORMAT.md) | `.mflow` JSON schema, GDS-II layer stratejisi |
 | [`docs/SHORTCUTS.md`](docs/SHORTCUTS.md) | Tam klavye kısayolu tablosu |
@@ -230,17 +219,20 @@ MicroFlow Studio tamamen **offline** çalışan bir desktop uygulamasıdır:
 ```
 examples/
   data/
-    velocity_profile.csv      — 200 μm kanalda parabolik hız ölçümü
-    pressure_drop.csv         — Basınç düşümü vs debi, 5 kanal uzunluğu
-    mixing_efficiency.json    — 4 Re'de karıştırma verimi
+    velocity_profile.csv             — 200 μm kanalda parabolik hız ölçümü
+    velocity_profile_experiment.csv  — Deney import diyaloğu için örnek ölçüm
+    pressure_drop.csv                — Basınç düşümü vs debi, 5 kanal uzunluğu
+    pressure_drop_experiment.csv     — Deney import diyaloğu için örnek ölçüm
+    mixing_efficiency.json           — 4 Re'de karıştırma verimi (JSON formatı)
   scripts/
-    basic_t_junction.lua      — Chip API ile basit T-bağlantı
-    parametric_sweep.lua      — Kanal genişliği taraması
-    gradient_generator.lua    — Konsantrasyon gradiyent ağı
+    basic_t_junction.lua             — Chip API ile basit T-bağlantı
+    parametric_sweep.lua             — Kanal genişliği taraması
+    gradient_generator.lua           — Konsantrasyon gradiyent ağı
+    droplet_generator.lua            — Damla üreteci tasarımı (script ile)
+    parametric_mixer.lua             — Parametrik serpantin mikser
   projects/
-    t_junction_droplet.mflow  — Damla üreteci tasarımı
-    serpentine_mixer.mflow    — 8-dönüş serpantin mikser
-    parallel_channels.mflow   — Paralel kanal ağı
+    t_junction_basic.mflow           — Basit T-bağlantı tasarımı (uygulamada aç)
+    serpentine_mixer.mflow           — Serpantin mikser tasarımı
 ```
 
 ---
