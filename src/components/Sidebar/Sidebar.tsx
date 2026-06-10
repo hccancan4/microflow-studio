@@ -5,7 +5,6 @@
 import React, { useState } from 'react';
 import { FiChevronDown, FiChevronRight } from 'react-icons/fi';
 import type { ComponentType } from '../../types';
-import clsx from 'clsx';
 import { COMPONENT_COLORS, PORT_COLORS } from '../../theme/componentColors';
 
 // Bileşen renkleri — canvas ile birebir aynı (componentColors.ts tek kaynak)

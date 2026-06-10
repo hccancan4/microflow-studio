@@ -66,7 +66,6 @@ export function getPortInfos(comp: ChipComponent): PortInfo[] {
 
     case 't_junction': {
       const { mainWidth = 300, branchWidth = 200 } = p as TJunctionParams;
-      const halfBranch = branchWidth / 2;
       return [
         {
           index: 0,

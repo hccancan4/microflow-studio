@@ -32,7 +32,6 @@ const DATA_TYPE_LABELS: Record<DataType, string> = {
 
 const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, suggestedColor }) => {
   const [filename, setFilename] = useState<string>('');
-  const [rawText, setRawText] = useState<string | null>(null);
   const [table, setTable] = useState<ParsedTable | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -48,7 +47,6 @@ const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, su
   useEffect(() => {
     if (open) {
       setFilename('');
-      setRawText(null);
       setTable(null);
       setErr(null);
       setXCol('');
@@ -113,7 +111,6 @@ const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, su
       if (!selected || typeof selected !== 'string') return;
       const text = await readTextFile(selected);
       setFilename(selected.split(/[\\/]/).pop() ?? selected);
-      setRawText(text);
       setErr(null);
       try {
         const parsed = parseTable(text, selected);

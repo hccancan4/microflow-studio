@@ -4,10 +4,6 @@
  * Seçili bileşenler için: sil, kopyala, yapıştır, döndür, özellikler.
  */
 import React, { useEffect, useRef } from 'react';
-import {
-  FiTrash2, FiCopy, FiClipboard, FiRotateCw, FiRotateCcw,
-  FiLayers, FiMove, FiLink, FiLink2,
-} from 'react-icons/fi';
 
 export interface ContextMenuItem {
   label: string;
@@ -19,7 +15,7 @@ export interface ContextMenuItem {
 }
 
 interface ContextMenuProps {
-  x: number;         // screen px
+  x: number; // screen px
   y: number;
   items: ContextMenuItem[];
   onClose: () => void;
@@ -50,7 +46,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose }) => {
   const style: React.CSSProperties = {
     position: 'fixed',
     left: Math.min(x, window.innerWidth - 200),
-    top:  Math.min(y, window.innerHeight - items.length * 32 - 16),
+    top: Math.min(y, window.innerHeight - items.length * 32 - 16),
     zIndex: 9999,
   };
 
@@ -63,25 +59,28 @@ const ContextMenu: React.FC<ContextMenuProps> = ({ x, y, items, onClose }) => {
     >
       {items.map((item, idx) => (
         <React.Fragment key={idx}>
-          {item.divider && idx > 0 && (
-            <div className="border-t border-mf-border my-1" />
-          )}
+          {item.divider && idx > 0 && <div className="border-t border-mf-border my-1" />}
           <button
             className={`
               flex items-center gap-2.5 w-full px-3 py-1.5 text-xs text-left
               transition-colors duration-75
-              ${item.disabled
-                ? 'text-mf-text-dark cursor-not-allowed'
-                : item.danger
-                  ? 'text-mf-red hover:bg-red-900/30'
-                  : 'text-mf-text hover:bg-mf-surface hover:text-mf-blue'}
+              ${
+                item.disabled
+                  ? 'text-mf-text-dark cursor-not-allowed'
+                  : item.danger
+                    ? 'text-mf-red hover:bg-red-900/30'
+                    : 'text-mf-text hover:bg-mf-surface hover:text-mf-blue'
+              }
             `}
-            onClick={() => { if (!item.disabled) { item.onClick(); onClose(); } }}
+            onClick={() => {
+              if (!item.disabled) {
+                item.onClick();
+                onClose();
+              }
+            }}
             disabled={item.disabled}
           >
-            {item.icon && (
-              <span className="flex-shrink-0 opacity-70">{item.icon}</span>
-            )}
+            {item.icon && <span className="flex-shrink-0 opacity-70">{item.icon}</span>}
             <span>{item.label}</span>
           </button>
         </React.Fragment>

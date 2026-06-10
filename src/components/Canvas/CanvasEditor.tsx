@@ -81,12 +81,10 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
     toggleSelection,
     clearSelection,
     selectAll,
-    updateComponent,
     copySelected,
     pasteClipboard,
     duplicateSelected,
     pendingConnection,
-    startConnection,
     updateConnectionMouse,
     cancelConnection,
     updateCanvas,
@@ -461,7 +459,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
 
   // ── Stage mouse move — pan + pending bağlantı + rubber-band ──────────────
   const handleMouseMove = useCallback(
-    (e: Konva.KonvaEventObject<MouseEvent>) => {
+    (_e: Konva.KonvaEventObject<MouseEvent>) => {
       const stage = stageRef.current;
       if (!stage) return;
       const ptr = stage.getPointerPosition()!;

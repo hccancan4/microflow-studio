@@ -83,7 +83,7 @@ const CfdOverlay: React.FC<CfdOverlayProps> = ({
   opacity = 0.75,
 }) => {
   // İlgili saha dizisini seç + min/max hesapla
-  const { values, min, max, unit, label } = useMemo(() => {
+  const { values, min, max } = useMemo(() => {
     const src =
       fieldType === 'magnitude'
         ? field.magnitude

@@ -259,7 +259,6 @@ const TJunction: React.FC<BaseProps> = ({ comp, sw, selected }) => {
 const YJunction: React.FC<BaseProps> = ({ comp, sw, selected }) => {
   const { mainWidth = 300, branchWidth = 200, branchAngle = 45 } = comp.params as YJunctionParams;
   const c = selected ? COLORS.selected : COLORS.junction;
-  const rad = (branchAngle * Math.PI) / 180;
   const armLen = mainWidth * 5;
 
   // Basit 3 dikdörtgen kollu Y şekli
@@ -530,7 +529,7 @@ const ReservoirShape: React.FC<BaseProps> = ({ comp, sw, selected }) => {
   );
 };
 
-const FallbackShape: React.FC<{ comp: ChipComponent; sw: number }> = ({ comp, sw }) => (
+const FallbackShape: React.FC<{ comp: ChipComponent; sw: number }> = ({ sw }) => (
   <Rect
     x={-300}
     y={-200}

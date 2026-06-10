@@ -22,7 +22,6 @@ const PREFERS_REDUCED_MOTION =
 const PORT_R_SCREEN_PX = 9; // port overlay dairesi ekran boyutu (piksel)
 const PORT_R_MAX_UM = 120; // çok uzak zoom'da port overlay dünya-uzayı üst sınırı (μm)
 const PORT_R_MIN_UM = 4; // çok yakın zoom'da port overlay dünya-uzayı alt sınırı (μm)
-const SNAP_DISTANCE = 400; // μm — bu mesafe içindeyse snap
 
 interface PortOverlayProps {
   components: ChipComponent[];
@@ -48,8 +47,7 @@ const PortOverlay: React.FC<PortOverlayProps> = ({
   onConnectionContextMenu,
   layer = 'above',
 }) => {
-  const { startConnection, cancelConnection, addConnection, updateConnectionMouse } =
-    useDesignStore();
+  const { startConnection, cancelConnection, addConnection } = useDesignStore();
   const [hoveredPort, setHoveredPort] = useState<string | null>(null);
   const [compatWarning, setCompatWarning] = useState<string | null>(null);
 
@@ -69,8 +67,8 @@ const PortOverlay: React.FC<PortOverlayProps> = ({
       const fromComp = components.find((c) => c.id === pendingConnection.fromComponentId);
       if (!fromComp || compId === pendingConnection.fromComponentId) return;
 
-      // Uyumluluk kontrolü
-      const { compatible, warning } = checkPortCompatibility(
+      // Uyumluluk kontrolü (yalnız uyarı metni kullanılır; engelleme handlePortClick'te)
+      const { warning } = checkPortCompatibility(
         pendingConnection
           ? getPortDiameter(
               pendingConnection.fromComponentId,
