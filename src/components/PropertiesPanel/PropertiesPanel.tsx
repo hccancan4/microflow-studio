@@ -4,6 +4,8 @@
 import React from 'react';
 import { useDesignStore } from '../../stores/useDesignStore';
 import { useSimulationStore, FLUID_PRESETS } from '../../stores/useSimulationStore';
+import { paToMbar, widthBelowFabLimit, W_FAB_MIN_UM } from '../../utils/fab';
+import type { FluidPreset } from '../../types';
 import clsx from 'clsx';
 
 interface PropertiesPanelProps {
@@ -186,6 +188,15 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ width }) => {
                   />
                 );
               })}
+              {/* Üretilebilirlik uyarısı (fab-check) */}
+              {widthBelowFabLimit(
+                selectedComponent.params as unknown as Record<string, unknown>,
+              ) && (
+                <div className="mt-1.5 px-2 py-1.5 text-2xs leading-relaxed rounded-sm border border-mf-orange/40 bg-mf-orange/10 text-mf-orange">
+                  ⚠ Üretim limiti: kanal genişliği ≥ {W_FAB_MIN_UM} µm olmalı. Daha dar kanallar
+                  standart fabrikasyonda güvenilir üretilemez.
+                </div>
+              )}
             </PropSection>
 
             {/* Etiket */}
@@ -217,7 +228,7 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ width }) => {
               className="mf-input text-xs"
               value={params.fluid}
               onChange={(e) => {
-                const fluid = e.target.value as 'water' | 'pdms' | 'oil';
+                const fluid = e.target.value as FluidPreset;
                 setParams({ fluid, fluidProperties: FLUID_PRESETS[fluid] });
               }}
             >
@@ -246,6 +257,10 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ width }) => {
               <span className="absolute right-2 top-1/2 -translate-y-1/2 text-2xs text-mf-text-dark pointer-events-none font-mono">
                 Pa
               </span>
+            </div>
+            {/* İkincil mbar gösterimi (1 mbar = 100 Pa) */}
+            <div className="mt-0.5 text-2xs text-mf-text-dark font-mono text-right">
+              = {paToMbar(params.inletPressure ?? 1000).toFixed(2)} mbar
             </div>
           </div>
 

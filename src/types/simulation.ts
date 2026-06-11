@@ -4,7 +4,7 @@
 
 export type SimulationMode = 'analytic' | 'cfd';
 export type SimulationStatus = 'idle' | 'running' | 'completed' | 'error';
-export type FluidPreset = 'water' | 'pdms' | 'oil';
+export type FluidPreset = 'water' | 'pbs' | 'plasma' | 'etanol' | 'gliserol50' | 'pdms' | 'oil';
 export type GridResolution = 'coarse' | 'medium' | 'fine';
 export type ColormapType = 'jet' | 'viridis' | 'plasma' | 'coolwarm';
 

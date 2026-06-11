@@ -15,9 +15,14 @@ export interface RunRequest {
   resolution?: GridResolution;
 }
 
-// Akışkan ön tanımları
+// Akışkan ön tanımları — Rust aynası: src-tauri/src/simulation/hydraulic.rs
+// fluid_by_key (anahtarlar + µ/ρ değerleri bire bir senkron; birlikte güncelle).
 export const FLUID_PRESETS: Record<string, FluidProperties> = {
-  water: { name: 'Su', viscosity: 0.001, density: 1000 },
+  water: { name: 'Su (DI)', viscosity: 0.001, density: 1000 },
+  pbs: { name: 'PBS tamponu', viscosity: 0.00102, density: 1005 },
+  plasma: { name: 'Kan plazması', viscosity: 0.0015, density: 1025 },
+  etanol: { name: 'Etanol', viscosity: 0.0011, density: 789 },
+  gliserol50: { name: 'Gliserol %50', viscosity: 0.006, density: 1126 },
   pdms: { name: 'PDMS (silikon yağı)', viscosity: 0.097, density: 970 },
   oil: { name: 'Mineral yağ', viscosity: 0.03, density: 860 },
 };
