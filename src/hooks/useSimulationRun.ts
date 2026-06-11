@@ -78,6 +78,11 @@ export function useSimulationRun(components: ChipComponent[], connections: Conne
         })),
         networkPaths: res.paths ?? [],
         velocityProfiles: res.profiles ?? [],
+        outletFlows: (res.outlet_flows ?? []).map((o) => ({
+          outletId: o.outlet_id ?? '',
+          label: o.label ?? undefined,
+          flowRate: safeNum(o.flow_rate),
+        })),
         summary: {
           maxVelocity: safeNum(res.max_velocity),
           minPressure: safeNum(res.min_pressure),

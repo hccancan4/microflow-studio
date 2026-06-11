@@ -9,7 +9,7 @@ mod scripting;
 
 use commands::{
     project_commands::{save_project_file, load_project_file, new_project},
-    simulation_commands::{run_analytic_simulation, run_analytic_network, run_cfd_simulation},
+    simulation_commands::{run_analytic_simulation, run_analytic_network, run_cfd_simulation, solve_targets},
     export_commands::{export_as_png, export_png_data, export_svg, export_gds_file},
     script_commands::{execute_script, execute_script_batch},
 };
@@ -31,6 +31,7 @@ pub fn run() {
             run_analytic_simulation,
             run_analytic_network,
             run_cfd_simulation,
+            solve_targets,
             // Dışa aktarma
             export_as_png,
             export_png_data,

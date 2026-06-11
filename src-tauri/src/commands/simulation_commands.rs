@@ -10,6 +10,7 @@ use crate::simulation::{
         analyze_design, AnalyticDesignResult, DesignComponent, DesignConnection,
     },
     cfd::{CfdParams, CfdField, solve_stokes_2d},
+    hydraulic::{self, BranchSpec, FeedSpec, TargetSpec},
     FluidProperties,
 };
 use serde::{Deserialize, Serialize};
@@ -66,6 +67,37 @@ pub fn run_analytic_network(req: AnalyticNetworkRequest) -> Result<AnalyticDesig
         req.inlet_pressure,
         &fluid,
     ))
+}
+
+/// Hedef debilerden dal dirençleri/uzunlukları (inverse design çekirdeği).
+/// Oto-Tasarım ve Doğrulama raporu aynı komutu kullanır (tek hidrolik çekirdek).
+#[derive(Debug, Deserialize)]
+pub struct SolveTargetsRequest {
+    pub p_in_pa: f64,
+    pub fluid_viscosity: f64,
+    pub fluid_density: f64,
+    pub w_um: f64,
+    pub h_um: f64,
+    pub cell_mm: Option<f64>,
+    pub feed: Option<FeedSpec>,
+    pub targets: Vec<TargetSpec>,
+}
+
+#[tauri::command]
+pub fn solve_targets(req: SolveTargetsRequest) -> Result<Vec<BranchSpec>, String> {
+    let fluid = FluidProperties {
+        viscosity: req.fluid_viscosity,
+        density: req.fluid_density,
+    };
+    hydraulic::solve_targets(
+        req.p_in_pa,
+        &fluid,
+        req.w_um,
+        req.h_um,
+        req.cell_mm,
+        req.feed.as_ref(),
+        &req.targets,
+    )
 }
 
 /// Analitik simülasyon — tek kanal (geriye dönük uyum)

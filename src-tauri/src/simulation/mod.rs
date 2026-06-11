@@ -6,6 +6,7 @@
 
 pub mod analytic;
 pub mod cfd;
+pub mod hydraulic;
 
 use serde::{Deserialize, Serialize};
 

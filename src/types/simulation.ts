@@ -70,6 +70,20 @@ export interface RawAnalyticResult {
   mixing_efficiency?: number;
 }
 
+/** Rust'tan gelen ham çıkış-başına debi (snake_case) */
+export interface RawOutletFlow {
+  outlet_id: string;
+  label?: string | null;
+  flow_rate: number;
+}
+
+/** Çıkış portu başına fiili debi — Doğrulama sekmesinin veri kaynağı */
+export interface OutletFlow {
+  outletId: string;
+  label?: string;
+  flowRate: number; // μL/min
+}
+
 /** Rust analyze_design ham çıktısı (invoke<> için) */
 export interface RawAnalyticDesignResult {
   results: RawAnalyticResult[];
@@ -80,6 +94,7 @@ export interface RawAnalyticDesignResult {
   min_pressure: number;
   paths: PathInfo[];
   profiles: VelocityProfile[];
+  outlet_flows?: RawOutletFlow[];
 }
 
 /** Frontend'in kullandığı camelCase analitik sonuç (RawAnalyticDesignResult'tan türetilir) */
@@ -121,6 +136,8 @@ export interface SimulationResult {
   networkPaths?: PathInfo[];
   /** Her bileşen için parabolik hız profili */
   velocityProfiles?: VelocityProfile[];
+  /** Çıkış portu başına fiili debi (Doğrulama sekmesi) */
+  outletFlows?: OutletFlow[];
   summary: {
     maxVelocity: number; // m/s
     minPressure: number; // Pa

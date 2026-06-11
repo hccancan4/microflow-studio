@@ -141,6 +141,9 @@ pub struct DesignComponent {
     pub component_type: String,
     #[serde(default)]
     pub params: serde_json::Value,
+    /// Kullanıcı etiketi (outlet adlandırma — doğrulama tablosu için).
+    #[serde(default)]
+    pub label: Option<String>,
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -558,6 +561,26 @@ pub fn analyze_design(
         r.mixing_efficiency = r.mixing_efficiency.map(finite_or_zero);
     }
 
+    // Çıkış başına fiili debi: her yolun son bileşeni outlet'tir; aynı
+    // outlet'e düşen paralel yolların debileri toplanır (doğrulama tablosu).
+    let label_by_id: HashMap<&str, &Option<String>> =
+        components.iter().map(|c| (c.id.as_str(), &c.label)).collect();
+    let mut outlet_acc: HashMap<String, f64> = HashMap::new();
+    for p in &paths_info {
+        if let Some(last) = p.components.last() {
+            *outlet_acc.entry(last.clone()).or_insert(0.0) += p.flow_rate;
+        }
+    }
+    let mut outlet_flows: Vec<OutletFlow> = outlet_acc
+        .into_iter()
+        .map(|(outlet_id, q)| OutletFlow {
+            label: label_by_id.get(outlet_id.as_str()).cloned().cloned().flatten(),
+            outlet_id,
+            flow_rate: finite_or_zero(q),
+        })
+        .collect();
+    outlet_flows.sort_by(|a, b| a.outlet_id.cmp(&b.outlet_id));
+
     AnalyticDesignResult {
         results: out,
         total_flow_rate:  finite_or_zero(total_flow_ul_min),
@@ -567,6 +590,7 @@ pub fn analyze_design(
         min_pressure:     finite_or_zero(min_p),
         paths: paths_info,
         profiles,
+        outlet_flows,
     }
 }
 
@@ -581,6 +605,18 @@ pub struct AnalyticDesignResult {
     pub min_pressure: f64,      // Pa
     pub paths: Vec<PathInfo>,
     pub profiles: Vec<VelocityProfile>,
+    /// Çıkış portu başına fiili debi — doğrulama tablosunun veri kaynağı.
+    /// (Eski kayıtlarla uyum için deserialize'da varsayılan boş.)
+    #[serde(default)]
+    pub outlet_flows: Vec<OutletFlow>,
+}
+
+/// Tek bir çıkış (outlet port) üzerinden geçen toplam debi.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OutletFlow {
+    pub outlet_id: String,
+    pub label: Option<String>,
+    pub flow_rate: f64, // μL/min
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -674,7 +710,7 @@ mod tests {
     // ── Ağ analizi testleri ─────────────────────────────────────────────
 
     fn make_comp(id: &str, ty: &str, params: serde_json::Value) -> DesignComponent {
-        DesignComponent { id: id.into(), component_type: ty.into(), params }
+        DesignComponent { id: id.into(), component_type: ty.into(), params, label: None }
     }
     fn make_conn(id: &str, a: &str, b: &str) -> DesignConnection {
         DesignConnection {
@@ -724,6 +760,34 @@ mod tests {
         let ch2 = r.results.iter().find(|x| x.component_id == "ch2").unwrap();
         assert!((ch1.flow_rate - ch2.flow_rate).abs() < 1e-9, "simetrik debi");
         assert!(r.total_flow_rate > ch1.flow_rate, "toplam > tek dal");
+    }
+
+    #[test]
+    fn test_outlet_flows_two_outlets() {
+        // in → ch1 → out1  ve  in → ch2 → out2 (farklı dirençli iki dal)
+        let mut out2 = make_comp("out2", "port", serde_json::json!({"portType": "outlet"}));
+        out2.label = Some("ÇIKIŞ 2".into());
+        let comps = vec![
+            make_comp("in", "port", serde_json::json!({"portType": "inlet"})),
+            make_comp("ch1", "straight_channel", serde_json::json!({"width": 200, "depth": 50, "length": 5000})),
+            make_comp("ch2", "straight_channel", serde_json::json!({"width": 200, "depth": 50, "length": 10000})),
+            make_comp("out1", "port", serde_json::json!({"portType": "outlet"})),
+            out2,
+        ];
+        let conns = vec![
+            make_conn("a", "in", "ch1"), make_conn("b", "ch1", "out1"),
+            make_conn("c", "in", "ch2"), make_conn("d", "ch2", "out2"),
+        ];
+        let r = analyze_design(&comps, &conns, 1000.0, &FluidProperties::water());
+        assert_eq!(r.outlet_flows.len(), 2, "iki çıkış akışı bekleniyor");
+        let sum: f64 = r.outlet_flows.iter().map(|o| o.flow_rate).sum();
+        assert!((sum - r.total_flow_rate).abs() / r.total_flow_rate < 1e-9,
+            "Σ outlet = toplam debi: {sum} vs {}", r.total_flow_rate);
+        // Kısa kanal (düşük R) daha çok akıtır
+        let o1 = r.outlet_flows.iter().find(|o| o.outlet_id == "out1").unwrap();
+        let o2 = r.outlet_flows.iter().find(|o| o.outlet_id == "out2").unwrap();
+        assert!(o1.flow_rate > o2.flow_rate);
+        assert_eq!(o2.label.as_deref(), Some("ÇIKIŞ 2"));
     }
 
     #[test]
