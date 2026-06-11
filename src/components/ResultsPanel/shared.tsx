@@ -31,7 +31,8 @@ export const MetricCard: React.FC<{
   );
 };
 
-export const MiniMetric: React.FC<{
+// Modül-içi: yalnız MetricsCard kullanıyor (dışarıdan import eden yok).
+const MiniMetric: React.FC<{
   label: string;
   value: string;
   color: 'blue' | 'green' | 'orange';

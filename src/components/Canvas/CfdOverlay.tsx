@@ -104,14 +104,7 @@ const CfdOverlay: React.FC<CfdOverlayProps> = ({
       mx = 1;
     }
     if (mx - mn < 1e-12) mx = mn + 1e-12;
-    return {
-      values: src,
-      min: mn,
-      max: mx,
-      unit: fieldType === 'pressure' ? 'Pa' : fieldType === 'wallShear' ? 'Pa' : 'm/s',
-      label:
-        fieldType === 'pressure' ? 'Basınç' : fieldType === 'wallShear' ? 'Duvar kesme' : '|v|',
-    };
+    return { values: src, min: mn, max: mx };
   }, [field, fieldType]);
 
   // Offscreen canvas → renk haritalı bitmap
@@ -184,6 +177,3 @@ export default React.memo(
     prev.colormap === next.colormap &&
     prev.opacity === next.opacity,
 );
-
-/** Overlay konumunu hesaplama yardımcısı — CanvasEditor dışında da kullanışlı */
-export { getComponentBbox };

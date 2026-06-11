@@ -117,7 +117,6 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
 
   // Sürükleme takibi: drag başlangıcında seçili bileşenlerin pozisyonları
   const dragStartPositions = useRef<Map<string, { x: number; y: number }>>(new Map());
-  const isDraggingSelection = useRef(false);
   const isRubberBanding = useRef(false);
 
   // ─── Pan state (spacebar / orta tık) ──────────────────────────────────────
@@ -724,7 +723,6 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
   const handleCompDragStart = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>, id: string) => {
       e.cancelBubble = true;
-      isDraggingSelection.current = true;
 
       // Sürüklenen seçili değilse seç
       if (!selectedIds.includes(id)) setSelected([id]);
@@ -807,7 +805,6 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
   const handleCompDragEnd = useCallback(
     (e: Konva.KonvaEventObject<DragEvent>, id: string) => {
       e.cancelBubble = true;
-      isDraggingSelection.current = false;
 
       const group = e.target as Konva.Group;
       const finalX = maybeSnap(group.x());

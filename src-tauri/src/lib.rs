@@ -2,7 +2,6 @@
 // Tauri v2 ile mikroakışkan çip tasarım ve simülasyon platformu
 
 mod commands;
-mod geometry;
 mod simulation;
 mod export;
 mod project;

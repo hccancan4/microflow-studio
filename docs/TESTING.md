@@ -3,14 +3,14 @@
 Two suites:
 
 ```bash
-# Rust unit tests (36)
+# Rust unit tests (34)
 cargo test --manifest-path src-tauri/Cargo.toml --lib
 
 # Frontend Vitest tests (72)
 npm test
 ```
 
-## Rust — **36 tests** across 7 files
+## Rust — **34 tests** across 6 files
 
 ---
 
@@ -71,13 +71,6 @@ npm test
 | `write_gds_basic_structure` | Output starts with correct HEADER record; ends with ENDLIB; contains a BOUNDARY record |
 | `save_gds_writes_file` | `save_gds()` creates a non-empty file with correct GDS-II header signature |
 | `cursor_smoke` | Import smoke test for `std::io::Cursor` |
-
-## `geometry/mod.rs` — 2 tests
-
-| Test name | What it verifies |
-|---|---|
-| `test_bounding_box` | Bounding box of a point set matches expected min/max |
-| `test_arc_points` | `arc_points(...)` returns the expected number of interpolation points |
 
 ## `project/mod.rs` — 1 test
 
