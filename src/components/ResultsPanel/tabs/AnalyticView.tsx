@@ -32,7 +32,14 @@ import type {
   ExperimentDataSet,
 } from '../../../types';
 
-export type TabKey = 'summary' | 'components' | 'charts' | 'profile' | 'experiment' | 'sweep';
+export type TabKey =
+  | 'summary'
+  | 'components'
+  | 'charts'
+  | 'profile'
+  | 'experiment'
+  | 'validation'
+  | 'sweep';
 
 export const AnalyticView: React.FC<{
   result: SimulationResult;

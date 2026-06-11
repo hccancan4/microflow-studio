@@ -17,12 +17,14 @@ import {
   FiBarChart2,
   FiDatabase,
   FiSliders,
+  FiTarget,
 } from 'react-icons/fi';
 import type { ColormapType } from '../../types';
 import { ToggleChip, TabBtn } from './shared';
 import { AnalyticView, type TabKey } from './tabs/AnalyticView';
 import { CfdView } from './tabs/CfdView';
 import { SweepTab } from './tabs/SweepTab';
+import { ValidationTab } from './tabs/ValidationTab';
 
 interface ResultsPanelProps {
   height: number;
@@ -161,6 +163,13 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ height }) => {
             >
               Deney
             </TabBtn>
+            <TabBtn
+              active={tab === 'validation'}
+              onClick={() => setTab('validation')}
+              icon={<FiTarget size={10} />}
+            >
+              Doğrulama
+            </TabBtn>
             {/* Tarama grubu */}
             {sweepHasData && (
               <>
@@ -236,8 +245,20 @@ const ResultsPanel: React.FC<ResultsPanelProps> = ({ height }) => {
           </div>
         )}
 
-        {status === 'completed' && result && isAnalytic && tab !== 'sweep' && (
-          <AnalyticView result={result} tab={tab} selectedIds={selectedIds} />
+        {status === 'completed' &&
+          result &&
+          isAnalytic &&
+          tab !== 'sweep' &&
+          tab !== 'validation' && (
+            <AnalyticView result={result} tab={tab} selectedIds={selectedIds} />
+          )}
+
+        {/* Doğrulama — hedef-vs-fiili debi tablosu (mf.set_target_flow / Oto-Tasarım) */}
+        {status === 'completed' && result && isAnalytic && tab === 'validation' && (
+          <ValidationTab
+            outletFlows={result.outletFlows ?? []}
+            totalFlow={result.summary.totalFlowRate}
+          />
         )}
 
         {status === 'completed' && result?.mode === 'cfd' && result.cfdField && tab !== 'sweep' && (
