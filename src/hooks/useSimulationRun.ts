@@ -182,5 +182,28 @@ export function useSimulationRun(components: ChipComponent[], connections: Conne
     }
   }, [components, params, reset, setStatus, setProgress, setResult, setError]);
 
+  // ── Script run kuyruğu tüketicisi ─────────────────────────────────────────
+  // mf.run_quick() / mf.run_cfd() action'ları dispatcher tarafından kuyruğa
+  // alınır; burada status müsait olunca sırayla işlenir. `status` da bağımlılık:
+  // koşu bitince ('completed') effect yeniden çalışır → kuyruktaki sıradaki
+  // istek (ör. quick → cfd) otomatik devam eder.
+  const queueLen = useSimulationStore((s) => s.runQueue.length);
+  const status = useSimulationStore((s) => s.status);
+  useEffect(() => {
+    if (queueLen === 0) return;
+    if (useSimulationStore.getState().status === 'running') return;
+    if (useSweepStore.getState().running) return;
+    const req = useSimulationStore.getState().dequeueRun();
+    if (!req) return;
+    if (req.mode === 'cfd') {
+      if (req.resolution) {
+        useSimulationStore.getState().setParams({ gridResolution: req.resolution });
+      }
+      void handleRunCfd();
+    } else {
+      void handleRunAnalytic();
+    }
+  }, [queueLen, status, handleRunAnalytic, handleRunCfd]);
+
   return { handleRunAnalytic, handleRunCfd };
 }

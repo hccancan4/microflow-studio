@@ -38,8 +38,7 @@ pub const SERPENTINE_LEN_FACTOR: f64 = 2.0 + std::f64::consts::FRAC_PI_2;
 // Not: water ρ=1000 (spec 998 der; R'yi etkilemez, Re'de %0.2 — FORMULAS.md).
 
 /// `key` → (kanonik anahtar, akışkan). Türkçe alias'lar çözülür.
-// TODO(C2): mf.set_fluid Lua doğrulaması bu fonksiyonu kullanacak; o commit'te allow kalkar.
-#[allow(dead_code)]
+/// `mf.set_fluid` Lua doğrulaması ve testler kullanır.
 pub fn fluid_by_key(key: &str) -> Option<(&'static str, FluidProperties)> {
     let canonical = match key.trim().to_lowercase().as_str() {
         "su" | "water" => "water",

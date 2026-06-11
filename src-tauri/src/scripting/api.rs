@@ -398,7 +398,7 @@ pub fn register_sweep_api(lua: &Lua, _ctx: ScriptContext) -> LuaResult<()> {
 use std::sync::atomic::{AtomicU64, Ordering};
 static ID_COUNTER: AtomicU64 = AtomicU64::new(1);
 
-fn gen_id(prefix: &str) -> String {
+pub(super) fn gen_id(prefix: &str) -> String {
     let n = ID_COUNTER.fetch_add(1, Ordering::SeqCst);
     let ts = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -408,7 +408,7 @@ fn gen_id(prefix: &str) -> String {
 }
 
 /// Lua'dan gelen port referansı: ya `PortRef`, ya da `{component_id, port_index}` tablosu
-fn port_from_value(v: &Value) -> LuaResult<(String, u32)> {
+pub(super) fn port_from_value(v: &Value) -> LuaResult<(String, u32)> {
     match v {
         Value::UserData(ud) => {
             // PortRef veya ComponentRef olabilir (ComponentRef'ten otomatik output al)

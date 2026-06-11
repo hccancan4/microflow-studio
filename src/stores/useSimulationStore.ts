@@ -5,7 +5,15 @@ import type {
   SimulationStatus,
   FluidProperties,
   ColormapType,
+  GridResolution,
 } from '../types';
+
+/** Script (mf.run_quick / mf.run_cfd) tarafından kuyruklanan koşu isteği.
+ *  useSimulationRun içindeki tüketici effect, status müsait olunca işler. */
+export interface RunRequest {
+  mode: 'analytic' | 'cfd';
+  resolution?: GridResolution;
+}
 
 // Akışkan ön tanımları
 export const FLUID_PRESETS: Record<string, FluidProperties> = {
@@ -17,7 +25,7 @@ export const FLUID_PRESETS: Record<string, FluidProperties> = {
 interface SimulationState {
   params: SimulationParams;
   status: SimulationStatus;
-  progress: number;       // 0-100
+  progress: number; // 0-100
   progressMessage: string;
   result: SimulationResult | null;
   error: string | null;
@@ -33,9 +41,14 @@ interface SimulationState {
   showStreamlines: boolean;
   showWallShear: boolean;
 
+  /** Bekleyen script koşu istekleri (FIFO) */
+  runQueue: RunRequest[];
+
   // Eylemler
   setParams: (params: Partial<SimulationParams>) => void;
   setStatus: (status: SimulationStatus) => void;
+  enqueueRun: (req: RunRequest) => void;
+  dequeueRun: () => RunRequest | undefined;
   setProgress: (progress: number, message?: string) => void;
   setResult: (result: SimulationResult) => void;
   setError: (error: string | null) => void;
@@ -59,8 +72,9 @@ const DEFAULT_PARAMS: SimulationParams = {
   maxIterations: 500,
 };
 
-export const useSimulationStore = create<SimulationState>()((set) => ({
+export const useSimulationStore = create<SimulationState>()((set, get) => ({
   params: DEFAULT_PARAMS,
+  runQueue: [],
   status: 'idle',
   progress: 0,
   progressMessage: '',
@@ -82,14 +96,18 @@ export const useSimulationStore = create<SimulationState>()((set) => ({
 
   setStatus: (status) => set({ status }),
 
-  setProgress: (progress, message) =>
-    set({ progress, progressMessage: message ?? '' }),
+  enqueueRun: (req) => set((s) => ({ runQueue: [...s.runQueue, req] })),
+  dequeueRun: () => {
+    const [head, ...rest] = get().runQueue;
+    if (head) set({ runQueue: rest });
+    return head;
+  },
 
-  setResult: (result) =>
-    set({ result, status: 'completed', progress: 100 }),
+  setProgress: (progress, message) => set({ progress, progressMessage: message ?? '' }),
 
-  setError: (error) =>
-    set({ error, status: 'error' }),
+  setResult: (result) => set({ result, status: 'completed', progress: 100 }),
+
+  setError: (error) => set({ error, status: 'error' }),
 
   reset: () =>
     set({
@@ -103,12 +121,8 @@ export const useSimulationStore = create<SimulationState>()((set) => ({
   setColormap: (colormap) => set({ colormap }),
   setCfdFieldType: (cfdFieldType) => set({ cfdFieldType }),
   setCfdTargetComponentId: (cfdTargetComponentId) => set({ cfdTargetComponentId }),
-  toggleVelocityField: () =>
-    set((s) => ({ showVelocityField: !s.showVelocityField })),
-  togglePressureField: () =>
-    set((s) => ({ showPressureField: !s.showPressureField })),
-  toggleStreamlines: () =>
-    set((s) => ({ showStreamlines: !s.showStreamlines })),
-  toggleWallShear: () =>
-    set((s) => ({ showWallShear: !s.showWallShear })),
+  toggleVelocityField: () => set((s) => ({ showVelocityField: !s.showVelocityField })),
+  togglePressureField: () => set((s) => ({ showPressureField: !s.showPressureField })),
+  toggleStreamlines: () => set((s) => ({ showStreamlines: !s.showStreamlines })),
+  toggleWallShear: () => set((s) => ({ showWallShear: !s.showWallShear })),
 }));

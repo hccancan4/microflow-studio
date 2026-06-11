@@ -9,8 +9,6 @@ import { useProjectStore } from '../stores/useProjectStore';
 import { useScriptDispatcher, type ScriptRunStatus } from './useScriptDispatcher';
 
 export function useScriptRun() {
-  const scriptContent = useProjectStore((s) => s.scriptContent);
-
   // Son koşudan gelen çıktı/hata/istatistik
   const [scriptStatus, setScriptStatus] = useState<ScriptRunStatus>({
     running: false,
@@ -30,32 +28,44 @@ export function useScriptRun() {
     }
   });
 
-  // Script çalıştırma — Lua → DesignAction event'leri → store
-  const handleRunScript = useCallback(async () => {
-    // Önceki koşunun output/hata bilgisini temizle, buffer'ı sıfırla
-    setScriptOutputLog('');
-    setScriptStatus({
-      running: true,
-      lastOutput: '',
-      lastError: null,
-      lastActionCount: 0,
-      lastElapsedMs: 0,
-    });
-    scriptDispatcher.reset();
-    try {
-      // Tauri tarafı script-action + script-completed event'leri emit edecek;
-      // useScriptDispatcher bunları buffer'layıp tek batch olarak store'a yazar.
-      await invoke<void>('execute_script', { script: scriptContent });
-    } catch (err) {
+  /**
+   * Script çalıştır — Lua → DesignAction event'leri → store.
+   * `code` verilirse o çalışır (asistan/şablon/oto-tasarım üretimi);
+   * verilmezse Script sekmesindeki güncel içerik (`getState` ile okunur —
+   * stale closure yok).
+   */
+  const runScript = useCallback(
+    async (code?: string) => {
+      const script = code ?? useProjectStore.getState().scriptContent;
+      // Önceki koşunun output/hata bilgisini temizle, buffer'ı sıfırla
+      setScriptOutputLog('');
       setScriptStatus({
-        running: false,
+        running: true,
         lastOutput: '',
-        lastError: `IPC hatası: ${err}`,
+        lastError: null,
         lastActionCount: 0,
         lastElapsedMs: 0,
       });
-    }
-  }, [scriptContent, scriptDispatcher]);
+      scriptDispatcher.reset();
+      try {
+        // Tauri tarafı script-action + script-completed event'leri emit edecek;
+        // useScriptDispatcher bunları buffer'layıp tek batch olarak store'a yazar.
+        await invoke<void>('execute_script', { script });
+      } catch (err) {
+        setScriptStatus({
+          running: false,
+          lastOutput: '',
+          lastError: `IPC hatası: ${err}`,
+          lastActionCount: 0,
+          lastElapsedMs: 0,
+        });
+      }
+    },
+    [scriptDispatcher],
+  );
 
-  return { handleRunScript, scriptStatus, scriptOutputLog };
+  // Geriye dönük isim: Script sekmesinin "Çalıştır" düğmesi
+  const handleRunScript = useCallback(() => runScript(), [runScript]);
+
+  return { runScript, handleRunScript, scriptStatus, scriptOutputLog };
 }

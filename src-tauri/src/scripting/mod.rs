@@ -9,6 +9,7 @@
 
 pub mod api;
 pub mod events;
+pub mod mf;
 
 use mlua::{Lua, Result as LuaResult, Value, Variadic};
 use serde::{Deserialize, Serialize};
@@ -90,9 +91,10 @@ pub fn create_sandbox(ctx: ScriptContext) -> LuaResult<Lua> {
     })?;
     globals.set("print", print_fn)?;
 
-    // Chip API'yi yükle
+    // Chip + mf API'lerini yükle (mf.* — copilot/şablon yüzeyi; Chip korunur)
     api::register_chip_api(&lua, ctx.clone())?;
     api::register_sweep_api(&lua, ctx.clone())?;
+    mf::register_mf_api(&lua, ctx.clone())?;
 
     Ok(lua)
 }
