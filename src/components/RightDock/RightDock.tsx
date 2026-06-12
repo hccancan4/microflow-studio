@@ -6,12 +6,13 @@ import React, { Suspense, lazy } from 'react';
 import clsx from 'clsx';
 import { useProjectStore } from '../../stores/useProjectStore';
 import PropertiesPanel from '../PropertiesPanel/PropertiesPanel';
+import type { ScriptRunOutcome } from '../../hooks/useScriptRun';
 
 const AssistantPanel = lazy(() => import('../../features/assistant/AssistantPanel'));
 
 interface Props {
   width: number;
-  runScript: (code?: string) => Promise<void>;
+  runScript: (code?: string) => Promise<ScriptRunOutcome>;
 }
 
 const RightDock: React.FC<Props> = ({ width, runScript }) => {

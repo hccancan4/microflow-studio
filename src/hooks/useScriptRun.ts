@@ -8,6 +8,12 @@ import { invoke } from '@tauri-apps/api/core';
 import { useProjectStore } from '../stores/useProjectStore';
 import { useScriptDispatcher, type ScriptRunStatus } from './useScriptDispatcher';
 
+/** Tek bir script koşusunun sonucu (Rust ScriptResult'ın özeti). */
+export interface ScriptRunOutcome {
+  success: boolean;
+  error?: string;
+}
+
 export function useScriptRun() {
   // Son koşudan gelen çıktı/hata/istatistik
   const [scriptStatus, setScriptStatus] = useState<ScriptRunStatus>({
@@ -32,10 +38,12 @@ export function useScriptRun() {
    * Script çalıştır — Lua → DesignAction event'leri → store.
    * `code` verilirse o çalışır (asistan/şablon/oto-tasarım üretimi);
    * verilmezse Script sekmesindeki güncel içerik (`getState` ile okunur —
-   * stale closure yok).
+   * stale closure yok). Dönüş: koşu sonucu — asistanın self-repair döngüsü
+   * hata mesajını LM'e geri beslemek için kullanır (execute_script'in
+   * ScriptResult'ı; eskiden yok sayılıyordu).
    */
   const runScript = useCallback(
-    async (code?: string) => {
+    async (code?: string): Promise<ScriptRunOutcome> => {
       const script = code ?? useProjectStore.getState().scriptContent;
       // Önceki koşunun output/hata bilgisini temizle, buffer'ı sıfırla
       setScriptOutputLog('');
@@ -50,15 +58,20 @@ export function useScriptRun() {
       try {
         // Tauri tarafı script-action + script-completed event'leri emit edecek;
         // useScriptDispatcher bunları buffer'layıp tek batch olarak store'a yazar.
-        await invoke<void>('execute_script', { script });
+        const result = await invoke<{ success: boolean; error: string | null }>('execute_script', {
+          script,
+        });
+        return { success: result.success, error: result.error ?? undefined };
       } catch (err) {
+        const error = `IPC hatası: ${err}`;
         setScriptStatus({
           running: false,
           lastOutput: '',
-          lastError: `IPC hatası: ${err}`,
+          lastError: error,
           lastActionCount: 0,
           lastElapsedMs: 0,
         });
+        return { success: false, error };
       }
     },
     [scriptDispatcher],

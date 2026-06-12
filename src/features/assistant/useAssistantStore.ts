@@ -7,17 +7,21 @@ import { create } from 'zustand';
 
 export interface AssistantMsg {
   id: string;
-  role: 'user' | 'assistant';
+  /** 'note': sistem kaydı (simülasyon sonucu, onarım bildirimi) — LM'e
+   *  "[sistem]" önekli user mesajı olarak gider (bkz. llmHistory.ts). */
+  role: 'user' | 'assistant' | 'note';
   /** Lua blokları çıkarılmış düz metin (gerekçe/yanıt). */
   text: string;
   /** Yanıttan çıkarılan çalıştırılabilir mf.* Lua (varsa). */
   lua?: string;
-  /** Yanıtı üreten sağlayıcı ('claude' | 'local'). */
+  /** Yanıtı üreten sağlayıcı ('anthropic' | 'openai' | 'local'). */
   provider?: string;
-  /** Fallback bilgi notu (Claude'a ulaşılamadıysa). */
+  /** Fallback bilgi notu (uzak sağlayıcıya ulaşılamadıysa). */
   note?: string;
   /** Lua çalıştırıldı mı (rozet için). */
   applied?: boolean;
+  /** Bu yanıt kaçıncı onarım denemesi (self-repair zinciri). */
+  repairRound?: number;
 }
 
 export type ProviderId = 'anthropic' | 'openai';

@@ -15,13 +15,14 @@ import { toast } from '../../stores/useUiStore';
 import { paToMbar, CELL_MM_MIN, CELL_MM_MAX } from '../../utils/fab';
 import { solveTargets, type BranchSpec } from './solveTargets';
 import { buildAutoDesignLua } from './autoDesignLua';
+import type { ScriptRunOutcome } from '../../hooks/useScriptRun';
 
 const FEED = { wUm: 300, lUm: 1000 };
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  runScript: (code?: string) => Promise<void>;
+  runScript: (code?: string) => Promise<ScriptRunOutcome>;
 }
 
 const AutoDesignDialog: React.FC<Props> = ({ open, onClose, runScript }) => {
