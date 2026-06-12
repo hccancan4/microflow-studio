@@ -12,6 +12,7 @@ use commands::{
     simulation_commands::{run_analytic_simulation, run_analytic_network, run_cfd_simulation, solve_targets},
     export_commands::{export_as_png, export_png_data, export_svg, export_gds_file},
     script_commands::{execute_script, execute_script_batch},
+    llm_commands::{llm_complete, llm_status, save_llm_settings},
 };
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -40,6 +41,10 @@ pub fn run() {
             // Script
             execute_script,
             execute_script_batch,
+            // LLM (✦ Asistan)
+            llm_complete,
+            llm_status,
+            save_llm_settings,
         ])
         .run(tauri::generate_context!())
         .expect("Tauri uygulaması başlatılırken hata oluştu");
