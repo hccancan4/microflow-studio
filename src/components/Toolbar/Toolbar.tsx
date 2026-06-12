@@ -40,6 +40,8 @@ interface ToolbarProps {
   onRunTemplate: (lua: string) => void;
   /** ✦ Asistan panelini aç/kapa (sağ dock sekmesi). */
   onToggleAssistant: () => void;
+  /** ✦ Oto-Tasarım dialogunu aç. */
+  onOpenAutoDesign: () => void;
   /** Asistan paneli şu an görünür mü (buton vurgusu). */
   assistantOpen?: boolean;
   /** Simülasyon ya da sweep çalışırken simülasyon butonlarını disabled yap. */
@@ -58,6 +60,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onOpenHelp,
   onRunTemplate,
   onToggleAssistant,
+  onOpenAutoDesign,
   assistantOpen = false,
   busy = false,
 }) => {
@@ -192,6 +195,19 @@ const Toolbar: React.FC<ToolbarProps> = ({
       <div className="tool-divider" />
 
       {/* ✦ AI grubu */}
+      <button
+        onClick={onOpenAutoDesign}
+        disabled={busy}
+        className={clsx(
+          'flex items-center gap-1 px-2 py-1 rounded-sm text-xs transition-colors',
+          'text-mf-text-dim hover:text-mf-text hover:bg-mf-elev',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+        )}
+        title="Otomatik Tasarım — hedef debilerden devre üret (inverse)"
+      >
+        <span className="text-[13px] leading-none">✦</span>
+        <span>Oto-Tasarım</span>
+      </button>
       <button
         onClick={onToggleAssistant}
         className={clsx(

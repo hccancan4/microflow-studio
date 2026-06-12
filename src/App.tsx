@@ -17,6 +17,7 @@ import ProgressOverlay from './components/overlays/ProgressOverlay';
 import ExportDialog from './features/export/ExportDialog';
 import ExperimentImportDialog from './features/experiment/ExperimentImportDialog';
 import SweepDialog from './features/sweep/SweepDialog';
+import AutoDesignDialog from './features/autodesign/AutoDesignDialog';
 import KeyboardHelp from './components/overlays/KeyboardHelp';
 import StatusBar from './components/StatusBar/StatusBar';
 import EditorLoading from './components/overlays/EditorLoading';
@@ -102,6 +103,7 @@ const App: React.FC = () => {
   // ── Dialog durumları ─────────────────────────────────────────────────────
   const [expDialogOpen, setExpDialogOpen] = useState(false);
   const [sweepDialogOpen, setSweepDialogOpen] = useState(false);
+  const [autoDesignOpen, setAutoDesignOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const addExperiment = useExperimentStore((s) => s.addDataset);
   const nextExpColor = useExperimentStore((s) => s.nextColor);
@@ -137,6 +139,7 @@ const App: React.FC = () => {
         onOpenHelp={() => setHelpOpen(true)}
         onRunTemplate={handleRunTemplate}
         onToggleAssistant={handleToggleAssistant}
+        onOpenAutoDesign={() => setAutoDesignOpen(true)}
         assistantOpen={assistantVisible}
         busy={isBusy}
       />
@@ -211,6 +214,13 @@ const App: React.FC = () => {
 
       {/* Parametre taraması */}
       <SweepDialog open={sweepDialogOpen} onClose={() => setSweepDialogOpen(false)} />
+
+      {/* ✦ Otomatik Tasarım (inverse) */}
+      <AutoDesignDialog
+        open={autoDesignOpen}
+        onClose={() => setAutoDesignOpen(false)}
+        runScript={runScript}
+      />
 
       {/* Klavye kısayolları (? veya F1) */}
       <KeyboardHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
