@@ -1,8 +1,15 @@
 # İlgili Çalışmalar — µFG Companion Repo Analizi
 
 MicroFlow Studio v1.1'in (AI copilot + inverse design + doğrulama) referans aldığı
-Science Advances makalesinin resmi kod depoları incelendi. Bu belge bulguları,
-bizim implementasyonla farkları ve gelecekte adapte edilebilecek fikirleri kaydeder.
+makale ve resmi kod depoları incelendi. Bu belge bulguları, bizim implementasyonla
+farkları ve gelecekte adapte edilebilecek fikirleri kaydeder.
+
+## Referans makale
+
+> Taşoğlu, S. ve ark. (DxBiotech Lab, Koç Üniversitesi).
+> **"ML-automated microfluidic circuit design"** (µFluidicGenius / µFG).
+> *Science Advances* **12**(5), 28 Ocak 2026.
+> DOI: [10.1126/sciadv.aea7598](https://doi.org/10.1126/sciadv.aea7598)
 
 ---
 
@@ -61,5 +68,13 @@ hedeflendiğinde yukarıdaki ampirik düzeltme, direnç çarpanı olarak ekleneb
 
 ## Atıf
 
-Bu depoların yöntemleri MicroFlow Studio'da yeniden uygulanmıştır (kod
-kopyalanmamıştır); ilgili makaleyi ve depoları çalışmalarınızda kaynak gösterin.
+µFG'nin yöntemleri (inverse design reçetesi, printability politikası, zarf
+kavramı) MicroFlow Studio'da bağımsız olarak yeniden uygulanmıştır — kod
+kopyalanmamıştır, dolayısıyla BSD-3/MIT lisans yükümlülükleri doğmaz; atıf
+bilimsel teamül gereğidir. MicroFlow Studio ile üretilen çalışmalarda lütfen
+kaynak gösterin:
+
+- **Makale:** Taşoğlu, S. ve ark. "ML-automated microfluidic circuit design."
+  *Science Advances* 12(5), 2026. doi:10.1126/sciadv.aea7598
+- **Kod:** github.com/dxbiotech/Microfluidics-Resistance-ML (BSD-3) ·
+  github.com/dxbiotech/ML-Micromilling-UI (MIT)

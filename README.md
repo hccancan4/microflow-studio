@@ -275,6 +275,20 @@ npm run tauri build
 
 ---
 
+## Bilimsel Referans
+
+AI copilot + inverse design + doğrulama özellikleri (v1.1), **µFluidicGenius (µFG)**
+çalışmasından esinlenmiştir ve yöntemleri bağımsız olarak yeniden uygular:
+
+> Taşoğlu, S. ve ark. *"ML-automated microfluidic circuit design."*
+> **Science Advances** 12(5), 2026. [doi:10.1126/sciadv.aea7598](https://doi.org/10.1126/sciadv.aea7598)
+> Companion kod: [Microfluidics-Resistance-ML](https://github.com/dxbiotech/Microfluidics-Resistance-ML) (BSD-3) · [ML-Micromilling-UI](https://github.com/dxbiotech/ML-Micromilling-UI) (MIT)
+
+Yaklaşım karşılaştırması ve ayrıntılı analiz: [`docs/RELATED_WORK.md`](docs/RELATED_WORK.md).
+MicroFlow Studio ile üretilen akademik çalışmalarda lütfen yukarıdaki makaleyi kaynak gösterin.
+
+---
+
 ## Lisans
 
 MIT — [`LICENSE`](LICENSE) dosyasına bakın.

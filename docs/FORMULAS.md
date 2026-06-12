@@ -425,3 +425,4 @@ Re difference is ~0.2%, well inside validation thresholds.
 12. Harlow, F. H., & Welch, J. E. (1965). Numerical calculation of time-dependent viscous incompressible flow. *Physics of Fluids*, 8(12), 2182–2189.
 13. Shah, R. K., & London, A. L. (1978). *Laminar Flow Forced Convection in Ducts*. Academic Press.
 14. Ito, H. (1959). Friction factors for turbulent flow in curved pipes. *Journal of Basic Engineering*, 81(2), 123–134.
+15. Taşoğlu, S., et al. (2026). ML-automated microfluidic circuit design (µFluidicGenius). *Science Advances*, 12(5). doi:10.1126/sciadv.aea7598 — inverse-design recipe, printability policy and fabrication envelope adopted here (see `RELATED_WORK.md`); companion code: github.com/dxbiotech/Microfluidics-Resistance-ML.
