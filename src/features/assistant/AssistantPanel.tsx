@@ -30,7 +30,7 @@ import { extractLuaBlocks, stripLuaBlocks } from './luaExtract';
 import { buildRepairMessage, repairBadge, MAX_REPAIR_ROUNDS } from './selfRepair';
 import { toLlmMessages } from './llmHistory';
 import { formatRunFeedback } from './runFeedback';
-import type { ScriptRunOutcome } from '../../hooks/useScriptRun';
+import type { RunScript } from '../../hooks/useScriptRun';
 import {
   useAssistantStore,
   nextMsgId,
@@ -77,7 +77,7 @@ const EXAMPLE_CHIPS = [
 ];
 
 interface Props {
-  runScript: (code?: string) => Promise<ScriptRunOutcome>;
+  runScript: RunScript;
 }
 
 const AssistantPanel: React.FC<Props> = ({ runScript }) => {
@@ -168,7 +168,9 @@ const AssistantPanel: React.FC<Props> = ({ runScript }) => {
     useProjectStore.getState().setScriptContent(msg.lua);
     // Geri besleme için taban: koşudan ÖNCEKİ sonucun timestamp'i
     awaitingBaselineRef.current = useSimulationStore.getState().result?.timestamp ?? null;
-    const outcome = await runScript(msg.lua);
+    // silentError: hatayı merkezi toast yerine sohbet içi not + self-repair
+    // turuyla ele alıyoruz (çift bildirim olmasın).
+    const outcome = await runScript(msg.lua, { silentError: true });
     if (outcome.success) {
       markApplied(msg.id);
       setAwaitingResult(true); // mf.run_quick kuyruğu bitince özet düşecek

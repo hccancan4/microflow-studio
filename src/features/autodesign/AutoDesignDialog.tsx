@@ -15,14 +15,14 @@ import { toast } from '../../stores/useUiStore';
 import { paToMbar, CELL_MM_MIN, CELL_MM_MAX } from '../../utils/fab';
 import { solveTargets, type BranchSpec } from './solveTargets';
 import { buildAutoDesignLua } from './autoDesignLua';
-import type { ScriptRunOutcome } from '../../hooks/useScriptRun';
+import type { RunScript } from '../../hooks/useScriptRun';
 
 const FEED = { wUm: 300, lUm: 1000 };
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  runScript: (code?: string) => Promise<ScriptRunOutcome>;
+  runScript: RunScript;
 }
 
 const AutoDesignDialog: React.FC<Props> = ({ open, onClose, runScript }) => {
@@ -96,8 +96,15 @@ const AutoDesignDialog: React.FC<Props> = ({ open, onClose, runScript }) => {
     const st = useProjectStore.getState();
     if (!st.bottomPanelOpen) st.toggleBottomPanel();
     onClose();
-    await runScript(lua);
-    toast.success('Devre üretildi — sonuçlar için Doğrulama sekmesine bakın');
+    // silentError: koşu sonucunu burada kontrol edip bağlamlı geri bildirim
+    // veriyoruz. Eski hata: outcome yok sayılıp HER durumda 'Devre üretildi'
+    // gösteriliyordu — script hata verse bile başarı toast'ı çıkıyordu.
+    const outcome = await runScript(lua, { silentError: true });
+    if (outcome.success) {
+      toast.success('Devre üretildi — sonuçlar için Doğrulama sekmesine bakın');
+    } else {
+      toast.error(`Devre üretilemedi: ${outcome.error ?? 'bilinmeyen script hatası'}`);
+    }
   };
 
   return (

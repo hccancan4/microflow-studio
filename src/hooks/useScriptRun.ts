@@ -6,6 +6,7 @@
 import { useCallback, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useProjectStore } from '../stores/useProjectStore';
+import { toast } from '../stores/useUiStore';
 import { useScriptDispatcher, type ScriptRunStatus } from './useScriptDispatcher';
 
 /** Tek bir script koşusunun sonucu (Rust ScriptResult'ın özeti). */
@@ -13,6 +14,22 @@ export interface ScriptRunOutcome {
   success: boolean;
   error?: string;
 }
+
+/** runScript opsiyonları. */
+export interface RunScriptOptions {
+  /**
+   * true ise koşu başarısızsa MERKEZİ `toast.error` BASTIRILIR — çağıran
+   * kendi (daha zengin) geri bildirimini sunacaktır: asistan sohbet içi not +
+   * self-repair turu açar, oto-tasarım bağlamlı bir hata toast'ı gösterir.
+   * Varsayılan (false): şablon menüsü, doğrudan "Script-Çalıştır" ve ileride
+   * eklenecek tüm çağıranlar başarısızlıkta otomatik GÖRÜNÜR hata alır —
+   * Canvas sekmesindeyken sessiz başarısızlık olmaz.
+   */
+  silentError?: boolean;
+}
+
+/** runScript çağrı imzası — prop olarak geçtiği yerlerde paylaşılır. */
+export type RunScript = (code?: string, opts?: RunScriptOptions) => Promise<ScriptRunOutcome>;
 
 export function useScriptRun() {
   // Son koşudan gelen çıktı/hata/istatistik
@@ -43,7 +60,7 @@ export function useScriptRun() {
    * ScriptResult'ı; eskiden yok sayılıyordu).
    */
   const runScript = useCallback(
-    async (code?: string): Promise<ScriptRunOutcome> => {
+    async (code?: string, opts?: RunScriptOptions): Promise<ScriptRunOutcome> => {
       const script = code ?? useProjectStore.getState().scriptContent;
       // Önceki koşunun output/hata bilgisini temizle, buffer'ı sıfırla
       setScriptOutputLog('');
@@ -61,8 +78,19 @@ export function useScriptRun() {
         const result = await invoke<{ success: boolean; error: string | null }>('execute_script', {
           script,
         });
-        return { success: result.success, error: result.error ?? undefined };
+        const outcome: ScriptRunOutcome = {
+          success: result.success,
+          error: result.error ?? undefined,
+        };
+        // Merkezi hata bildirimi (bkz. RunScriptOptions.silentError). Lua hatası
+        // dönerse — kullanıcı Canvas sekmesinde olsa bile — görünür toast çıkar.
+        if (!outcome.success && !opts?.silentError) {
+          toast.error(outcome.error ?? 'Script çalıştırılamadı');
+        }
+        return outcome;
       } catch (err) {
+        // IPC reddi: bu yolda 'script-completed' event'i HİÇ emit edilmez, bu
+        // yüzden hata yalnızca burada görünür kılınabilir.
         const error = `IPC hatası: ${err}`;
         setScriptStatus({
           running: false,
@@ -71,6 +99,7 @@ export function useScriptRun() {
           lastActionCount: 0,
           lastElapsedMs: 0,
         });
+        if (!opts?.silentError) toast.error(error);
         return { success: false, error };
       }
     },
