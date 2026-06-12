@@ -20,12 +20,16 @@ import {
   FiCpu,
 } from 'react-icons/fi';
 import { useProjectStore } from '../../stores/useProjectStore';
+import { useSimulationStore } from '../../stores/useSimulationStore';
+import { useValidationStore } from '../validation/useValidationStore';
+import { computeValidationRows } from '../validation/validation';
 import { toast } from '../../stores/useUiStore';
 import { completeWithFallback } from './providers';
 import { SYSTEM_PROMPT_TR } from './systemPrompt';
 import { extractLuaBlocks, stripLuaBlocks } from './luaExtract';
 import { buildRepairMessage, repairBadge, MAX_REPAIR_ROUNDS } from './selfRepair';
 import { toLlmMessages } from './llmHistory';
+import { formatRunFeedback } from './runFeedback';
 import type { ScriptRunOutcome } from '../../hooks/useScriptRun';
 import {
   useAssistantStore,
@@ -123,6 +127,36 @@ const AssistantPanel: React.FC<Props> = ({ runScript }) => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages.length, sending]);
 
+  // ── Sonuç geri besleme — asistanın tetiklediği koşunun çıktısı sohbete ──
+  // applyLua başarılı olunca bekleme bayrağı kurulur (o anki result
+  // timestamp'iyle — bayat sonuç yanlış pozitif üretmesin); analitik koşu
+  // tamamlanıp YENİ sonuç gelince doğrulama özeti note olarak eklenir.
+  const [awaitingResult, setAwaitingResult] = useState(false);
+  const awaitingBaselineRef = useRef<string | null>(null);
+  const simStatus = useSimulationStore((s) => s.status);
+  useEffect(() => {
+    if (!awaitingResult) return;
+    if (simStatus === 'error') {
+      setAwaitingResult(false);
+      return;
+    }
+    if (simStatus !== 'completed') return;
+    const result = useSimulationStore.getState().result;
+    if (!result || result.timestamp === awaitingBaselineRef.current) return; // hâlâ eski sonuç
+    setAwaitingResult(false);
+    if (result.mode !== 'analytic') return;
+    const targets = useValidationStore.getState().targets;
+    if (Object.keys(targets).length === 0) return;
+    const rows = computeValidationRows(targets, result.outletFlows ?? []);
+    if (rows.length === 0) return;
+    addMessage({
+      id: nextMsgId(),
+      role: 'note',
+      text: formatRunFeedback(rows, result.summary.totalFlowRate),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [awaitingResult, simStatus]);
+
   /**
    * Lua'yı çalıştır; BAŞARISIZSA hata mesajını LM'e geri besleyip onarım
    * turu başlat (maks MAX_REPAIR_ROUNDS; yerel kural motoru kendini
@@ -132,9 +166,12 @@ const AssistantPanel: React.FC<Props> = ({ runScript }) => {
   const applyLua = async (msg: AssistantMsg) => {
     if (!msg.lua) return;
     useProjectStore.getState().setScriptContent(msg.lua);
+    // Geri besleme için taban: koşudan ÖNCEKİ sonucun timestamp'i
+    awaitingBaselineRef.current = useSimulationStore.getState().result?.timestamp ?? null;
     const outcome = await runScript(msg.lua);
     if (outcome.success) {
       markApplied(msg.id);
+      setAwaitingResult(true); // mf.run_quick kuyruğu bitince özet düşecek
       toast.success('Tasarıma uygulandı — Script sekmesinde düzenlenebilir');
       return;
     }
