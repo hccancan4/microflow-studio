@@ -78,44 +78,63 @@ export function useScriptDispatcher(onStatusChange?: (status: ScriptRunStatus) =
   const isCollecting = useRef(false);
 
   useEffect(() => {
+    // KRİTİK — yarış-güvenli kayıt: listen() async'tir; StrictMode'un hızlı
+    // mount→unmount→mount döngüsünde cleanup, promise resolve olmadan koşarsa
+    // ilk listener sahipsiz kalır ve her event İKİ KEZ işlenir (bileşenler
+    // aynı id ile çift eklenir, çözücü debileri şişer). `cancelled` bayrağı
+    // resolve-sonrası geç kalan kayıtları anında geri alır.
+    let cancelled = false;
     const unlisten: UnlistenFn[] = [];
+    const track = (p: Promise<UnlistenFn>) => {
+      p.then((u) => {
+        if (cancelled) u();
+        else unlisten.push(u);
+      });
+    };
 
     // Bir design action geldi → batch'e ekle
-    listen<DesignAction>('script-action', (evt) => {
-      batch.current.push(evt.payload);
-    }).then((u) => unlisten.push(u));
+    track(
+      listen<DesignAction>('script-action', (evt) => {
+        batch.current.push(evt.payload);
+      }),
+    );
 
     // Script çıktısı (print satırları)
-    listen<string>('script-output', (evt) => {
-      onStatusChange?.({
-        running: true,
-        lastOutput: evt.payload,
-        lastError: null,
-        lastActionCount: batch.current.length,
-        lastElapsedMs: 0,
-      });
-    }).then((u) => unlisten.push(u));
+    track(
+      listen<string>('script-output', (evt) => {
+        onStatusChange?.({
+          running: true,
+          lastOutput: evt.payload,
+          lastError: null,
+          lastActionCount: batch.current.length,
+          lastElapsedMs: 0,
+        });
+      }),
+    );
 
     // Script tamamlandı → buffer'ı tek seferde store'a uygula
-    listen<ScriptCompletedPayload>('script-completed', (evt) => {
-      const actions = batch.current;
-      batch.current = [];
-      isCollecting.current = false;
+    track(
+      listen<ScriptCompletedPayload>('script-completed', (evt) => {
+        const actions = batch.current;
+        batch.current = [];
+        isCollecting.current = false;
 
-      if (evt.payload.success) {
-        applyActionBatch(actions);
-      }
+        if (evt.payload.success) {
+          applyActionBatch(actions);
+        }
 
-      onStatusChange?.({
-        running: false,
-        lastOutput: '',
-        lastError: evt.payload.error,
-        lastActionCount: evt.payload.action_count,
-        lastElapsedMs: evt.payload.elapsed_ms,
-      });
-    }).then((u) => unlisten.push(u));
+        onStatusChange?.({
+          running: false,
+          lastOutput: '',
+          lastError: evt.payload.error,
+          lastActionCount: evt.payload.action_count,
+          lastElapsedMs: evt.payload.elapsed_ms,
+        });
+      }),
+    );
 
     return () => {
+      cancelled = true;
       unlisten.forEach((u) => u());
     };
   }, [onStatusChange]);
@@ -157,21 +176,35 @@ export function applyActionBatch(actions: DesignAction[]) {
     let connections = [...useDesignStore.getState().connections];
     let canvas = { ...useDesignStore.getState().canvas };
 
+    // Savunma: aynı id'li çift add/connect TEK sayılır. (Olası bir çift event
+    // kaydı bileşenleri üst üste iki kez eklerse render/silme bozulur ve
+    // çözücüde inlet/outlet çiftlenip debiler şişer — id'ye göre dedupe.)
+    const seenComponentIds = new Set(components.map((c) => c.id));
+    const seenConnectionIds = new Set(connections.map((c) => c.id));
+
     for (const action of design) {
       switch (action.type) {
         case 'clear_design': {
           components = [];
           connections = [];
+          seenComponentIds.clear();
+          seenConnectionIds.clear();
           // Bayat hedefler yanlış "fail" üretmesin
           useValidationStore.getState().clearTargets();
           break;
         }
         case 'add_component': {
-          components = [...components, action.component];
+          if (!seenComponentIds.has(action.component.id)) {
+            seenComponentIds.add(action.component.id);
+            components = [...components, action.component];
+          }
           break;
         }
         case 'connect': {
-          connections = [...connections, action.connection];
+          if (!seenConnectionIds.has(action.connection.id)) {
+            seenConnectionIds.add(action.connection.id);
+            connections = [...connections, action.connection];
+          }
           break;
         }
         case 'update_component': {
@@ -185,6 +218,7 @@ export function applyActionBatch(actions: DesignAction[]) {
           connections = connections.filter(
             (cn) => cn.fromComponentId !== action.id && cn.toComponentId !== action.id,
           );
+          seenComponentIds.delete(action.id);
           break;
         }
         case 'update_canvas': {
@@ -202,6 +236,12 @@ export function applyActionBatch(actions: DesignAction[]) {
       selectedIds: [],
     });
     setDirty(true);
+
+    // Script tasarımları gerçek µm ölçülerinde DEV olabilir (63 mm'lik serpantin
+    // zoom=1'de ekran dışıdır) — bileşen eklendiyse görünüm otomatik sığdırılır.
+    if (design.some((a) => a.type === 'add_component')) {
+      useDesignStore.getState().requestFitAll();
+    }
   }
 
   for (const action of meta) {

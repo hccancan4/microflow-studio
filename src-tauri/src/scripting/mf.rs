@@ -546,6 +546,45 @@ mod tests {
         }
     }
 
+    /// UÇTAN UCA: serpantin şablonu → gerçek çözücü → hedef debi tutmalı.
+    /// (Doğrulama sekmesindeki "yüksek sapma" şikayetinin regresyon testi:
+    /// şablonun ürettiği tasarım, analitik ağda Q≈2.0 µL/min vermeli.)
+    #[test]
+    fn serpentine_template_end_to_end_hits_target() {
+        use crate::simulation::analytic::{
+            analyze_design, DesignComponent, DesignConnection,
+        };
+        use crate::simulation::FluidProperties;
+
+        let lua = include_str!("../../../src/templates/lua/serpentine_resistor.lua");
+        let (r, actions) = run_script_collect(lua);
+        assert!(r.success, "şablon hatası: {:?}", r.error);
+
+        let mut comps: Vec<DesignComponent> = Vec::new();
+        let mut conns: Vec<DesignConnection> = Vec::new();
+        for a in &actions {
+            match a {
+                DesignAction::AddComponent { component } => {
+                    comps.push(serde_json::from_value(component.clone()).unwrap());
+                }
+                DesignAction::Connect { connection } => {
+                    conns.push(serde_json::from_value(connection.clone()).unwrap());
+                }
+                _ => {}
+            }
+        }
+        assert_eq!(comps.len(), 3, "inlet + serpantin + outlet");
+
+        let res = analyze_design(&comps, &conns, 1000.0, &FluidProperties::water());
+        assert_eq!(res.outlet_flows.len(), 1, "tek çıkış akışı");
+        let q = res.outlet_flows[0].flow_rate;
+        let dev = (q - 2.0_f64).abs() / 2.0 * 100.0;
+        assert!(
+            dev < 5.0,
+            "hedef 2.0 µL/min, fiili {q:.4} (sapma %{dev:.1}) — şablon/çözücü uyumsuz"
+        );
+    }
+
     #[test]
     fn mf_run_cfd_resolution_mapping() {
         let (r, actions) = run_script_collect(r#"mf.run_cfd("kaba")"#);

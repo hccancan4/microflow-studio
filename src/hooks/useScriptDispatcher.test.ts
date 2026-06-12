@@ -101,4 +101,38 @@ describe('applyActionBatch — tasarım + meta karışık', () => {
     applyActionBatch([{ type: 'clear_design' }]);
     expect(useValidationStore.getState().targets).toEqual({});
   });
+
+  it('aynı id ile çift add_component/connect TEK uygulanır (çift-event savunması)', () => {
+    // Regresyon: StrictMode'da yarışlı listener kaydı her action'ı iki kez
+    // düşürüyordu → üst üste kopyalar + çözücüde şişmiş debi.
+    const c = comp('dup');
+    const conn = {
+      id: 'conn-dup',
+      fromComponentId: 'dup',
+      fromPortIndex: 0,
+      toComponentId: 'dup2',
+      toPortIndex: 0,
+    };
+    applyActionBatch([
+      { type: 'clear_design' },
+      { type: 'clear_design' },
+      { type: 'add_component', component: c },
+      { type: 'add_component', component: c },
+      { type: 'add_component', component: comp('dup2') },
+      { type: 'add_component', component: comp('dup2') },
+      { type: 'connect', connection: conn },
+      { type: 'connect', connection: conn },
+    ]);
+    const s = useDesignStore.getState();
+    expect(s.components.map((x) => x.id)).toEqual(['dup', 'dup2']);
+    expect(s.connections).toHaveLength(1);
+  });
+
+  it('bileşen ekleyen batch fit-all isteği bırakır; eklemeyen bırakmaz', () => {
+    const before = useDesignStore.getState().fitAllRequest;
+    applyActionBatch([{ type: 'set_inlet_pressure', pa: 1200 }]);
+    expect(useDesignStore.getState().fitAllRequest).toBe(before); // meta-only → istek yok
+    applyActionBatch([{ type: 'add_component', component: comp('f1') }]);
+    expect(useDesignStore.getState().fitAllRequest).toBe(before + 1);
+  });
 });

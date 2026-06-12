@@ -378,17 +378,23 @@ pub fn analyze_design(
         .map(|(k, v)| (k, v.into_iter().collect()))
         .collect();
 
-    // 4. Inlet ve outlet portları ayır
-    let inlets: Vec<&str> = components.iter()
-        .filter(|c| c.component_type == "port"
-            && c.params.get("portType").and_then(|v| v.as_str()) == Some("inlet"))
-        .map(|c| c.id.as_str())
-        .collect();
-    let outlets: Vec<&str> = components.iter()
-        .filter(|c| c.component_type == "port"
-            && c.params.get("portType").and_then(|v| v.as_str()) == Some("outlet"))
-        .map(|c| c.id.as_str())
-        .collect();
+    // 4. Inlet ve outlet portları ayır.
+    //    Kenarlar gibi port listeleri de TEKLENİR: girişte aynı id'li bileşen
+    //    iki kez gelirse (çift event vb.) inlet×outlet kombinasyonları katlanır,
+    //    find_all_paths aynı yolu birden çok kez bulur ve paralel direnç
+    //    hesabı debiyi şişirir. HashSet sırayı bozmadan ilk görüleni tutar.
+    let mut seen_ports: HashSet<&str> = HashSet::new();
+    let mut inlets: Vec<&str> = Vec::new();
+    let mut outlets: Vec<&str> = Vec::new();
+    for c in components {
+        if c.component_type != "port" { continue; }
+        if !seen_ports.insert(c.id.as_str()) { continue; }
+        match c.params.get("portType").and_then(|v| v.as_str()) {
+            Some("inlet") => inlets.push(c.id.as_str()),
+            Some("outlet") => outlets.push(c.id.as_str()),
+            _ => {}
+        }
+    }
 
     // 5. Inlet→Outlet yolları (tüm basit path'ler; küçük tasarımlarda tüm yolları say)
     let mut all_paths: Vec<Vec<String>> = Vec::new();
@@ -788,6 +794,32 @@ mod tests {
         let o2 = r.outlet_flows.iter().find(|o| o.outlet_id == "out2").unwrap();
         assert!(o1.flow_rate > o2.flow_rate);
         assert_eq!(o2.label.as_deref(), Some("ÇIKIŞ 2"));
+    }
+
+    /// Regresyon: girişte aynı id'li bileşenler İKİ KEZ gelirse (çift event
+    /// kaydı gibi bir frontend hatası) debi şişmemeli — duplicate inlet/outlet
+    /// kombinasyonları aynı yolu paralelmiş gibi katlıyordu.
+    #[test]
+    fn test_duplicate_components_do_not_inflate_flow() {
+        let base = vec![
+            make_comp("in", "port", serde_json::json!({"portType": "inlet"})),
+            make_comp("ch", "straight_channel", serde_json::json!({"width": 200, "depth": 50, "length": 10000})),
+            make_comp("out", "port", serde_json::json!({"portType": "outlet"})),
+        ];
+        let conns = vec![make_conn("c1", "in", "ch"), make_conn("c2", "ch", "out")];
+        let clean = analyze_design(&base, &conns, 1000.0, &FluidProperties::water());
+
+        // Aynı listeyi çiftle (id'ler aynı!) + bağlantıları da çiftle
+        let mut doubled = base.clone();
+        doubled.extend(base.clone());
+        let mut conns2 = conns.clone();
+        conns2.extend(conns.clone());
+        let dup = analyze_design(&doubled, &conns2, 1000.0, &FluidProperties::water());
+
+        let rel = (dup.total_flow_rate - clean.total_flow_rate).abs() / clean.total_flow_rate;
+        assert!(rel < 1e-9, "çift girdi debiyi değiştirdi: {} vs {}",
+            dup.total_flow_rate, clean.total_flow_rate);
+        assert_eq!(dup.outlet_flows.len(), 1, "çıkış akışı teklenmeli");
     }
 
     #[test]

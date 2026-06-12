@@ -104,6 +104,10 @@ interface DesignState {
   zoomReset: () => void;
   /** Tüm bileşenleri kapsayan bbox'ı viewport'a sığdır. */
   fitAll: (viewportW: number, viewportH: number) => void;
+  /** Viewport'u bilmeyen katmanlar (script dispatcher) fit-all İSTER;
+   *  CanvasEditor sayacı izleyip gerçek fitAll'u çağırır. */
+  fitAllRequest: number;
+  requestFitAll: () => void;
 
   // Transform
   /** Seçili bileşenleri delta derece kadar döndür — tek history kaydı. */
@@ -380,6 +384,9 @@ export const useDesignStore = create<DesignState>()(
       set((s) => ({
         canvas: { ...s.canvas, zoom: 1, panX: DEFAULT_CANVAS.panX, panY: DEFAULT_CANVAS.panY },
       })),
+
+    fitAllRequest: 0,
+    requestFitAll: () => set((s) => ({ fitAllRequest: s.fitAllRequest + 1 })),
 
     /** Tüm bileşenleri kapsayan bbox → viewport'a sığdır (10% padding). */
     fitAll: (viewportW, viewportH) => {

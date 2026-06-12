@@ -91,6 +91,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
     zoomBy,
     zoomReset,
     fitAll,
+    fitAllRequest,
     rotateSelected,
     setSelectedConnection,
     setDragOffset,
@@ -118,6 +119,18 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
   // Sürükleme takibi: drag başlangıcında seçili bileşenlerin pozisyonları
   const dragStartPositions = useRef<Map<string, { x: number; y: number }>>(new Map());
   const isRubberBanding = useRef(false);
+
+  // ── Script/şablon tasarımı uygulanınca otomatik fit-all ──────────────────
+  // Dispatcher viewport'u bilmediği için sayaçla istek bırakır. Script
+  // tasarımları gerçek µm ölçekte DEV olabilir (63 mm serpantin) — zoom=1'de
+  // ekran dışı kalıyordu; istek gelince görünüm sığdırılır.
+  useEffect(() => {
+    if (fitAllRequest === 0) return;
+    fitAll(Math.max(1, width - RULER_SIZE), Math.max(1, height - RULER_SIZE));
+    // width/height kasıtlı olarak dep DEĞİL: yalnız istek anında sığdır
+    // (her pencere boyutlanışında değil).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fitAllRequest, fitAll]);
 
   // ─── Pan state (spacebar / orta tık) ──────────────────────────────────────
   // 'idle': boş; 'space-held': spacebar basılı (cursor=grab); 'panning': aktif drag (cursor=grabbing)
