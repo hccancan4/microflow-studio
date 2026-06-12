@@ -2,7 +2,7 @@
 
 Mikroakışkan çip tasarımı ve simülasyonu için profesyonel masaüstü uygulaması. [Tauri v2](https://tauri.app/) (Rust backend + React frontend), AutoCAD/Fusion 360 tarzı bir CAD ergonomisiyle inşa edildi.
 
-[![CI](https://github.com/hccancan4/microflow-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/hccancan4/microflow-studio/actions/workflows/ci.yml) ![Version](https://img.shields.io/badge/version-1.1.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tauri](https://img.shields.io/badge/tauri-v2-orange) ![Tests](https://img.shields.io/badge/tests-57%20rust%20%2B%20104%20frontend-brightgreen)
+[![CI](https://github.com/hccancan4/microflow-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/hccancan4/microflow-studio/actions/workflows/ci.yml) ![Version](https://img.shields.io/badge/version-1.1.5-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tauri](https://img.shields.io/badge/tauri-v2-orange) ![Tests](https://img.shields.io/badge/tests-63%20rust%20%2B%20113%20frontend-brightgreen)
 
 ---
 
@@ -93,6 +93,21 @@ Sürükle-bırak canvas editöründe 10 tip parametrik bileşenden mikroakışka
 - **Oto-Tasarım** (dialog): N çıkış + hedef debi tablosu → `solve_targets` (R_i = (P−Q·R_feed)/Q_i) → önizleme (R/L/Re + zarf bayrakları) → tek tıkla devre
 - **Doğrulama** sekmesi: çıkış başına hedef-vs-fiili debi, sapma yüzdesi (≤%5 yeşil · ≤%15 sarı · üstü kırmızı), zarf/üretim bayrakları
 - **API anahtarı yalnız backend'de**: `ANTHROPIC_API_KEY` ortam değişkeni (öncelikli) veya Asistan ⚙ ayarlarından girilen anahtar uygulama config dizinine yazılır; webview anahtarı asla görmez
+
+### ✦ Kendi LM'inizi bağlayın (v1.1.5 — agent-ready)
+
+Asistan **çoklu-sağlayıcı**: Claude'un yanında her **OpenAI-uyumlu** endpoint takılır —
+Ollama, LM Studio, llama.cpp, vLLM ve kendi fine-tune mikroakışkan modeliniz
+(Qwen/Gemma vb.) aynı protokolü konuşur. Örnek (Ollama, tamamen lokal, anahtarsız):
+
+```bash
+ollama pull qwen2.5:14b        # veya kendi fine-tune GGUF'unuz
+# Asistan ⚙ → Sağlayıcı: "OpenAI-uyumlu" → adres http://localhost:11434/v1 → model qwen2.5:14b
+```
+
+- Anahtar **opsiyonel** (lokal sunucularda gerekmez); uzak servisler için `OPENAI_API_KEY` veya ⚙'dan
+- Zaman aşımı sağlayıcı-başına yapılandırılır (lokal modeller için varsayılan 60 sn)
+- **Agentik döngü:** üretilen Lua hata verirse hata LM'e geri beslenir ve düzeltilmiş script üretilir (maks 2 onarım turu, onay akışına saygılı); koşu bitince **doğrulama özeti sohbete döner** — "sapma yüksek, revize et" tek mesajla çalışır
 
 ### Dışa Aktarma
 
@@ -198,9 +213,9 @@ Projeler `.mflow` (JSON) olarak kaydedilir. Schema için [`docs/FILE_FORMAT.md`]
 MicroFlow Studio **offline-öncelikli** bir desktop uygulamasıdır:
 
 - **Hiçbir telemetri** gönderilmez
-- **Tek opt-in ağ çağrısı**: ✦ Asistan'ın Claude isteği — yalnız kullanıcı API anahtarı tanımlayıp mesaj gönderirse, **backend'den** (`reqwest`) `api.anthropic.com`'a gider; webview hiçbir dış host'a çıkamaz (CSP). Anahtar yoksa yerel kural motoru devrededir, uygulama tamamen çevrimdışı çalışır
+- **Tek opt-in ağ çağrısı**: ✦ Asistan'ın LM isteği — yalnız kullanıcı bir sağlayıcı yapılandırıp mesaj gönderirse, **backend'den** (`reqwest`) seçili sağlayıcıya gider (`api.anthropic.com` veya kullanıcının tanımladığı OpenAI-uyumlu adres — lokal Ollama'da ağ trafiği makineden çıkmaz); webview hiçbir dış host'a çıkamaz (CSP). Sağlayıcı yoksa yerel kural motoru devrededir, uygulama tamamen çevrimdışı çalışır
 - Onun dışında **hiçbir ağ çağrısı** yapılmaz — fontlar (`@fontsource` ile self-hosted IBM Plex) ve **Monaco editör tamamen yerel bundle'dan** gelir; build çıktısı `dist/` içinde CDN URL'si yoktur
-- **API anahtarı**: `ANTHROPIC_API_KEY` ortam değişkeni veya uygulama config dizinindeki `llm.json` (UI'dan kaydedilir, Unix'te 0600); anahtar webview'a/loglara asla dönmez
+- **API anahtarları**: `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` ortam değişkenleri veya uygulama config dizinindeki `llm.json` (UI'dan kaydedilir, Unix'te 0600); anahtarlar webview'a/loglara asla dönmez
 - **Dosya erişimi**: kullanıcının seçtiği `.mflow` / export hedef klasörüne sınırlıdır (Tauri dialog)
 - **Lua sandbox**: `os`, `io`, `debug`, `package` modülleri devre dışı (kod execution attack surface yok)
 - **CSP**: Tauri config'inde XSS karşı temel `default-src 'self'` policy

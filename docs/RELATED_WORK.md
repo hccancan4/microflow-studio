@@ -56,7 +56,7 @@ tahmincisi (Dash notebook; LLM yok, görselleştirme yok, yalnız su).
 **Çıkarım:** Bizim analitik çözücü pürüzsüz duvar varsayar. Micromilled PMMA
 hedeflendiğinde yukarıdaki ampirik düzeltme, direnç çarpanı olarak eklenebilir.
 
-## 3. Gelecek adaylar (bu turda YAPILMADI)
+## 3. Gelecek adaylar
 
 1. **Pürüzlülük parametresi (RR %)** — `solve_targets`/`analyze_design`'a
    opsiyonel; direnç `×(1+30·rr^1.35)` düzeltmesi (kaynak: ML-Micromilling-UI).
@@ -65,6 +65,12 @@ hedeflendiğinde yukarıdaki ampirik düzeltme, direnç çarpanı olarak ekleneb
    tipi + render + çözücü modeli gerektirir.
 3. **Tabu-tarzı çoklu-kısıt arama** — kapalı-form çözümün yetmediği gelecek
    senaryolar için (çok-girişli ağlar, ayrık bileşen kütüphanesi).
+4. **Fine-tune prompt profili** — domain'e fine-tune edilmiş model (Qwen/Gemma)
+   mf.* API'sini zaten bildiğinde sistem promptunun kısaltılmış varyantı
+   (sağlayıcı-başına prompt override; token tasarrufu + tutarlılık).
+5. **JSONL eğitim verisi dışa aktarımı** — Asistan oturumlarındaki
+   (komut → üretilen Lua → doğrulama sonucu) üçlülerini fine-tune veri seti
+   olarak dışa aktar; kendi mikroakışkan LM'inin eğitim hattını besler.
 
 ## Atıf
 

@@ -145,16 +145,21 @@ co-located); shared, framework-free helpers stay in `src/utils/`.
 
 ---
 
-## AI Copilot Data Flow (v1.1)
+## AI Copilot Data Flow (v1.1 · çoklu-sağlayıcı + agentik döngü v1.1.5)
 
 ```
 AssistantPanel (webview)                       Rust backend
   │ kullanıcı komutu                             │
-  ├── invoke('llm_complete', {model,system,msgs})┼──► commands/llm_commands.rs
-  │                                              │      key = env ANTHROPIC_API_KEY
-  │                                              │            || app_config_dir/llm.json
-  │                                              │      reqwest → api.anthropic.com (14s ×2 timeout)
-  │ ◄── yalnız üretilen METİN ──────────────────┤      (anahtar asla yanıtta/logda değil)
+  ├── invoke('llm_complete',                     │
+  │     {provider, model?, system, msgs}) ───────┼──► commands/llm_commands.rs
+  │                                              │      llm.json: active_provider +
+  │                                              │        anthropic{key,model} (env ANTHROPIC_API_KEY öncelikli)
+  │                                              │        openai{base_url,key?,model,timeout} (env OPENAI_API_KEY)
+  │                                              │      anthropic → api.anthropic.com (14s ×2)
+  │                                              │      openai   → {base_url}/chat/completions
+  │                                              │                 (Ollama/LM Studio/vLLM/fine-tune;
+  │                                              │                  anahtarsız lokal OK; timeout yapılandırılır)
+  │ ◄── yalnız üretilen METİN ──────────────────┤      (anahtarlar asla yanıtta/logda değil)
   │ hata/timeout?                                │
   ├── LocalRuleProvider (TR regex) ──► invoke('solve_targets') ──► simulation/hydraulic.rs
   │                                                                R_i=(P−Q·R_feed)/Q_i, l_for_r
@@ -164,10 +169,20 @@ AssistantPanel (webview)                       Rust backend
          meta eylemler (set_fluid/pressure/target) → ayar store'ları (history YOK)
          run_simulation → useSimulationStore.runQueue → useSimulationRun effect
            (status müsaitken dequeue → handleRunAnalytic/handleRunCfd)
+
+AGENTİK DÖNGÜ (v1.1.5):
+  runScript → ScriptResult{success,error}
+    ├─ HATA → buildRepairMessage(lua, hata) sohbet geçmişine eklenir →
+    │         aynı sağlayıcıdan düzeltilmiş Lua (maks 2 tur; onay akışına saygılı;
+    │         yerel kural motoru kendini onarmaz)
+    └─ BAŞARI → analitik koşu tamamlanınca formatRunFeedback (hedef-vs-fiili özet)
+                sohbete 'note' düşer → llmHistory bunu "[sistem]" user mesajı olarak
+                LM'e taşır → "sapmayı düzelt" tek mesajla revizyon döngüsü kurar
 ```
 
 Güvenlik sınırı: webview'ın CSP'si dış host'a izin vermez; tek dış çağrı backend'dedir
-ve yalnız kullanıcı anahtar tanımlayıp Asistan'ı kullanırsa gerçekleşir.
+ve yalnız kullanıcı bir sağlayıcı yapılandırıp Asistan'ı kullanırsa gerçekleşir
+(lokal Ollama'da trafik makineden çıkmaz).
 
 ---
 

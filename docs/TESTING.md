@@ -3,20 +3,20 @@
 Two suites:
 
 ```bash
-# Rust unit tests (57)
+# Rust unit tests (63)
 cargo test --manifest-path src-tauri/Cargo.toml --lib
 
-# Frontend Vitest tests (104)
+# Frontend Vitest tests (113)
 npm test
 ```
 
-## Rust — **57 tests** across 9 files
+## Rust — **63 tests** across 9 files
 
 v1.1 additions (detayları kaynak dosyalarda):
-- `simulation/hydraulic.rs` — 7 tests: l_for_r roundtrip (1e-12), spec references (63.5 mm in-envelope / 254 mm flagged), mass conservation through feed network, w_flag, feed-overload error, fluid aliases
-- `scripting/mf.rs` — 9 tests: mf.* emission counts, serpentine length exactness, junction fan-out port selection, error paths, **the 4 Lua templates executed in the real interpreter** (include_str! single-source)
-- `commands/llm_commands.rs` — 6 tests: key resolution priority, request body shape, response/error parsing (no network)
-- `simulation/analytic.rs` — +1: two-outlet `outlet_flows` sums to total
+- `simulation/hydraulic.rs` — 8 tests: l_for_r roundtrip (1e-12), spec references (63.5 mm in-envelope / 254 mm flagged), mass conservation through feed network, w_flag, feed-overload error, fluid aliases, rounded-length-never-exceeds-exact (µFG alttan-yaklaşma politikası)
+- `scripting/mf.rs` — 10 tests: mf.* emission counts, serpentine length exactness, junction fan-out port selection, error paths, **the 4 Lua templates executed in the real interpreter** (include_str! single-source), serpantin şablonu uçtan uca gerçek çözücüde hedefi tutturur
+- `commands/llm_commands.rs` — 9 tests (v1.1.5 multi-provider): key resolution per provider, anthropic/openai body shapes (system embedding), both response/error parsers, legacy config migration, provider normalization (no network)
+- `simulation/analytic.rs` — +2: two-outlet `outlet_flows` sums to total; duplicated component lists do not inflate flow
 
 ---
 
@@ -86,13 +86,19 @@ v1.1 additions (detayları kaynak dosyalarda):
 
 ---
 
-## Frontend — **104 Vitest tests** across 14 files
+## Frontend — **113 Vitest tests** across 16 files
 
-v1.1 additions: `useScriptDispatcher.test.ts` (7 — partition: meta actions
-produce no history/dirty, run queue, targets), `utils/fab.test.ts` (6),
+v1.1 additions: `useScriptDispatcher.test.ts` (9 — partition: meta actions
+produce no history/dirty, run queue, targets, duplicate-id defenses,
+fit-all request), `utils/fab.test.ts` (6),
 `features/validation/validation.test.ts` (5), `templates/luaTemplates.test.ts`
 (2), `features/assistant/luaExtract.test.ts` (3) + `providers.test.ts`
 (5 — Turkish intent parsing), `features/autodesign/autoDesignLua.test.ts` (4).
+
+v1.1.5 additions (agent-ready): `features/assistant/selfRepair.test.ts`
+(5 — repair message content, round cap, lua re-attachment and note→user
+history conversion), `features/assistant/runFeedback.test.ts` (2 —
+target-vs-actual chat summary incl. missing-outlet hint).
 
 ### v1.0 çekirdeği — 72 test, 8 dosya
 

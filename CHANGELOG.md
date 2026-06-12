@@ -195,3 +195,37 @@ Inspired by the LM-driven microfluidic generator paper (Sci. Adv., µFG); built 
 - **Lua templates** (`templates/lua/`): 2:1 splitter, 4-way equal, reference serpentine resistor, T-junction droplet topology — Toolbar "Şablonlar" menu; the same files run in Rust tests via `include_str!`; `starters.ts` retired
 - Tests: Rust 34 → **57**, Vitest 72 → **104**; all green with clippy `-D warnings`
 - **Post-release fixes**: race-safe Tauri event listeners under StrictMode + same-id dedupe defenses (duplicated components/inflated flows) + auto fit-all after script designs; **rounding policy corrected after studying the official µFG companion code** (`dxbiotech/Microfluidics-Resistance-ML`): branch length now rounds DOWN — design resistance sits slightly below target and milling tolerance carries it up (their Tabu fitness penalizes over-resistance 1.05×); source analysis in `docs/RELATED_WORK.md`
+
+---
+
+## Phase 11.5 — v1.1.5 "Agent-Ready": Multi-Provider LLM + Agentic Core
+
+Groundwork for non-Claude providers and the user's future fine-tuned
+microfluidics LM (Qwen/Gemma served via Ollama/LM Studio/vLLM), plus the
+two feedback loops that make the copilot genuinely agentic.
+
+- **Multi-provider backend** (`commands/llm_commands.rs`): `llm.json` gains
+  `active_provider` + per-provider blocks; the `openai` type speaks the
+  OpenAI-compatible `/chat/completions` protocol with configurable
+  `base_url` (default `http://localhost:11434/v1` = Ollama), OPTIONAL key
+  (local servers run keyless — Bearer header skipped), per-provider
+  timeout (anthropic fixed 14 s; openai default 60 s, configurable 5–600 —
+  local Qwen/Gemma inference is slow); env mapping `ANTHROPIC_API_KEY` /
+  `OPENAI_API_KEY`; legacy flat config migrates automatically
+- **Provider picker** (Asistan ⚙): Claude API / OpenAI-uyumlu toggle;
+  openai mode exposes base_url, model name, timeout and optional key;
+  keyless-local shown as a normal (green) state; switch persists via
+  `active_provider`
+- **Self-repair loop**: `runScript` now consumes `execute_script`'s
+  ScriptResult; on Lua failure the error + failed script are fed back to
+  the SAME provider via `buildRepairMessage`, the corrected reply re-enters
+  the approve/run flow (confirmBeforeRun respected), up to 2 rounds;
+  visible "🔧 düzeltiliyor (n/2)" note rows; local rule engine never
+  self-repairs (deterministic)
+- **Run-result feedback**: after an assistant-applied design's analytic run
+  completes, `formatRunFeedback` posts the per-outlet target-vs-actual
+  summary into the chat as a note; `llmHistory.toLlmMessages` converts
+  notes to "[sistem]"-prefixed user messages so a follow-up like "sapmayı
+  düzelt" works in one message (timestamp guard against stale results)
+- Versions bumped to 1.1.5 (package.json / Cargo.toml / tauri.conf.json)
+- Tests: Rust 60 → **63**, Vitest 106 → **113**
