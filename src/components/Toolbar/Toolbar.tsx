@@ -38,6 +38,10 @@ interface ToolbarProps {
   onOpenHelp: () => void;
   /** Şablon Lua'sını çalıştır (Script sekmesine de yazılır). */
   onRunTemplate: (lua: string) => void;
+  /** ✦ Asistan panelini aç/kapa (sağ dock sekmesi). */
+  onToggleAssistant: () => void;
+  /** Asistan paneli şu an görünür mü (buton vurgusu). */
+  assistantOpen?: boolean;
   /** Simülasyon ya da sweep çalışırken simülasyon butonlarını disabled yap. */
   busy?: boolean;
 }
@@ -53,6 +57,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onOpenSweep,
   onOpenHelp,
   onRunTemplate,
+  onToggleAssistant,
+  assistantOpen = false,
   busy = false,
 }) => {
   const {
@@ -182,6 +188,23 @@ const Toolbar: React.FC<ToolbarProps> = ({
           tooltip="Parametre taraması — batch analitik"
         />
       </div>
+
+      <div className="tool-divider" />
+
+      {/* ✦ AI grubu */}
+      <button
+        onClick={onToggleAssistant}
+        className={clsx(
+          'flex items-center gap-1 px-2 py-1 rounded-sm text-xs transition-colors',
+          assistantOpen
+            ? 'bg-mf-blue/15 text-mf-blue'
+            : 'text-mf-text-dim hover:text-mf-text hover:bg-mf-elev',
+        )}
+        title="AI Asistan — doğal dilden mf.* Lua tasarımı"
+      >
+        <span className="text-[13px] leading-none">✦</span>
+        <span>Asistan</span>
+      </button>
 
       <div className="flex-1" />
 

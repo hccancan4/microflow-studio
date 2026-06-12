@@ -12,7 +12,7 @@ import CanvasEditor from './components/Canvas/CanvasEditor';
 // ScriptEditor (Monaco) yalnız Script sekmesine geçilince yüklenir (kod-bölme).
 const ScriptEditor = lazy(() => import('./components/ScriptEditor/ScriptEditor'));
 import ResultsPanel from './components/ResultsPanel/ResultsPanel';
-import PropertiesPanel from './components/PropertiesPanel/PropertiesPanel';
+import RightDock from './components/RightDock/RightDock';
 import ProgressOverlay from './components/overlays/ProgressOverlay';
 import ExportDialog from './features/export/ExportDialog';
 import ExperimentImportDialog from './features/experiment/ExperimentImportDialog';
@@ -85,6 +85,20 @@ const App: React.FC = () => {
     [runScript],
   );
 
+  // ✦ Asistan toggle: kapalıysa aç + asistan sekmesine geç;
+  // zaten asistan görünürken tekrar basılırsa paneli kapat.
+  const rightPanelTab = useProjectStore((s) => s.rightPanelTab);
+  const assistantVisible = rightPanelOpen && rightPanelTab === 'assistant';
+  const handleToggleAssistant = useCallback(() => {
+    const st = useProjectStore.getState();
+    if (st.rightPanelOpen && st.rightPanelTab === 'assistant') {
+      st.toggleRightPanel();
+    } else {
+      if (!st.rightPanelOpen) st.toggleRightPanel();
+      st.setRightPanelTab('assistant');
+    }
+  }, []);
+
   // ── Dialog durumları ─────────────────────────────────────────────────────
   const [expDialogOpen, setExpDialogOpen] = useState(false);
   const [sweepDialogOpen, setSweepDialogOpen] = useState(false);
@@ -122,6 +136,8 @@ const App: React.FC = () => {
         onOpenSweep={() => setSweepDialogOpen(true)}
         onOpenHelp={() => setHelpOpen(true)}
         onRunTemplate={handleRunTemplate}
+        onToggleAssistant={handleToggleAssistant}
+        assistantOpen={assistantVisible}
         busy={isBusy}
       />
 
@@ -155,7 +171,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Sağ panel */}
-        {rightPanelOpen && <PropertiesPanel width={rightPanelWidth} />}
+        {rightPanelOpen && <RightDock width={rightPanelWidth} runScript={runScript} />}
       </div>
 
       {/* Status bar */}

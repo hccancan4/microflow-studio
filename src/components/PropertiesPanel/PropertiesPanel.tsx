@@ -44,11 +44,9 @@ const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ width }) => {
     selectedIds.length === 1 ? components.find((c) => c.id === selectedIds[0]) : null;
   const multiSelected = selectedIds.length > 1;
 
+  // Kenarlık RightDock'tan gelir (bu panel artık sağ dock sekmesi içinde yaşar)
   return (
-    <div
-      className="flex flex-col bg-mf-surface border-l border-mf-border overflow-hidden"
-      style={{ width }}
-    >
+    <div className="flex flex-col bg-mf-surface overflow-hidden h-full" style={{ width }}>
       {/* Bileşen Özellikleri */}
       <div className="panel-header">
         <span>Özellikler</span>

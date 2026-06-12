@@ -3,8 +3,8 @@ import type { ProjectMetadata, ActiveTab } from '../types';
 
 interface ProjectState {
   metadata: ProjectMetadata;
-  filePath: string | null;       // mevcut .mflow dosyası yolu
-  isDirty: boolean;              // kaydedilmemiş değişiklik var mı
+  filePath: string | null; // mevcut .mflow dosyası yolu
+  isDirty: boolean; // kaydedilmemiş değişiklik var mı
   recentFiles: string[];
   activeTab: ActiveTab;
 
@@ -15,6 +15,8 @@ interface ProjectState {
   leftPanelWidth: number;
   rightPanelWidth: number;
   bottomPanelHeight: number;
+  /** Sağ dock sekmesi: Özellikler | ✦ Asistan */
+  rightPanelTab: 'properties' | 'assistant';
 
   // Script içeriği
   scriptContent: string;
@@ -32,6 +34,7 @@ interface ProjectState {
   setLeftPanelWidth: (width: number) => void;
   setRightPanelWidth: (width: number) => void;
   setBottomPanelHeight: (height: number) => void;
+  setRightPanelTab: (tab: 'properties' | 'assistant') => void;
 
   setScriptContent: (content: string) => void;
   newProject: () => void;
@@ -83,6 +86,7 @@ export const useProjectStore = create<ProjectState>()((set) => ({
   leftPanelWidth: 240,
   rightPanelWidth: 280,
   bottomPanelHeight: 220,
+  rightPanelTab: 'properties',
 
   scriptContent: DEFAULT_SCRIPT,
 
@@ -103,16 +107,14 @@ export const useProjectStore = create<ProjectState>()((set) => ({
 
   setActiveTab: (tab) => set({ activeTab: tab }),
 
-  toggleLeftPanel: () =>
-    set((state) => ({ leftPanelOpen: !state.leftPanelOpen })),
-  toggleRightPanel: () =>
-    set((state) => ({ rightPanelOpen: !state.rightPanelOpen })),
-  toggleBottomPanel: () =>
-    set((state) => ({ bottomPanelOpen: !state.bottomPanelOpen })),
+  toggleLeftPanel: () => set((state) => ({ leftPanelOpen: !state.leftPanelOpen })),
+  toggleRightPanel: () => set((state) => ({ rightPanelOpen: !state.rightPanelOpen })),
+  toggleBottomPanel: () => set((state) => ({ bottomPanelOpen: !state.bottomPanelOpen })),
 
   setLeftPanelWidth: (width) => set({ leftPanelWidth: width }),
   setRightPanelWidth: (width) => set({ rightPanelWidth: width }),
   setBottomPanelHeight: (height) => set({ bottomPanelHeight: height }),
+  setRightPanelTab: (rightPanelTab) => set({ rightPanelTab }),
 
   setScriptContent: (content) => set({ scriptContent: content, isDirty: true }),
 
