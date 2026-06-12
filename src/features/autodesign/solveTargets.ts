@@ -13,7 +13,7 @@ export interface BranchSpec {
   target_q_ul_min: number;
   r_si: number; // Pa·s/m³
   r_disp: number; // mbar/(µL·min⁻¹)
-  l_mm: number; // 0.01 mm'ye yukarı yuvarlanmış
+  l_mm: number; // 0.01 mm'ye AŞAĞI yuvarlanmış (µFG 1.05× fazla-direnç cezası: hedefe alttan yaklaş)
   footprint_mm: number;
   fits_envelope: boolean;
   w_flag: boolean;

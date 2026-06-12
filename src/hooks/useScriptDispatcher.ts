@@ -15,7 +15,7 @@
  *   2) Bu hook her event'i yakalayıp store'a uygular
  *   3) Performance için: çok sayıda action → tek history push
  */
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { useDesignStore } from '../stores/useDesignStore';
 import { useProjectStore } from '../stores/useProjectStore';
@@ -77,6 +77,17 @@ export function useScriptDispatcher(onStatusChange?: (status: ScriptRunStatus) =
   const batch = useRef<DesignAction[]>([]);
   const isCollecting = useRef(false);
 
+  // KRİTİK — callback ref üzerinden okunur ki listener'lar caller'ın her
+  // render'ında SÖKÜLÜP yeniden kurulmasın. Eski hali `[onStatusChange]`
+  // bağımlılığıyla koşuyordu ve useScriptRun her render'da yeni closure
+  // geçirdiğinden her App render'ı unlisten→listen döngüsü yaratıyordu.
+  // runScript koşu başında state güncellediği (render tetiklediği) için
+  // Rust'ın emit ettiği script-action/script-completed event'leri tam bu
+  // dinleyicisiz pencereye düşüyor ve batch sessizce kayboluyordu —
+  // şablon/asistan tasarımları canvas'a hiç çizilmiyordu.
+  const onStatusChangeRef = useRef(onStatusChange);
+  onStatusChangeRef.current = onStatusChange;
+
   useEffect(() => {
     // KRİTİK — yarış-güvenli kayıt: listen() async'tir; StrictMode'un hızlı
     // mount→unmount→mount döngüsünde cleanup, promise resolve olmadan koşarsa
@@ -102,7 +113,7 @@ export function useScriptDispatcher(onStatusChange?: (status: ScriptRunStatus) =
     // Script çıktısı (print satırları)
     track(
       listen<string>('script-output', (evt) => {
-        onStatusChange?.({
+        onStatusChangeRef.current?.({
           running: true,
           lastOutput: evt.payload,
           lastError: null,
@@ -123,7 +134,7 @@ export function useScriptDispatcher(onStatusChange?: (status: ScriptRunStatus) =
           applyActionBatch(actions);
         }
 
-        onStatusChange?.({
+        onStatusChangeRef.current?.({
           running: false,
           lastOutput: '',
           lastError: evt.payload.error,
@@ -137,15 +148,22 @@ export function useScriptDispatcher(onStatusChange?: (status: ScriptRunStatus) =
       cancelled = true;
       unlisten.forEach((u) => u());
     };
-  }, [onStatusChange]);
+    // Bilinçli boş bağımlılık: listener'lar mount başına BİR KEZ kurulur;
+    // güncel callback onStatusChangeRef üzerinden okunur (yukarıya bkz).
+  }, []);
 
-  return {
-    /** Yeni script koşusu başlıyor — buffer'ı temizle */
-    reset: () => {
-      batch.current = [];
-      isCollecting.current = true;
-    },
-  };
+  // KRİTİK — dönüş STABİL tutulur. reset yalnız stabil ref'lere dokunduğu
+  // için useCallback([]) güvenli; dönüş useMemo'lanınca useScriptRun'ın
+  // runScript useCallback'i (dep: scriptDispatcher) artık her render'da
+  // yeniden oluşmaz → Toolbar/RightDock/AutoDesignDialog prop churn'ü biter.
+  // (Bu churn eski listener-sökme bug'ının mekanizmasıydı; boş-deps onu
+  // zararsız kıldı, burada kaynağını da kapatıyoruz.)
+  const reset = useCallback(() => {
+    batch.current = [];
+    isCollecting.current = true;
+  }, []);
+
+  return useMemo(() => ({ reset }), [reset]);
 }
 
 /**
