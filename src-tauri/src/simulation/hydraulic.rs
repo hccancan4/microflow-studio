@@ -104,7 +104,7 @@ pub struct BranchSpec {
     pub target_q_ul_min: f64,
     pub r_si: f64,          // Pa·s/m³
     pub r_disp: f64,        // mbar/(µL·min⁻¹)
-    pub l_mm: f64,          // 0.01 mm'ye YUKARI yuvarlanmış serpantin uzunluğu
+    pub l_mm: f64,          // 0.01 mm'ye AŞAĞI yuvarlanmış serpantin uzunluğu
     pub footprint_mm: f64,  // hücre içi yaklaşık iz: l / SERPENTINE_LEN_FACTOR
     pub fits_envelope: bool, // l_mm <= cell_mm
     pub w_flag: bool,        // w_um < W_FAB_MIN_UM (üretim limiti)
@@ -117,9 +117,11 @@ const UL_MIN_TO_M3_S: f64 = 1.0 / (1e9 * 60.0);
 ///
 /// Elektrik analojisi: her dal aynı `p_branch` basıncını görür;
 /// `p_branch = p_in − Q_tot·R_feed` (besleme düşümü kesin olarak düşülür),
-/// `R_i = p_branch / Q_i`. Uzunluk YUKARI yuvarlanır: R artar ⇒ gerçek debi
-/// hedefe ALTTAN yaklaşır (µFG printability politikası; fab hatası R'yi
-/// zaten artırma eğiliminde).
+/// `R_i = p_branch / Q_i`. Uzunluk AŞAĞI yuvarlanır: tasarım direnci hedefin
+/// hafif ALTINDA kalır; üretim toleransı (daha dar/pürüzlü kanal ⇒ R↑)
+/// direnci hedefe alttan taşır. Bu, µFG'nin Tabu Search fitness'ındaki
+/// 1.05× asimetrik fazla-direnç cezasıyla aynı politikadır
+/// (dxbiotech/Microfluidics-Resistance-ML, generative_model.py).
 pub fn solve_targets(
     p_in_pa: f64,
     fluid: &FluidProperties,
@@ -160,7 +162,9 @@ pub fn solve_targets(
         .map(|t| {
             let r = p_branch / (t.q_ul_min * UL_MIN_TO_M3_S);
             let l_um = l_um_for_r(r, w_um, h_um, fluid);
-            let l_mm = (l_um / 1000.0 * 100.0).ceil() / 100.0; // yukarı, 0.01 mm
+            // Aşağı yuvarla (0.01 mm) — tasarım R'si hedefin altında kalsın
+            // (fab toleransı R'yi yukarı iter); taban koruması 0.01 mm.
+            let l_mm = ((l_um / 1000.0 * 100.0).floor() / 100.0).max(0.01);
             BranchSpec {
                 label: t.label.clone(),
                 target_q_ul_min: t.q_ul_min,
@@ -253,6 +257,26 @@ mod tests {
                 t.label,
                 q_ul,
                 t.q_ul_min
+            );
+        }
+    }
+
+    /// "Alttan" politikası: yuvarlanan uzunluk tam değeri ASLA aşmaz
+    /// (tasarım R'si hedefin altında kalır; üretim toleransı tamamlar).
+    #[test]
+    fn rounded_length_never_exceeds_exact() {
+        let f = water();
+        for q in [0.3, 0.5, 1.0, 1.7, 2.0, 3.3, 7.9] {
+            let out = solve_targets(
+                1000.0, &f, 100.0, 80.0, None, None,
+                &[TargetSpec { label: "Ç".into(), q_ul_min: q }],
+            )
+            .unwrap();
+            let exact_um = l_um_for_r(out[0].r_si, 100.0, 80.0, &f);
+            assert!(
+                out[0].l_mm * 1000.0 <= exact_um + 1e-6,
+                "q={q}: l_mm={} tam değeri aşıyor ({exact_um} µm)",
+                out[0].l_mm
             );
         }
     }
