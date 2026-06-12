@@ -74,7 +74,16 @@ const App: React.FC = () => {
     handleExport,
     handleExportConfirm,
   } = useExportFlow(components, connections);
-  const { handleRunScript, scriptStatus, scriptOutputLog } = useScriptRun();
+  const { runScript, handleRunScript, scriptStatus, scriptOutputLog } = useScriptRun();
+
+  // Şablon: Lua'yı Script sekmesine yaz + çalıştır (copilot ile aynı yol)
+  const handleRunTemplate = useCallback(
+    (lua: string) => {
+      useProjectStore.getState().setScriptContent(lua);
+      void runScript(lua);
+    },
+    [runScript],
+  );
 
   // ── Dialog durumları ─────────────────────────────────────────────────────
   const [expDialogOpen, setExpDialogOpen] = useState(false);
@@ -112,6 +121,7 @@ const App: React.FC = () => {
         onImportExperiment={handleImportExperiment}
         onOpenSweep={() => setSweepDialogOpen(true)}
         onOpenHelp={() => setHelpOpen(true)}
+        onRunTemplate={handleRunTemplate}
         busy={isBusy}
       />
 

@@ -2,7 +2,7 @@
  * Toolbar — Üst araç çubuğu
  * Dosya işlemleri, düzenleme araçları, simülasyon butonları
  */
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   FiFile,
   FiFolder,
@@ -18,9 +18,12 @@ import {
   FiSliders,
   FiLayout,
   FiHelpCircle,
+  FiBookOpen,
+  FiChevronDown,
 } from 'react-icons/fi';
 import { useProjectStore } from '../../stores/useProjectStore';
 import { useDesignStore } from '../../stores/useDesignStore';
+import { LUA_TEMPLATES } from '../../templates/luaTemplates';
 import clsx from 'clsx';
 
 interface ToolbarProps {
@@ -33,6 +36,8 @@ interface ToolbarProps {
   onImportExperiment: () => void;
   onOpenSweep: () => void;
   onOpenHelp: () => void;
+  /** Şablon Lua'sını çalıştır (Script sekmesine de yazılır). */
+  onRunTemplate: (lua: string) => void;
   /** Simülasyon ya da sweep çalışırken simülasyon butonlarını disabled yap. */
   busy?: boolean;
 }
@@ -47,6 +52,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onImportExperiment,
   onOpenSweep,
   onOpenHelp,
+  onRunTemplate,
   busy = false,
 }) => {
   const {
@@ -179,6 +185,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
 
       <div className="flex-1" />
 
+      {/* Şablonlar — mf.* Lua snippet'leri */}
+      <TemplatesMenu onRunTemplate={onRunTemplate} busy={busy} />
+
       {/* Deney verisi */}
       <ToolbarButton
         icon={<FiDatabase />}
@@ -211,6 +220,69 @@ const Toolbar: React.FC<ToolbarProps> = ({
 
       <div className="tool-divider" />
       <ToolbarButton icon={<FiHelpCircle />} label="Klavye Kısayolları (?)" onClick={onOpenHelp} />
+    </div>
+  );
+};
+
+/** Şablonlar dropdown'u — her madde bir mf.* Lua şablonunu çalıştırır. */
+const TemplatesMenu: React.FC<{ onRunTemplate: (lua: string) => void; busy: boolean }> = ({
+  onRunTemplate,
+  busy,
+}) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Dışarı tıklama / ESC ile kapat
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        disabled={busy}
+        className={clsx(
+          'flex items-center gap-1 px-2 py-1 rounded-sm text-xs transition-colors',
+          'text-mf-text-dim hover:text-mf-text hover:bg-mf-elev',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
+          open && 'bg-mf-elev text-mf-text',
+        )}
+        title="Hazır mf.* Lua şablonları — çalıştırır ve Script sekmesine yazar"
+      >
+        <FiBookOpen size={13} />
+        <span>Şablonlar</span>
+        <FiChevronDown size={11} className={clsx('transition-transform', open && 'rotate-180')} />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-50 w-72 bg-mf-panel border border-mf-border rounded-ds-sm shadow-pop py-1">
+          {LUA_TEMPLATES.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => {
+                setOpen(false);
+                onRunTemplate(t.lua);
+              }}
+              className="w-full text-left px-3 py-1.5 hover:bg-mf-elev transition-colors"
+            >
+              <div className="text-xs text-mf-text">{t.label}</div>
+              <div className="text-2xs text-mf-text-dark leading-snug">{t.description}</div>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

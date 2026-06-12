@@ -516,6 +516,36 @@ mod tests {
         assert_eq!(conn["toPortIndex"].as_u64(), Some(0), "hedef varsayılanı giriş portu 0");
     }
 
+    /// Şablon Lua dosyaları (src/templates/lua/) gerçek yorumlayıcıda koşar —
+    /// frontend `?raw` ile aynı dosyaları kullanır (tek kaynak, çift doğrulama).
+    #[test]
+    fn lua_templates_execute_successfully() {
+        let templates: [(&str, &str); 4] = [
+            ("splitter_2_1", include_str!("../../../src/templates/lua/splitter_2_1.lua")),
+            ("splitter_4_equal", include_str!("../../../src/templates/lua/splitter_4_equal.lua")),
+            (
+                "serpentine_resistor",
+                include_str!("../../../src/templates/lua/serpentine_resistor.lua"),
+            ),
+            (
+                "droplet_tjunction",
+                include_str!("../../../src/templates/lua/droplet_tjunction.lua"),
+            ),
+        ];
+        for (name, lua) in templates {
+            let (r, actions) = run_script_collect(lua);
+            assert!(r.success, "şablon {name} hata verdi: {:?}", r.error);
+            assert!(
+                actions.iter().any(|a| matches!(a, DesignAction::AddComponent { .. })),
+                "şablon {name} hiç bileşen üretmedi"
+            );
+            assert!(
+                actions.iter().any(|a| matches!(a, DesignAction::RunSimulation { .. })),
+                "şablon {name} simülasyon tetiklemiyor"
+            );
+        }
+    }
+
     #[test]
     fn mf_run_cfd_resolution_mapping() {
         let (r, actions) = run_script_collect(r#"mf.run_cfd("kaba")"#);
