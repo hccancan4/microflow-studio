@@ -20,15 +20,29 @@ export interface AssistantMsg {
   applied?: boolean;
 }
 
-export interface LlmStatusInfo {
+export type ProviderId = 'anthropic' | 'openai';
+
+export interface ProviderStatusInfo {
   hasKey: boolean;
   source: 'env' | 'config' | 'none';
   model: string;
+  baseUrl?: string;
+  timeoutSecs?: number;
+}
+
+/** Backend `llm_status` dönüşünün frontend yansıması (anahtarlar asla gelmez). */
+export interface LlmStatusInfo {
+  activeProvider: ProviderId;
+  anthropic: ProviderStatusInfo;
+  openai: ProviderStatusInfo;
 }
 
 interface AssistantState {
   messages: AssistantMsg[];
   sending: boolean;
+  /** Aktif uzak sağlayıcı (backend active_provider ile senkron). */
+  providerId: ProviderId;
+  /** Anthropic model seçimi (openai modeli backend config'ten gelir). */
   model: string;
   /** Üretilen Lua çalıştırılmadan önce onay iste (güvenli varsayılan). */
   confirmBeforeRun: boolean;
@@ -37,9 +51,10 @@ interface AssistantState {
   addMessage: (m: AssistantMsg) => void;
   markApplied: (id: string) => void;
   setSending: (v: boolean) => void;
+  setProviderId: (p: ProviderId) => void;
   setModel: (m: string) => void;
   setConfirmBeforeRun: (v: boolean) => void;
-  setStatus: (s: LlmStatusInfo) => void;
+  setStatus: (s: LlmStatusInfo | null) => void;
   clearChat: () => void;
 }
 
@@ -55,6 +70,7 @@ export const nextMsgId = () => `msg_${Date.now()}_${++msgCounter}`;
 export const useAssistantStore = create<AssistantState>()((set) => ({
   messages: [],
   sending: false,
+  providerId: 'anthropic',
   model: 'claude-sonnet-4-6',
   confirmBeforeRun: true,
   status: null,
@@ -65,6 +81,7 @@ export const useAssistantStore = create<AssistantState>()((set) => ({
       messages: s.messages.map((m) => (m.id === id ? { ...m, applied: true } : m)),
     })),
   setSending: (sending) => set({ sending }),
+  setProviderId: (providerId) => set({ providerId }),
   setModel: (model) => set({ model }),
   setConfirmBeforeRun: (confirmBeforeRun) => set({ confirmBeforeRun }),
   setStatus: (status) => set({ status }),

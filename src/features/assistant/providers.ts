@@ -1,17 +1,21 @@
 /**
  * providers — sağlayıcı-bağımsız LM katmanı.
  *
- * `ClaudeProvider` → Tauri `llm_complete` (çağrı Rust'ta, anahtar backend'de).
+ * `RemoteProvider(id)` → Tauri `llm_complete` (çağrı Rust'ta, anahtarlar
+ * backend'de). id: 'anthropic' (Claude) | 'openai' (OpenAI-uyumlu — Ollama,
+ * LM Studio, vLLM, fine-tune mikroakışkan LM...; base_url backend config'te).
  * `LocalRuleProvider` → Türkçe komutu regex ile ayrıştırır, AYNI
  * `solve_targets` çekirdeğiyle dal uzunluklarını çözer ve mf.* Lua üretir —
  * API yokken/koparken bile doğru hidrolik (µFG'den farkımız).
- * `completeWithFallback` → Claude hata/timeout'unda yerel motora düşer;
- * UI hiçbir durumda bloke olmaz (backend 14 sn çift timeout).
+ * `completeWithFallback` → uzak sağlayıcı hata/timeout'unda yerel motora
+ * düşer; UI hiçbir durumda bloke olmaz (backend çift timeout).
  */
 import { invoke } from '@tauri-apps/api/core';
 import { FLUID_PRESETS } from '../../stores/useSimulationStore';
 import { solveTargets } from '../autodesign/solveTargets';
 import { buildAutoDesignLua } from '../autodesign/autoDesignLua';
+
+export type ProviderId = 'anthropic' | 'openai';
 
 export interface LlmMessage {
   role: 'user' | 'assistant';
@@ -19,6 +23,7 @@ export interface LlmMessage {
 }
 
 export interface LlmRequest {
+  /** Boş bırakılırsa backend, sağlayıcının config'teki modelini kullanır. */
   model: string;
   system: string;
   messages: LlmMessage[];
@@ -29,13 +34,17 @@ export interface LlmProvider {
   complete(req: LlmRequest): Promise<string>;
 }
 
-// ─── Claude (backend üzerinden) ─────────────────────────────────────────────
+// ─── Uzak sağlayıcı (backend üzerinden — anthropic | openai-uyumlu) ────────
 
-export class ClaudeProvider implements LlmProvider {
-  readonly name = 'claude';
+export class RemoteProvider implements LlmProvider {
+  readonly name: ProviderId;
+  constructor(id: ProviderId) {
+    this.name = id;
+  }
   async complete(req: LlmRequest): Promise<string> {
     return invoke<string>('llm_complete', {
-      model: req.model,
+      provider: this.name,
+      model: req.model.length > 0 ? req.model : null,
       system: req.system,
       messages: req.messages,
     });
@@ -159,22 +168,30 @@ export class LocalRuleProvider implements LlmProvider {
 export interface CompletionResult {
   text: string;
   provider: string;
-  /** Claude'dan yerel motora düşüldüyse kullanıcıya gösterilecek not. */
+  /** Uzak sağlayıcıdan yerel motora düşüldüyse kullanıcıya gösterilecek not. */
   fallbackNote?: string;
 }
 
-export async function completeWithFallback(req: LlmRequest): Promise<CompletionResult> {
-  const claude = new ClaudeProvider();
+const PROVIDER_LABELS: Record<ProviderId, string> = {
+  anthropic: 'Claude',
+  openai: 'OpenAI-uyumlu sağlayıcı',
+};
+
+export async function completeWithFallback(
+  req: LlmRequest,
+  providerId: ProviderId = 'anthropic',
+): Promise<CompletionResult> {
+  const remote = new RemoteProvider(providerId);
   try {
-    const text = await claude.complete(req);
-    return { text, provider: claude.name };
+    const text = await remote.complete(req);
+    return { text, provider: remote.name };
   } catch (err) {
     const local = new LocalRuleProvider();
     const text = await local.complete(req);
     return {
       text,
       provider: local.name,
-      fallbackNote: `Claude'a ulaşılamadı (${String(err).slice(0, 120)}) — yerel kural motoru kullanıldı.`,
+      fallbackNote: `${PROVIDER_LABELS[providerId]}'ya ulaşılamadı (${String(err).slice(0, 120)}) — yerel kural motoru kullanıldı.`,
     };
   }
 }

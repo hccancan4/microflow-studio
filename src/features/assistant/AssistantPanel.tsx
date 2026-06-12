@@ -30,7 +30,38 @@ import {
   MODELS,
   type AssistantMsg,
   type LlmStatusInfo,
+  type ProviderId,
+  type ProviderStatusInfo,
 } from './useAssistantStore';
+
+/** Backend `llm_status` ham şekli (snake_case). */
+interface RawProviderStatus {
+  has_key: boolean;
+  source: string;
+  model: string;
+  base_url?: string;
+  timeout_secs?: number;
+}
+interface RawLlmStatus {
+  active_provider: string;
+  anthropic: RawProviderStatus;
+  openai: RawProviderStatus;
+}
+
+function mapStatus(raw: RawLlmStatus): LlmStatusInfo {
+  const map = (p: RawProviderStatus): ProviderStatusInfo => ({
+    hasKey: p.has_key,
+    source: p.source as ProviderStatusInfo['source'],
+    model: p.model,
+    baseUrl: p.base_url,
+    timeoutSecs: p.timeout_secs,
+  });
+  return {
+    activeProvider: raw.active_provider === 'openai' ? 'openai' : 'anthropic',
+    anthropic: map(raw.anthropic),
+    openai: map(raw.openai),
+  };
+}
 
 const EXAMPLE_CHIPS = [
   '10 mbar 2:1:1 bölücü su',
@@ -46,12 +77,14 @@ const AssistantPanel: React.FC<Props> = ({ runScript }) => {
   const {
     messages,
     sending,
+    providerId,
     model,
     confirmBeforeRun,
     status,
     addMessage,
     markApplied,
     setSending,
+    setProviderId,
     setModel,
     setConfirmBeforeRun,
     setStatus,
@@ -61,19 +94,24 @@ const AssistantPanel: React.FC<Props> = ({ runScript }) => {
   const [input, setInput] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [keyInput, setKeyInput] = useState('');
+  // OpenAI-uyumlu sağlayıcı form alanları (backend config'e kaydedilir)
+  const [baseUrlInput, setBaseUrlInput] = useState('');
+  const [openaiModelInput, setOpenaiModelInput] = useState('');
+  const [timeoutInput, setTimeoutInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Anahtar/model durumunu yükle (panel ilk açıldığında)
+  // Sağlayıcı/anahtar durumunu yükle (panel ilk açıldığında)
   useEffect(() => {
-    invoke<{ has_key: boolean; source: string; model: string }>('llm_status')
-      .then((s) =>
-        setStatus({
-          hasKey: s.has_key,
-          source: s.source as LlmStatusInfo['source'],
-          model: s.model,
-        }),
-      )
-      .catch(() => setStatus({ hasKey: false, source: 'none', model }));
+    invoke<RawLlmStatus>('llm_status')
+      .then((raw) => {
+        const s = mapStatus(raw);
+        setStatus(s);
+        setProviderId(s.activeProvider);
+        setBaseUrlInput(s.openai.baseUrl ?? '');
+        setOpenaiModelInput(s.openai.model);
+        setTimeoutInput(String(s.openai.timeoutSecs ?? 60));
+      })
+      .catch(() => setStatus(null));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -103,11 +141,15 @@ const AssistantPanel: React.FC<Props> = ({ runScript }) => {
         role: m.role,
         content: m.lua ? `${m.text}\n\`\`\`lua\n${m.lua}\n\`\`\`` : m.text,
       }));
-      const res = await completeWithFallback({
-        model,
-        system: SYSTEM_PROMPT_TR,
-        messages: history,
-      });
+      // anthropic: panel model seçimi; openai: backend config'teki model ('' → backend çözer)
+      const res = await completeWithFallback(
+        {
+          model: providerId === 'anthropic' ? model : '',
+          system: SYSTEM_PROMPT_TR,
+          messages: history,
+        },
+        providerId,
+      );
       const blocks = extractLuaBlocks(res.text);
       const lua = blocks.length > 0 ? blocks.join('\n\n') : undefined;
       const aMsg: AssistantMsg = {
@@ -139,15 +181,24 @@ const AssistantPanel: React.FC<Props> = ({ runScript }) => {
 
   const saveSettings = async () => {
     try {
-      const s = await invoke<{ has_key: boolean; source: string; model: string }>(
-        'save_llm_settings',
-        { key: keyInput.length > 0 ? keyInput : null, model },
-      );
-      setStatus({
-        hasKey: s.has_key,
-        source: s.source as LlmStatusInfo['source'],
-        model: s.model,
-      });
+      const args =
+        providerId === 'openai'
+          ? {
+              provider: 'openai',
+              key: keyInput.length > 0 ? keyInput : null,
+              model: openaiModelInput.trim() || null,
+              baseUrl: baseUrlInput.trim() || null,
+              timeoutSecs: Number.parseInt(timeoutInput, 10) || null,
+              activeProvider: providerId,
+            }
+          : {
+              provider: 'anthropic',
+              key: keyInput.length > 0 ? keyInput : null,
+              model,
+              activeProvider: providerId,
+            };
+      const raw = await invoke<RawLlmStatus>('save_llm_settings', args);
+      setStatus(mapStatus(raw));
       setKeyInput('');
       toast.success('Asistan ayarları kaydedildi');
     } catch (err) {
@@ -155,15 +206,38 @@ const AssistantPanel: React.FC<Props> = ({ runScript }) => {
     }
   };
 
-  const keyBadge =
-    status === null
-      ? { text: '...', cls: 'text-mf-text-dark' }
-      : status.hasKey
-        ? {
-            text: status.source === 'env' ? 'Anahtar: ortam değişkeni' : 'Anahtar: yapılandırma',
-            cls: 'text-mf-green',
-          }
-        : { text: 'Anahtar yok — yerel kural modu', cls: 'text-mf-orange' };
+  /** Sağlayıcı değişimi anında backend'e de yazılır (kalıcı). */
+  const switchProvider = async (p: ProviderId) => {
+    setProviderId(p);
+    try {
+      const raw = await invoke<RawLlmStatus>('save_llm_settings', {
+        provider: p,
+        activeProvider: p,
+      });
+      setStatus(mapStatus(raw));
+    } catch {
+      /* durum yenilenemese de UI seçimi geçerli — complete çağrısı provider'ı açıkça geçer */
+    }
+  };
+
+  // Durum rozeti — sağlayıcıya göre: openai'de anahtarsızlık NORMALDİR (lokal sunucu)
+  const active: ProviderStatusInfo | null =
+    status === null ? null : providerId === 'openai' ? status.openai : status.anthropic;
+  const keyBadge = (() => {
+    if (active === null) return { text: '...', cls: 'text-mf-text-dark' };
+    if (providerId === 'openai') {
+      const host = (active.baseUrl ?? '').replace(/^https?:\/\//, '');
+      return active.hasKey
+        ? { text: `openai · ${host} · anahtarlı`, cls: 'text-mf-green' }
+        : { text: `openai · ${host} · anahtarsız (lokal)`, cls: 'text-mf-green' };
+    }
+    return active.hasKey
+      ? {
+          text: active.source === 'env' ? 'Claude · ortam değişkeni' : 'Claude · yapılandırma',
+          cls: 'text-mf-green',
+        }
+      : { text: 'Claude anahtarı yok — yerel kural modu', cls: 'text-mf-orange' };
+  })();
 
   return (
     <div className="flex flex-col h-full min-h-0">
@@ -199,54 +273,150 @@ const AssistantPanel: React.FC<Props> = ({ runScript }) => {
       {/* Ayarlar */}
       {settingsOpen && (
         <div className="px-3 py-2 border-b border-mf-border space-y-2 flex-shrink-0 bg-mf-bg/50">
+          {/* Sağlayıcı seçimi */}
           <div>
             <label className="text-2xs text-mf-text-dim uppercase tracking-caps block mb-1">
-              Model
+              Sağlayıcı
             </label>
-            <select
-              className="mf-input text-xs"
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-            >
-              {MODELS.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.label}
-                </option>
+            <div className="flex gap-0 bg-mf-bg border border-mf-border rounded-sm overflow-hidden">
+              {(
+                [
+                  ['anthropic', 'Claude API'],
+                  ['openai', 'OpenAI-uyumlu (lokal/uzak)'],
+                ] as [ProviderId, string][]
+              ).map(([id, label], i) => (
+                <button
+                  key={id}
+                  onClick={() => void switchProvider(id)}
+                  className={clsx(
+                    'flex-1 py-1 text-2xs font-semibold transition-colors',
+                    i > 0 && 'border-l border-mf-border',
+                    providerId === id
+                      ? 'bg-mf-blue/15 text-mf-blue'
+                      : 'text-mf-text-dim hover:text-mf-text hover:bg-mf-elev',
+                  )}
+                >
+                  {label}
+                </button>
               ))}
-            </select>
+            </div>
           </div>
-          <div>
-            <label className="text-2xs text-mf-text-dim uppercase tracking-caps block mb-1">
-              Anthropic API Anahtarı
-            </label>
-            <div className="flex gap-1">
+
+          {providerId === 'anthropic' ? (
+            <>
+              <div>
+                <label className="text-2xs text-mf-text-dim uppercase tracking-caps block mb-1">
+                  Model
+                </label>
+                <select
+                  className="mf-input text-xs"
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                >
+                  {MODELS.map((m) => (
+                    <option key={m.id} value={m.id}>
+                      {m.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-2xs text-mf-text-dim uppercase tracking-caps block mb-1">
+                  Anthropic API Anahtarı
+                </label>
+                <input
+                  type="password"
+                  className="mf-input text-xs"
+                  placeholder="sk-ant-..."
+                  value={keyInput}
+                  onChange={(e) => setKeyInput(e.target.value)}
+                  autoComplete="off"
+                />
+                <div className="text-2xs text-mf-text-dark mt-1 leading-snug">
+                  Anahtar yalnız backend'de saklanır; ANTHROPIC_API_KEY ortam değişkeni
+                  önceliklidir.
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <label className="text-2xs text-mf-text-dim uppercase tracking-caps block mb-1">
+                  Sunucu Adresi (base URL)
+                </label>
+                <input
+                  type="text"
+                  className="mf-input text-xs font-mono"
+                  placeholder="http://localhost:11434/v1  (Ollama)"
+                  value={baseUrlInput}
+                  onChange={(e) => setBaseUrlInput(e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
+              <div className="grid grid-cols-[1fr_72px] gap-1.5">
+                <div>
+                  <label className="text-2xs text-mf-text-dim uppercase tracking-caps block mb-1">
+                    Model Adı
+                  </label>
+                  <input
+                    type="text"
+                    className="mf-input text-xs font-mono"
+                    placeholder="qwen2.5:14b · gemma3:12b · fine-tune adınız"
+                    value={openaiModelInput}
+                    onChange={(e) => setOpenaiModelInput(e.target.value)}
+                    autoComplete="off"
+                  />
+                </div>
+                <div>
+                  <label className="text-2xs text-mf-text-dim uppercase tracking-caps block mb-1">
+                    Süre (sn)
+                  </label>
+                  <input
+                    type="number"
+                    className="mf-input text-xs font-mono"
+                    min={5}
+                    max={600}
+                    value={timeoutInput}
+                    onChange={(e) => setTimeoutInput(e.target.value)}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-2xs text-mf-text-dim uppercase tracking-caps block mb-1">
+                  API Anahtarı (opsiyonel — lokal sunucularda gerekmez)
+                </label>
+                <input
+                  type="password"
+                  className="mf-input text-xs"
+                  placeholder="boş bırakılabilir"
+                  value={keyInput}
+                  onChange={(e) => setKeyInput(e.target.value)}
+                  autoComplete="off"
+                />
+                <div className="text-2xs text-mf-text-dark mt-1 leading-snug">
+                  Ollama / LM Studio / vLLM ve fine-tune modeliniz bu protokolü konuşur;
+                  OPENAI_API_KEY ortam değişkeni önceliklidir.
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-2 text-xs text-mf-text-dim cursor-pointer">
               <input
-                type="password"
-                className="mf-input text-xs flex-1"
-                placeholder="sk-ant-..."
-                value={keyInput}
-                onChange={(e) => setKeyInput(e.target.value)}
-                autoComplete="off"
+                type="checkbox"
+                checked={confirmBeforeRun}
+                onChange={(e) => setConfirmBeforeRun(e.target.checked)}
               />
-              <button
-                onClick={saveSettings}
-                className="px-2 py-1 text-xs rounded border border-mf-blue/40 text-mf-blue hover:bg-mf-blue/10"
-              >
-                Kaydet
-              </button>
-            </div>
-            <div className="text-2xs text-mf-text-dark mt-1 leading-snug">
-              Anahtar yalnız backend'de saklanır; ANTHROPIC_API_KEY ortam değişkeni önceliklidir.
-            </div>
+              Çalıştırmadan önce onayla
+            </label>
+            <button
+              onClick={saveSettings}
+              className="px-2.5 py-1 text-xs rounded border border-mf-blue/40 text-mf-blue hover:bg-mf-blue/10"
+            >
+              Kaydet
+            </button>
           </div>
-          <label className="flex items-center gap-2 text-xs text-mf-text-dim cursor-pointer">
-            <input
-              type="checkbox"
-              checked={confirmBeforeRun}
-              onChange={(e) => setConfirmBeforeRun(e.target.checked)}
-            />
-            Çalıştırmadan önce onayla
-          </label>
         </div>
       )}
 
@@ -314,8 +484,8 @@ const AssistantPanel: React.FC<Props> = ({ runScript }) => {
 
         {sending && (
           <div className="flex items-center gap-2 text-xs text-mf-text-dim px-1">
-            <FiLoader size={12} className="animate-spin" /> yanıt bekleniyor… (≤14 sn, sonra yerel
-            motor)
+            <FiLoader size={12} className="animate-spin" /> yanıt bekleniyor… (≤
+            {providerId === 'openai' ? (active?.timeoutSecs ?? 60) : 14} sn, sonra yerel motor)
           </div>
         )}
       </div>
