@@ -370,10 +370,14 @@ P_branch = P_in − Q_tot·R_feed        (exact feed deduction)
 R_i      = P_branch / Q_i,target  →  L_i = l_for_r(R_i)
 ```
 
-**Rounding policy.** The µFG printability rule says flow should approach the target *from below*
-(fabrication errors tend to increase resistance). Therefore **L is rounded UP** (to 0.01 mm):
-R slightly higher ⇒ actual Q slightly *below* target. (The spec's literal "round L down" would
-overshoot the target; we documented and resolved the contradiction in favor of the flow-side rule.)
+**Rounding policy.** **L is rounded DOWN** (to 0.01 mm, floor-guarded at 0.01): the *design*
+resistance lands slightly **below** target, and fabrication tolerance (narrower, rougher channels
+⇒ higher R) carries it up *toward* the target. This is the actual µFG printability rule —
+confirmed in the official companion code (`dxbiotech/Microfluidics-Resistance-ML`,
+`generative_model.py`), whose Tabu Search fitness penalizes **over**-resistance 1.05× more
+heavily than under-resistance. "Approach the target from below" refers to **resistance**, not
+flow. (v1.1 initially rounded UP under a flow-side reading; corrected after studying the
+source — see `docs/RELATED_WORK.md`.)
 
 **Serpentine length model** (shared with the analytic solver and `mf.add_serpentine`):
 

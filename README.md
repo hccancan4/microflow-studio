@@ -220,6 +220,7 @@ MicroFlow Studio **offline-öncelikli** bir desktop uygulamasıdır:
 | [`docs/COMPONENTS.md`](docs/COMPONENTS.md) | 10 bileşen tipi, parametreler, port topoloji, direnç formülleri |
 | [`docs/SIMULATION.md`](docs/SIMULATION.md) | Analitik ağ çözücü + CFD algoritmaları |
 | [`docs/FORMULAS.md`](docs/FORMULAS.md) | Tüm fizik formülleri (direnç, Re, Dean, karıştırma) türetimleriyle |
+| [`docs/RELATED_WORK.md`](docs/RELATED_WORK.md) | µFG companion repo analizi — yaklaşım farkları, atıflar, gelecek adaylar |
 | [`docs/SCRIPTING.md`](docs/SCRIPTING.md) | Lua API referansı + örnekler |
 | [`docs/FILE_FORMAT.md`](docs/FILE_FORMAT.md) | `.mflow` JSON schema, GDS-II layer stratejisi |
 | [`docs/SHORTCUTS.md`](docs/SHORTCUTS.md) | Tam klavye kısayolu tablosu |
