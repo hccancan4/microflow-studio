@@ -3,14 +3,20 @@
 Two suites:
 
 ```bash
-# Rust unit tests (34)
+# Rust unit tests (57)
 cargo test --manifest-path src-tauri/Cargo.toml --lib
 
-# Frontend Vitest tests (72)
+# Frontend Vitest tests (104)
 npm test
 ```
 
-## Rust — **34 tests** across 6 files
+## Rust — **57 tests** across 9 files
+
+v1.1 additions (detayları kaynak dosyalarda):
+- `simulation/hydraulic.rs` — 7 tests: l_for_r roundtrip (1e-12), spec references (63.5 mm in-envelope / 254 mm flagged), mass conservation through feed network, w_flag, feed-overload error, fluid aliases
+- `scripting/mf.rs` — 9 tests: mf.* emission counts, serpentine length exactness, junction fan-out port selection, error paths, **the 4 Lua templates executed in the real interpreter** (include_str! single-source)
+- `commands/llm_commands.rs` — 6 tests: key resolution priority, request body shape, response/error parsing (no network)
+- `simulation/analytic.rs` — +1: two-outlet `outlet_flows` sums to total
 
 ---
 
@@ -80,7 +86,15 @@ npm test
 
 ---
 
-## Frontend — **72 Vitest tests** across 8 files
+## Frontend — **104 Vitest tests** across 14 files
+
+v1.1 additions: `useScriptDispatcher.test.ts` (7 — partition: meta actions
+produce no history/dirty, run queue, targets), `utils/fab.test.ts` (6),
+`features/validation/validation.test.ts` (5), `templates/luaTemplates.test.ts`
+(2), `features/assistant/luaExtract.test.ts` (3) + `providers.test.ts`
+(5 — Turkish intent parsing), `features/autodesign/autoDesignLua.test.ts` (4).
+
+### v1.0 çekirdeği — 72 test, 8 dosya
 
 Discovered by `vitest.config.ts` glob `src/**/*.{test,spec}.ts` (node env);
 tests are co-located next to their source files.

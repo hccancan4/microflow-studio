@@ -145,6 +145,32 @@ co-located); shared, framework-free helpers stay in `src/utils/`.
 
 ---
 
+## AI Copilot Data Flow (v1.1)
+
+```
+AssistantPanel (webview)                       Rust backend
+  │ kullanıcı komutu                             │
+  ├── invoke('llm_complete', {model,system,msgs})┼──► commands/llm_commands.rs
+  │                                              │      key = env ANTHROPIC_API_KEY
+  │                                              │            || app_config_dir/llm.json
+  │                                              │      reqwest → api.anthropic.com (14s ×2 timeout)
+  │ ◄── yalnız üretilen METİN ──────────────────┤      (anahtar asla yanıtta/logda değil)
+  │ hata/timeout?                                │
+  ├── LocalRuleProvider (TR regex) ──► invoke('solve_targets') ──► simulation/hydraulic.rs
+  │                                                                R_i=(P−Q·R_feed)/Q_i, l_for_r
+  │ ```lua bloğu → setScriptContent + runScript(lua)
+  └──► execute_script → DesignAction'lar → useScriptDispatcher PARTITION:
+         tasarım eylemleri → tek undo girdisi + tek setState + dirty
+         meta eylemler (set_fluid/pressure/target) → ayar store'ları (history YOK)
+         run_simulation → useSimulationStore.runQueue → useSimulationRun effect
+           (status müsaitken dequeue → handleRunAnalytic/handleRunCfd)
+```
+
+Güvenlik sınırı: webview'ın CSP'si dış host'a izin vermez; tek dış çağrı backend'dedir
+ve yalnız kullanıcı anahtar tanımlayıp Asistan'ı kullanırsa gerçekleşir.
+
+---
+
 ## Backend Layer (`src-tauri/src/`)
 
 ### Module Map

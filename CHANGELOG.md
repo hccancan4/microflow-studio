@@ -178,3 +178,19 @@ Professional repo-layout pass; behavior-neutral except one flagged fix.
 - **CI added**: GitHub Actions workflow (frontend: lint/typecheck/vitest/build; rust: clippy + cargo test with webkit deps and cache)
 - **Docs trued up**: ARCHITECTURE paths (utils → features), TESTING counts (29 → 36 Rust, phantom `test_clear` removed, 72-test frontend section added), README (CI badge, real examples tree, FORMULAS row, screenshots placeholder), stale CODE_QUALITY_REPORT deleted
 - **Root decluttered**: `.prettierrc.json` and `postcss.config.js` merged into package.json keys, `vitest.config.ts` merged into vite.config.ts `test` block; `BUGS.md` + `CONVENTIONS.md` moved under `docs/`; single-file `.vscode/` and placeholder-only `docs/images/` removed (root: 18 → 13 files)
+
+---
+
+## Phase 11 — v1.1: AI Copilot, Inverse Design & Validation (µFG parity)
+
+Inspired by the LM-driven microfluidic generator paper (Sci. Adv., µFG); built on the principle **Lua is the LM's action API** — the copilot mutates the canvas only by emitting `mf.*` Lua through the existing script pipeline.
+
+- **Hydraulic core** (`simulation/hydraulic.rs`): envelope/fab constants, fluid table with Turkish aliases, `l_um_for_r` (structural inverse of `channel_resistance`), `solve_targets` (parallel-branch R from targets with exact feed-channel deduction; length rounded UP so flow approaches the target from below). `solve_targets` Tauri command; `AnalyticDesignResult.outlet_flows` (per-outlet actual flow)
+- **`mf.*` Lua API** (`scripting/mf.rs`): intent-level surface — inlet/outlet, target-length serpentine (`turns·pitch·(2+π/2) == length_mm` exactly), smart-default `connect` with junction fan-out, `set_fluid`/`set_inlet_pressure`/`set_target_flow`, `run_quick`/`run_cfd`. Four new meta `DesignAction`s; dispatcher partition (meta actions never touch undo/dirty); run queue consumed by `useSimulationRun`
+- **✦ Asistan** (`features/assistant/`): chat panel in a tabbed right dock; provider-agnostic (`ClaudeProvider` → backend `llm_complete`; `LocalRuleProvider` parses Turkish commands and solves through the same core); model picker (Sonnet 4.6 default / Fable 5 / Haiku 4.5); confirm-before-run; generated Lua lands editable in the Script tab
+- **LLM backend** (`commands/llm_commands.rs`): Messages API via reqwest+rustls; key from `ANTHROPIC_API_KEY` env or app-config `llm.json` (UI-managed, never returned to the webview); dual 14 s timeout with local-rule fallback
+- **✦ Oto-Tasarım** (`features/autodesign/`): targets table → solve preview (R/L/Re + envelope/fab flags) → one-click circuit via generated Lua (+optional CFD on the feed channel)
+- **Doğrulama tab** (`features/validation/` + `ValidationTab`): per-outlet target-vs-actual flow, ≤5%/≤15% thresholds, missing-outlet and envelope flags
+- **Multi-fluid + fab-awareness**: 7 fluid presets (pbs/plasma/etanol/gliserol50 added), mbar secondary display, <40 µm inline fabrication warnings
+- **Lua templates** (`templates/lua/`): 2:1 splitter, 4-way equal, reference serpentine resistor, T-junction droplet topology — Toolbar "Şablonlar" menu; the same files run in Rust tests via `include_str!`; `starters.ts` retired
+- Tests: Rust 34 → **57**, Vitest 72 → **104**; all green with clippy `-D warnings`

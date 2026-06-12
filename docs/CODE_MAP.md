@@ -41,6 +41,15 @@ Store güncellenir  ──►  ilgili panel render olur
 | `.mflow` dosya şeması | `types/project.ts` + `src-tauri/src/project/mod.rs` |
 | Tipler (domain'e bölünmüş) | `types/<domain>.ts` (`component`, `canvas`, `simulation`, `project`, `experiment`, `ui`) |
 | Sweep feature (dialog + store + runner + helpers) | `features/sweep/` |
+| ✦ Asistan (copilot UI + sağlayıcılar + sistem promptu) | `features/assistant/` |
+| ✦ Oto-Tasarım (dialog + Lua üretici + solve_targets sarmalayıcı) | `features/autodesign/` |
+| Doğrulama (hedef store + satır hesabı) | `features/validation/` + `ResultsPanel/tabs/ValidationTab.tsx` |
+| `mf.*` Lua API (copilot eylem yüzeyi) | `src-tauri/src/scripting/mf.rs` |
+| Hidrolik çekirdek (l_for_r, solve_targets, zarf sabitleri, akışkan tablosu) | `src-tauri/src/simulation/hydraulic.rs` (TS aynası: `utils/fab.ts`) |
+| LLM backend (anahtar çözümü + Messages API çağrısı) | `src-tauri/src/commands/llm_commands.rs` |
+| Script run kuyruğu (mf.run_quick/run_cfd tüketicisi) | `stores/useSimulationStore.ts` (`runQueue`) + `hooks/useSimulationRun.ts` effect |
+| Lua şablonları (tek kaynak; Rust testi de koşturur) | `templates/lua/*.lua` + `templates/luaTemplates.ts` |
+| Sağ dock sekmeleri (Özellikler / ✦ Asistan) | `components/RightDock/RightDock.tsx` |
 | Overlay/feedback bileşenleri (toast, progress, kısayol yardımı, lazy spinner) | `components/overlays/` |
 | Monaco editör offline kurulumu (yerel bundle + worker, CDN yok) | `components/ScriptEditor/monacoSetup.ts` + `vite.config.ts` (`strip-monaco-cdn`) |
 | Bilinen latent bug'lar | [`BUGS.md`](BUGS.md) |
@@ -86,6 +95,20 @@ Store güncellenir  ──►  ilgili panel render olur
 → `invoke('save_project_file' | 'load_project_file' | 'new_project')`
 → `commands/project_commands.rs` → `project/mod.rs`
 → yükleme: `RawMFlowProject` (snake_case) → store'lara dağıtılır (design + simulation + experiment + script)
+
+### ✦ Asistan (AI copilot)
+`features/assistant/AssistantPanel.tsx` → `completeWithFallback` (`providers.ts`)
+→ **Claude yolu**: `invoke('llm_complete')` → `commands/llm_commands.rs` (anahtar env/config; reqwest; 14 sn çift timeout) → yanıttan ```lua bloğu (`luaExtract.ts`)
+→ **fallback yolu**: `LocalRuleProvider` TR komutu ayrıştırır → `invoke('solve_targets')` → `autodesign/autoDesignLua.ts`
+→ üretilen Lua → `setScriptContent` + `runScript(lua)` → script pipeline → canvas + `mf.run_quick()` kuyruğu → Doğrulama sekmesi
+
+### ✦ Oto-Tasarım (inverse)
+`features/autodesign/AutoDesignDialog.tsx` → `solveTargets` (`invoke('solve_targets')` → `simulation/hydraulic.rs::solve_targets`, R_i=(P−Q·R_feed)/Q_i + `l_um_for_r`)
+→ önizleme tablosu → `buildAutoDesignLua` → `runScript(lua)` → canvas + Doğrulama
+
+### Doğrulama
+`mf.set_target_flow` (script) → `SetTargetFlow` action → `features/validation/useValidationStore`
+→ analitik sonuç `outlet_flows` (`analytic.rs`, path uçlarından gruplanır) → `computeValidationRows` → `ValidationTab`
 
 ### Lua Script
 `components/ScriptEditor/ScriptEditor.tsx` (Monaco offline: `monacoSetup.ts` `loader.config({ monaco })` + yerel worker) → `hooks/useScriptRun.handleRunScript`

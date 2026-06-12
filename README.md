@@ -2,13 +2,15 @@
 
 Mikroakışkan çip tasarımı ve simülasyonu için profesyonel masaüstü uygulaması. [Tauri v2](https://tauri.app/) (Rust backend + React frontend), AutoCAD/Fusion 360 tarzı bir CAD ergonomisiyle inşa edildi.
 
-[![CI](https://github.com/hccancan4/microflow-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/hccancan4/microflow-studio/actions/workflows/ci.yml) ![Version](https://img.shields.io/badge/version-1.0.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tauri](https://img.shields.io/badge/tauri-v2-orange) ![Tests](https://img.shields.io/badge/tests-36%20rust%20%2B%2072%20frontend-brightgreen)
+[![CI](https://github.com/hccancan4/microflow-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/hccancan4/microflow-studio/actions/workflows/ci.yml) ![Version](https://img.shields.io/badge/version-1.1.0-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tauri](https://img.shields.io/badge/tauri-v2-orange) ![Tests](https://img.shields.io/badge/tests-57%20rust%20%2B%20104%20frontend-brightgreen)
 
 ---
 
 ## Ne yapar
 
 Sürükle-bırak canvas editöründe 10 tip parametrik bileşenden mikroakışkan çip tasarımı yaparsın. Tasarımı **analitik ağ çözücü** (Hagen-Poiseuille) veya **2D CFD çözücüsü** (Chorin projeksiyon) ile analiz edersin. Sonuçlar sekmeli panellerde gösterilir; deney verileriyle karşılaştırılır. Tamamlanan tasarımlar **PNG / SVG / GDS-II** (fotomask üretimi) olarak dışa aktarılır. Gömülü **Lua scripting** ortamı tam programatik çip üretimi + parametre taraması sağlar.
+
+**v1.1 — AI destekli tasarım:** ✦ **Asistan** doğal dilden (`"10 mbar 2:1:1 bölücü su"`) `mf.*` Lua üretir ve çalıştırır; API anahtarı yoksa **yerel kural motoru** aynı işi çevrimdışı yapar. ✦ **Oto-Tasarım** hedef debilerden devreyi tersine çözer (R=P/Q → serpantin uzunluğu). **Doğrulama** sekmesi hedef-vs-fiili debiyi renk kodlu raporlar. 7 akışkan ön tanımı, mbar gösterimi, üretilebilirlik (≥40 µm, ≤180 mm) bayrakları ve hazır Lua şablonları.
 
 ---
 
@@ -80,8 +82,17 @@ Sürükle-bırak canvas editöründe 10 tip parametrik bileşenden mikroakışka
 - Monaco-tabanlı (Lua syntax highlighting) — **yerel bundle'dan yüklenir, CDN yok (offline)**
 - Gömülü Lua 5.4 (mlua), **sandboxed** (no os/io/debug/package)
 - `Chip` API: `Chip.new`, 10 `chip:add_*`, `chip:connect`, `chip:clear`
+- **`mf.*` API** (v1.1): copilot/şablon/oto-tasarımın ortak eylem yüzeyi — `mf.add_inlet/add_outlet/add_serpentine{length_mm}/connect/set_fluid/set_inlet_pressure/set_target_flow/run_quick/run_cfd` (tam referans: [`docs/SCRIPTING.md`](docs/SCRIPTING.md))
 - `Sweep.run` parametrik batch
 - Canlı output log
+
+### ✦ AI Asistan + Oto-Tasarım (v1.1)
+
+- **Asistan** (sağ dock sekmesi): doğal dil → tek `mf.*` Lua bloğu → script pipeline → canvas. Üretilen Lua Script sekmesine yazılır, düzenlenebilir; "çalıştırmadan önce onayla" varsayılan açık
+- **Sağlayıcı-bağımsız:** Claude (model seçici: Sonnet 4.6 / Fable 5 / Haiku 4.5) → hata/zaman aşımında (≤14 sn) **yerel kural motoru** — `"N:M:K bölücü"`, `"N çıkış eşit"`, mbar/Pa, akışkan adlarını ayrıştırır ve **aynı hidrolik çekirdekle** çözer (UI asla bloke olmaz)
+- **Oto-Tasarım** (dialog): N çıkış + hedef debi tablosu → `solve_targets` (R_i = (P−Q·R_feed)/Q_i) → önizleme (R/L/Re + zarf bayrakları) → tek tıkla devre
+- **Doğrulama** sekmesi: çıkış başına hedef-vs-fiili debi, sapma yüzdesi (≤%5 yeşil · ≤%15 sarı · üstü kırmızı), zarf/üretim bayrakları
+- **API anahtarı yalnız backend'de**: `ANTHROPIC_API_KEY` ortam değişkeni (öncelikli) veya Asistan ⚙ ayarlarından girilen anahtar uygulama config dizinine yazılır; webview anahtarı asla görmez
 
 ### Dışa Aktarma
 
@@ -184,10 +195,12 @@ Projeler `.mflow` (JSON) olarak kaydedilir. Schema için [`docs/FILE_FORMAT.md`]
 
 ## Güvenlik & Gizlilik
 
-MicroFlow Studio tamamen **offline** çalışan bir desktop uygulamasıdır:
+MicroFlow Studio **offline-öncelikli** bir desktop uygulamasıdır:
 
 - **Hiçbir telemetri** gönderilmez
-- **Hiçbir ağ çağrısı** yapılmaz — fontlar (`@fontsource` ile self-hosted IBM Plex) ve **Monaco editör tamamen yerel bundle'dan** gelir; çalışma anında hiçbir CDN'e gidilmez (build çıktısı `dist/` içinde jsDelivr/CDN URL'si yoktur)
+- **Tek opt-in ağ çağrısı**: ✦ Asistan'ın Claude isteği — yalnız kullanıcı API anahtarı tanımlayıp mesaj gönderirse, **backend'den** (`reqwest`) `api.anthropic.com`'a gider; webview hiçbir dış host'a çıkamaz (CSP). Anahtar yoksa yerel kural motoru devrededir, uygulama tamamen çevrimdışı çalışır
+- Onun dışında **hiçbir ağ çağrısı** yapılmaz — fontlar (`@fontsource` ile self-hosted IBM Plex) ve **Monaco editör tamamen yerel bundle'dan** gelir; build çıktısı `dist/` içinde CDN URL'si yoktur
+- **API anahtarı**: `ANTHROPIC_API_KEY` ortam değişkeni veya uygulama config dizinindeki `llm.json` (UI'dan kaydedilir, Unix'te 0600); anahtar webview'a/loglara asla dönmez
 - **Dosya erişimi**: kullanıcının seçtiği `.mflow` / export hedef klasörüne sınırlıdır (Tauri dialog)
 - **Lua sandbox**: `os`, `io`, `debug`, `package` modülleri devre dışı (kod execution attack surface yok)
 - **CSP**: Tauri config'inde XSS karşı temel `default-src 'self'` policy
@@ -210,7 +223,7 @@ MicroFlow Studio tamamen **offline** çalışan bir desktop uygulamasıdır:
 | [`docs/SCRIPTING.md`](docs/SCRIPTING.md) | Lua API referansı + örnekler |
 | [`docs/FILE_FORMAT.md`](docs/FILE_FORMAT.md) | `.mflow` JSON schema, GDS-II layer stratejisi |
 | [`docs/SHORTCUTS.md`](docs/SHORTCUTS.md) | Tam klavye kısayolu tablosu |
-| [`docs/TESTING.md`](docs/TESTING.md) | 36 Rust unit testinin açıklaması |
+| [`docs/TESTING.md`](docs/TESTING.md) | Rust + Vitest test envanteri ve felsefesi |
 | [`CHANGELOG.md`](CHANGELOG.md) | Faz-faz değişiklik geçmişi |
 
 ---
@@ -247,9 +260,9 @@ Kod tabanında gezinme için: klasör kuralları [`docs/CONVENTIONS.md`](docs/CO
 npm run lint            # eslint (0 hata hedefi; uyarılar bilgilendirici)
 npm run format          # prettier --write
 npm run typecheck       # tsc --noEmit
-npm test                # vitest (72 test: karakterizasyon + undo/redo correctness)
+npm test                # vitest (104 test: karakterizasyon + correctness + AI yardımcıları)
 
-# Rust testleri (36 test, ~2 sn) + clippy strict
+# Rust testleri (57 test, ~2 sn) + clippy strict
 cd src-tauri && cargo test --lib
 cd src-tauri && cargo clippy --all-targets -- -D warnings
 

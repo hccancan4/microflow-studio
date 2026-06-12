@@ -4,7 +4,47 @@
 
 MicroFlow Studio embeds a Lua 5.4 interpreter (via the [`mlua`](https://crates.io/crates/mlua) Rust crate, v0.10) that allows fully programmatic chip design. Scripts run in a sandboxed environment: the `os`, `io`, `debug`, `package`, and `require` globals are removed. A custom `print` function routes output to the Script Editor's output log.
 
-Scripts are executed via the `execute_script` Tauri IPC command. The backend collects `DesignAction` events (AddComponent, Connect, ClearDesign) and dispatches them to the frontend stores via `useScriptDispatcher`.
+Scripts are executed via the `execute_script` Tauri IPC command. The backend collects `DesignAction` events (AddComponent, Connect, ClearDesign + the v1.1 meta actions SetFluid/SetInletPressure/SetTargetFlow/RunSimulation) and dispatches them to the frontend stores via `useScriptDispatcher`. Design actions land as a **single undo entry**; meta actions go to the settings/queue stores and never touch undo history or the dirty flag.
+
+Two API surfaces coexist:
+- **`mf.*`** (v1.1) — the intent-level surface the AI copilot, Auto-Design and templates emit. Prefer this for new scripts.
+- **`Chip`** — the original low-level builder; fully preserved.
+
+---
+
+## `mf.*` — copilot/template action surface (v1.1)
+
+Units: coordinates & widths in **µm**, pressure in **Pa**, lengths in **mm**.
+Every `mf.add_*` returns a **ComponentRef** usable in `mf.connect` / `mf.set_target_flow`.
+
+| Function | Description |
+|---|---|
+| `mf.clear()` | Clear the design (also resets validation targets) |
+| `mf.set_fluid(key)` | `"su"\|"pbs"\|"plazma"\|"etanol"\|"gliserol50"\|"pdms"\|"oil"` (Turkish aliases resolve to canonical keys; invalid key → script error) |
+| `mf.set_inlet_pressure(pa)` | Set the simulation inlet pressure |
+| `mf.add_inlet(x, y, {pressure=, name=, diameter=})` | Inlet port; `pressure` also sets the simulation inlet pressure |
+| `mf.add_outlet(x, y, {name=, diameter=})` | Outlet port; `name` becomes the validation-table label |
+| `mf.add_channel(x1,y1, x2,y2, {w=200, h=50, label=})` | Straight channel between two points |
+| `mf.add_serpentine(x, y, {w, h, length_mm, pitch?})` | **Target-length** serpentine: `(turns, pitch)` are chosen so `turns·pitch·(2+π/2)` equals `length_mm` exactly — matching the analytic solver's length model, so resistance equals the inverse-design value. `length_mm` is required (min ≈ 0.72 mm); pitch is clamped to 200–1200 µm |
+| `mf.add_tjunction(x, y, rot?, {main_width=, branch_width=, h=})` | T-junction (ports: 0 in, 1 & 2 out) |
+| `mf.add_yjunction(x, y, rot?, {...})` | Y-junction |
+| `mf.connect(a, b, {from=, to=}?)` | Smart default ports: source → port comp 0, junctions → first **unused** output (1 then 2), others → 1; target → 0. Override with `from`/`to` or pass `a:port(i)` |
+| `mf.set_target_flow(outlet, q_ul_min)` | Declare a target flow for the Doğrulama (validation) tab |
+| `mf.run_quick()` | Queue a quick (analytic) run after the script applies |
+| `mf.run_cfd("kaba"\|"orta"\|"ince")` | Queue a CFD run at the given resolution |
+
+There is **no `mf.add_cross`** (no cross component type exists) — compose two `mf.add_tjunction` calls instead.
+
+```lua
+-- 10 mbar, su, hedefli tek dal
+mf.clear(); mf.set_fluid("su"); mf.set_inlet_pressure(1000)
+local i = mf.add_inlet(0, 300, {pressure = 1000})
+local s = mf.add_serpentine(800, 300, {w = 100, h = 80, length_mm = 63.5})
+local o = mf.add_outlet(3400, 300, {name = "ÇIKIŞ 1"})
+mf.connect(i, s); mf.connect(s, o)
+mf.set_target_flow(o, 2.0)
+mf.run_quick()
+```
 
 ---
 

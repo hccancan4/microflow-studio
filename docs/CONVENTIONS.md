@@ -11,7 +11,7 @@ gezinebilmeli. Uçtan uca akışlar için bkz. [`CODE_MAP.md`](CODE_MAP.md).
 | Klasör | Sorumluluk | Örnek |
 |---|---|---|
 | `components/<Alan>/` | Görsel React bileşenleri, alana göre gruplu | `Canvas/`, `ResultsPanel/`, `Toolbar/`, `Sidebar/`, `PropertiesPanel/`, `StatusBar/`, `ScriptEditor/`, `overlays/` (toast/progress/yardım) |
-| `features/<özellik>/` | Kendine yeten, dikey bir özelliğin tüm parçaları (UI + store + util) | `features/experiment/`, `features/export/`, `features/sweep/` |
+| `features/<özellik>/` | Kendine yeten, dikey bir özelliğin tüm parçaları (UI + store + util) | `features/experiment/`, `features/export/`, `features/sweep/`, `features/assistant/`, `features/autodesign/`, `features/validation/` |
 | `hooks/` | Yeniden kullanılabilir React hook'ları; App orkestrasyonu hook'lara taşınır | `useProjectIO`, `useSimulationRun`, `useExportFlow`, `useScriptRun`, `useKeyboardShortcuts` |
 | `stores/` | Zustand global state; her store tek bir alan (feature'a özel store ilgili `features/` klasöründe) | `useDesignStore` (tasarım+canvas), `useSimulationStore`, `useUiStore`, `useProjectStore` |
 | `types/` | Domain'e bölünmüş TypeScript tipleri + re-export hub | `component.ts`, `canvas.ts`, `simulation.ts`, `project.ts`, `experiment.ts`, `ui.ts`, `index.ts` |

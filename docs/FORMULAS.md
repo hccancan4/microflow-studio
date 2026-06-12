@@ -349,6 +349,62 @@ If L < L_e, the Hagen-Poiseuille resistance is underestimated. The analytical so
 
 ---
 
+## 10. Inverse Design Core (v1.1 — `simulation/hydraulic.rs`)
+
+**Display resistance unit.** Bench work uses mbar and µL/min; the solver uses SI:
+
+```
+R_disp [mbar/(µL·min⁻¹)] = R_SI [Pa·s/m³] × R_SI_TO_DISP,   R_SI_TO_DISP = 1/(6×10¹²) ≈ 1.667×10⁻¹³
+```
+
+**Inverse length.** Resistance is linear in length, so the inverse is structural (no root-finding):
+
+```
+l_for_r:  L = R / R(w, h, L=1 µm)
+```
+
+**Parallel-branch targeting** (single inlet, N outlets; optional shared feed channel):
+
+```
+P_branch = P_in − Q_tot·R_feed        (exact feed deduction)
+R_i      = P_branch / Q_i,target  →  L_i = l_for_r(R_i)
+```
+
+**Rounding policy.** The µFG printability rule says flow should approach the target *from below*
+(fabrication errors tend to increase resistance). Therefore **L is rounded UP** (to 0.01 mm):
+R slightly higher ⇒ actual Q slightly *below* target. (The spec's literal "round L down" would
+overshoot the target; we documented and resolved the contradiction in favor of the flow-side rule.)
+
+**Serpentine length model** (shared with the analytic solver and `mf.add_serpentine`):
+
+```
+L = turns · pitch · (2 + π/2)
+```
+`mf.add_serpentine{length_mm}` picks `(turns, pitch)` so this holds exactly (pitch ∈ 200–1200 µm).
+
+**Fabrication envelope.** `W_FAB_MIN_UM = 40 µm`, cell length `10–180 mm`; branches outside flag
+`fits_envelope=false` / `w_flag=true` (red/orange in the Doğrulama tab and Auto-Design preview).
+
+**Fluid presets** (canonical in Rust `fluid_by_key`, mirrored in `FLUID_PRESETS`):
+
+| key | µ (Pa·s) | ρ (kg/m³) | label |
+|---|---|---|---|
+| water (alias: su) | 1.00×10⁻³ | 1000 | Su (DI) |
+| pbs | 1.02×10⁻³ | 1005 | PBS tamponu |
+| plasma (alias: plazma) | 1.50×10⁻³ | 1025 | Kan plazması |
+| etanol | 1.10×10⁻³ | 789 | Etanol |
+| gliserol50 | 6.0×10⁻³ | 1126 | Gliserol %50 |
+| pdms | 9.7×10⁻² | 970 | PDMS (silikon yağı) |
+| oil | 3.0×10⁻² | 860 | Mineral yağ |
+
+Note: water density is kept at 1000 (spec lists 998) — resistance is density-independent and the
+Re difference is ~0.2%, well inside validation thresholds.
+
+**Reference check** (water, 100×80 µm, 10 mbar): Q=2 µL/min → R_disp=5 → **L=63.5 mm**, Re≈0.37
+(in envelope); Q=0.5 µL/min → L≈254 mm → **out of envelope** (>180 mm). Locked by Rust tests.
+
+---
+
 ## References (Master List)
 
 1. Bruus, H. (2008). *Theoretical Microfluidics*. Oxford University Press.
