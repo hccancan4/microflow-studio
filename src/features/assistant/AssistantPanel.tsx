@@ -76,6 +76,25 @@ const EXAMPLE_CHIPS = [
   '2:1 bölücü gliserol',
 ];
 
+/** Panel şu anda görünür mü? (sağ dock açık VE asistan sekmesi seçili — App.tsx'teki mount koşulu) */
+const assistantPanelVisible = () => {
+  const st = useProjectStore.getState();
+  return st.rightPanelOpen && st.rightPanelTab === 'assistant';
+};
+
+/**
+ * Terminal başarısızlık bildirimi: not her zaman sohbete düşer; panel o anda
+ * görünür DEĞİLSE ek olarak global toast.error çıkar. Başarı dalı global
+ * toast.success kullandığından, self-repair zinciri sürerken (LM çağrılarıyla
+ * 14-60+ sn) kullanıcı paneli kapatır/sekme değiştirirse başarısızlık sessiz
+ * kalmasın. Görünürlük bildirim ANINDA okunur — zincir store closure'larıyla
+ * unmount sonrası da devam eder.
+ */
+const notifyTerminalFailure = (text: string) => {
+  useAssistantStore.getState().addMessage({ id: nextMsgId(), role: 'note', text });
+  if (!assistantPanelVisible()) toast.error(text);
+};
+
 interface Props {
   runScript: RunScript;
 }
@@ -180,14 +199,11 @@ const AssistantPanel: React.FC<Props> = ({ runScript }) => {
     const error = outcome.error ?? 'bilinmeyen script hatası';
     const round = (msg.repairRound ?? 0) + 1;
     if (msg.provider === 'local' || round > MAX_REPAIR_ROUNDS) {
-      addMessage({
-        id: nextMsgId(),
-        role: 'note',
-        text:
-          round > MAX_REPAIR_ROUNDS
-            ? `Onarım ${MAX_REPAIR_ROUNDS} turda başaramadı — script'i elle düzenleyin. Son hata: ${error}`
-            : `Script hatası: ${error}`,
-      });
+      notifyTerminalFailure(
+        round > MAX_REPAIR_ROUNDS
+          ? `Onarım ${MAX_REPAIR_ROUNDS} turda başaramadı — script'i elle düzenleyin. Son hata: ${error}`
+          : `Script hatası: ${error}`,
+      );
       return;
     }
     await requestRepair(msg.lua, error, round);
@@ -231,7 +247,7 @@ const AssistantPanel: React.FC<Props> = ({ runScript }) => {
         }
       }
     } catch (err) {
-      addMessage({ id: nextMsgId(), role: 'note', text: `Onarım isteği başarısız: ${err}` });
+      notifyTerminalFailure(`Onarım isteği başarısız: ${err}`);
     } finally {
       setSending(false);
     }
