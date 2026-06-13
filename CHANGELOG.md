@@ -229,3 +229,37 @@ two feedback loops that make the copilot genuinely agentic.
   düzelt" works in one message (timestamp guard against stale results)
 - Versions bumped to 1.1.5 (package.json / Cargo.toml / tauri.conf.json)
 - Tests: Rust 60 → **63**, Vitest 106 → **113**
+
+---
+
+## Post-1.1.5 — Stabilization & test hardening (refactor/code-organization)
+
+Behavior-neutral hardening on top of v1.1.5; no new features.
+
+- **Script designs not drawing to canvas** (regression surfaced by the
+  StrictMode listener-leak fix): `useScriptDispatcher` re-registered the Tauri
+  listeners on every render (a fresh inline `onStatusChange` identity), so the
+  post-Lua event burst fell into the unlisten/relisten gap and vanished →
+  empty batch, nothing drawn, the Script-tab Run button stuck disabled. Fixed
+  with a latest-ref + mount-once (`[]` deps) listener and a stabilized
+  `useMemo`/`useCallback` return (which also kills the prop churn that was the
+  root mechanism)
+- **Silent run errors surfaced**: `runScript` now raises a central
+  `toast.error` on failure (Lua error or IPC rejection) so a failure is
+  visible even from the Canvas tab; `RunScriptOptions.silentError` lets the
+  assistant (chat note + self-repair) and Oto-Tasarım (its own contextual
+  toast) suppress the central toast to avoid double notification.
+  `AutoDesignDialog` now checks the outcome instead of always showing "Devre
+  üretildi"
+- **Assistant failure-notification symmetry**: when the assistant panel is
+  closed/unmounted, a terminal run failure (local/max-repair branch or a
+  repair-request error) now also raises a `toast.error` — the success branch
+  already showed a global toast, so failures no longer go silent while the
+  self-repair chain runs in the background
+- **Toast/`silentError` decision extracted + unit-tested**: pure
+  `hooks/scriptRunNotify.ts` (`scriptErrorToastText`, `ipcErrorText`) wired
+  into `useScriptRun` with zero behavior change; 9 Vitest cases pin the
+  contract that previously had no coverage
+- **CI**: `actions/checkout` and `actions/setup-node` bumped v4 → v5 (Node 20
+  deprecation; both now run on Node 24)
+- Tests: Vitest 113 → **122** (Rust unchanged at 63)

@@ -48,6 +48,7 @@ Store güncellenir  ──►  ilgili panel render olur
 | Hidrolik çekirdek (l_for_r, solve_targets, zarf sabitleri, akışkan tablosu) | `src-tauri/src/simulation/hydraulic.rs` (TS aynası: `utils/fab.ts`) |
 | LLM backend (anahtar çözümü + Messages API çağrısı) | `src-tauri/src/commands/llm_commands.rs` |
 | Script run kuyruğu (mf.run_quick/run_cfd tüketicisi) | `stores/useSimulationStore.ts` (`runQueue`) + `hooks/useSimulationRun.ts` effect |
+| Script koşu hata bildirimi kararı (toast / `silentError`, saf + test'li) | `hooks/scriptRunNotify.ts` (`hooks/useScriptRun.ts` kullanır) |
 | Lua şablonları (tek kaynak; Rust testi de koşturur) | `templates/lua/*.lua` + `templates/luaTemplates.ts` |
 | Sağ dock sekmeleri (Özellikler / ✦ Asistan) | `components/RightDock/RightDock.tsx` |
 | Overlay/feedback bileşenleri (toast, progress, kısayol yardımı, lazy spinner) | `components/overlays/` |

@@ -2,7 +2,7 @@
 
 Mikroakışkan çip tasarımı ve simülasyonu için profesyonel masaüstü uygulaması. [Tauri v2](https://tauri.app/) (Rust backend + React frontend), AutoCAD/Fusion 360 tarzı bir CAD ergonomisiyle inşa edildi.
 
-[![CI](https://github.com/hccancan4/microflow-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/hccancan4/microflow-studio/actions/workflows/ci.yml) ![Version](https://img.shields.io/badge/version-1.1.5-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tauri](https://img.shields.io/badge/tauri-v2-orange) ![Tests](https://img.shields.io/badge/tests-63%20rust%20%2B%20113%20frontend-brightgreen)
+[![CI](https://github.com/hccancan4/microflow-studio/actions/workflows/ci.yml/badge.svg)](https://github.com/hccancan4/microflow-studio/actions/workflows/ci.yml) ![Version](https://img.shields.io/badge/version-1.1.5-blue) ![License](https://img.shields.io/badge/license-MIT-green) ![Tauri](https://img.shields.io/badge/tauri-v2-orange) ![Tests](https://img.shields.io/badge/tests-63%20rust%20%2B%20122%20frontend-brightgreen)
 
 ---
 
@@ -276,9 +276,9 @@ Kod tabanında gezinme için: klasör kuralları [`docs/CONVENTIONS.md`](docs/CO
 npm run lint            # eslint (0 hata hedefi; uyarılar bilgilendirici)
 npm run format          # prettier --write
 npm run typecheck       # tsc --noEmit
-npm test                # vitest (104 test: karakterizasyon + correctness + AI yardımcıları)
+npm test                # vitest (122 test: karakterizasyon + correctness + AI yardımcıları)
 
-# Rust testleri (57 test, ~2 sn) + clippy strict
+# Rust testleri (63 test, ~2 sn) + clippy strict
 cd src-tauri && cargo test --lib
 cd src-tauri && cargo clippy --all-targets -- -D warnings
 

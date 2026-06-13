@@ -6,7 +6,7 @@ Two suites:
 # Rust unit tests (63)
 cargo test --manifest-path src-tauri/Cargo.toml --lib
 
-# Frontend Vitest tests (113)
+# Frontend Vitest tests (122)
 npm test
 ```
 
@@ -86,7 +86,7 @@ v1.1 additions (detayları kaynak dosyalarda):
 
 ---
 
-## Frontend — **113 Vitest tests** across 16 files
+## Frontend — **122 Vitest tests** across 18 files
 
 v1.1 additions: `useScriptDispatcher.test.ts` (9 — partition: meta actions
 produce no history/dirty, run queue, targets, duplicate-id defenses,
@@ -99,6 +99,11 @@ v1.1.5 additions (agent-ready): `features/assistant/selfRepair.test.ts`
 (5 — repair message content, round cap, lua re-attachment and note→user
 history conversion), `features/assistant/runFeedback.test.ts` (2 —
 target-vs-actual chat summary incl. missing-outlet hint).
+
+Post-1.1.5 stabilization: `hooks/scriptRunNotify.test.ts` (9 — the central
+toast/`silentError` contract: a failed run shows `toast.error` by default,
+`silentError: true` suppresses it, the IPC-rejection text path, and the
+fallback message when the run reports no error string).
 
 ### v1.0 çekirdeği — 72 test, 8 dosya
 
