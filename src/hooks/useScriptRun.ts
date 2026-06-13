@@ -7,6 +7,7 @@ import { useCallback, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useProjectStore } from '../stores/useProjectStore';
 import { toast } from '../stores/useUiStore';
+import { scriptErrorToastText, ipcErrorText } from './scriptRunNotify';
 import { useScriptDispatcher, type ScriptRunStatus } from './useScriptDispatcher';
 
 /** Tek bir script koşusunun sonucu (Rust ScriptResult'ın özeti). */
@@ -82,16 +83,16 @@ export function useScriptRun() {
           success: result.success,
           error: result.error ?? undefined,
         };
-        // Merkezi hata bildirimi (bkz. RunScriptOptions.silentError). Lua hatası
-        // dönerse — kullanıcı Canvas sekmesinde olsa bile — görünür toast çıkar.
-        if (!outcome.success && !opts?.silentError) {
-          toast.error(outcome.error ?? 'Script çalıştırılamadı');
-        }
+        // Merkezi hata bildirimi (karar mantığı scriptRunNotify'da, saf+test'li;
+        // bkz. RunScriptOptions.silentError). Lua hatası dönerse — kullanıcı
+        // Canvas sekmesinde olsa bile — görünür toast çıkar.
+        const errToast = scriptErrorToastText(outcome, opts);
+        if (errToast) toast.error(errToast);
         return outcome;
       } catch (err) {
         // IPC reddi: bu yolda 'script-completed' event'i HİÇ emit edilmez, bu
         // yüzden hata yalnızca burada görünür kılınabilir.
-        const error = `IPC hatası: ${err}`;
+        const error = ipcErrorText(err);
         setScriptStatus({
           running: false,
           lastOutput: '',
@@ -99,7 +100,8 @@ export function useScriptRun() {
           lastActionCount: 0,
           lastElapsedMs: 0,
         });
-        if (!opts?.silentError) toast.error(error);
+        const errToast = scriptErrorToastText({ success: false, error }, opts);
+        if (errToast) toast.error(errToast);
         return { success: false, error };
       }
     },
