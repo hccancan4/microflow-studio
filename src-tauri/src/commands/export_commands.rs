@@ -6,18 +6,10 @@
 //! gösterilebilir `String`'e çevirir.
 
 use crate::export::{
-    ExportOptions, export_png, save_png_from_base64, save_svg,
+    ExportOptions, save_png_from_base64, save_svg,
     GdsPolygon, GdsExportParams, save_gds,
 };
 use std::path::Path;
-
-/// Placeholder PNG (geriye dönük uyum). Yeni kod `export_png_data` kullanmalı.
-#[tauri::command]
-pub fn export_as_png(output_path: String, width: u32, height: u32) -> Result<(), String> {
-    let options = ExportOptions::default();
-    export_png(&[], width, height, Path::new(&output_path), &options)
-        .map_err(|e| format!("PNG dışa aktarma hatası: {e}"))
-}
 
 /// Frontend'ten gelen base64 PNG verisini diske yaz.
 /// `data` — data URL ("data:image/png;base64,...") veya ham base64 olabilir.

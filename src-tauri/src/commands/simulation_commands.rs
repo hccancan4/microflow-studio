@@ -5,27 +5,13 @@
 //! bir worker thread'de (`spawn_blocking`) çalıştırıp ilerleme event'i yayar.
 
 use crate::simulation::{
-    analytic::{
-        RectChannel, analyze_channel, AnalyticResult,
-        analyze_design, AnalyticDesignResult, DesignComponent, DesignConnection,
-    },
+    analytic::{analyze_design, AnalyticDesignResult, DesignComponent, DesignConnection},
     cfd::{CfdParams, CfdField, solve_stokes_2d},
     hydraulic::{self, BranchSpec, FeedSpec, TargetSpec},
     FluidProperties,
 };
 use serde::{Deserialize, Serialize};
 use tauri::Emitter;
-
-#[derive(Debug, Deserialize)]
-pub struct AnalyticRequest {
-    pub component_id: String,
-    pub width: f64,
-    pub depth: f64,
-    pub length: f64,
-    pub inlet_pressure: f64,
-    pub fluid_viscosity: f64,
-    pub fluid_density: f64,
-}
 
 #[derive(Debug, Deserialize)]
 pub struct CfdRequest {
@@ -98,21 +84,6 @@ pub fn solve_targets(req: SolveTargetsRequest) -> Result<Vec<BranchSpec>, String
         req.feed.as_ref(),
         &req.targets,
     )
-}
-
-/// Analitik simülasyon — tek kanal (geriye dönük uyum)
-#[tauri::command]
-pub fn run_analytic_simulation(req: AnalyticRequest) -> Result<AnalyticResult, String> {
-    let channel = RectChannel {
-        width: req.width,
-        depth: req.depth,
-        length: req.length,
-    };
-    let fluid = FluidProperties {
-        viscosity: req.fluid_viscosity,
-        density: req.fluid_density,
-    };
-    Ok(analyze_channel(&req.component_id, &channel, req.inlet_pressure, &fluid))
 }
 
 /// CFD simülasyon — gerçek 2D Stokes projeksiyon çözücüsü.

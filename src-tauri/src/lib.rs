@@ -9,9 +9,9 @@ mod scripting;
 
 use commands::{
     project_commands::{save_project_file, load_project_file, new_project},
-    simulation_commands::{run_analytic_simulation, run_analytic_network, run_cfd_simulation, solve_targets},
-    export_commands::{export_as_png, export_png_data, export_svg, export_gds_file},
-    script_commands::{execute_script, execute_script_batch},
+    simulation_commands::{run_analytic_network, run_cfd_simulation, solve_targets},
+    export_commands::{export_png_data, export_svg, export_gds_file},
+    script_commands::execute_script,
     llm_commands::{llm_complete, llm_status, save_llm_settings},
 };
 
@@ -29,18 +29,15 @@ pub fn run() {
             load_project_file,
             new_project,
             // Simülasyon komutları
-            run_analytic_simulation,
             run_analytic_network,
             run_cfd_simulation,
             solve_targets,
             // Dışa aktarma
-            export_as_png,
             export_png_data,
             export_svg,
             export_gds_file,
             // Script
             execute_script,
-            execute_script_batch,
             // LLM (✦ Asistan)
             llm_complete,
             llm_status,

@@ -106,29 +106,6 @@ pub fn mixing_efficiency_serpentine(
     eta.clamp(0.0, 1.0)
 }
 
-/// Tek kanal için tam analitik analiz
-pub fn analyze_channel(
-    component_id: &str,
-    channel: &RectChannel,
-    inlet_pressure_pa: f64,
-    fluid: &FluidProperties,
-) -> AnalyticResult {
-    let resistance = channel_resistance(channel, fluid);
-    let flow_rate = flow_rate_from_pressure(inlet_pressure_pa, resistance);
-    let re = reynolds_number(flow_rate, channel.width, channel.depth, fluid);
-    let pressure_drop = inlet_pressure_pa; // tek kanal: tüm basınç düşümü bu kanalda
-
-    AnalyticResult {
-        component_id: component_id.to_string(),
-        flow_rate,
-        pressure_drop,
-        reynolds_number: re,
-        resistance,
-        dean_number: None,
-        mixing_efficiency: None,
-    }
-}
-
 // ══════════════════════════════════════════════════════════════════════════
 // AĞ ANALİZİ (Faz 4A)
 // ══════════════════════════════════════════════════════════════════════════

@@ -2,9 +2,9 @@
 //!
 //! İnce adapter: yorumlayıcı ve DesignAction toplama `crate::scripting` içinde.
 //! `execute_script` action'ları event olarak yayar (store ile aynı undo/redo
-//! akışına düşsün diye); `execute_script_batch` tek seferde toplu liste döndürür.
+//! akışına düşsün diye).
 
-use crate::scripting::{run_script_collect, ScriptResult, DesignAction};
+use crate::scripting::{run_script_collect, ScriptResult};
 use tauri::Emitter;
 
 /// Script'i çalıştır ve:
@@ -41,11 +41,4 @@ pub async fn execute_script(
     }));
 
     Ok(result)
-}
-
-/// Script'i çalıştır ama action'ları event göndermeden toplu liste döndür.
-/// Frontend tercih ederse tek seferde apply edebilir (daha az re-render).
-#[tauri::command]
-pub fn execute_script_batch(script: String) -> Result<(ScriptResult, Vec<DesignAction>), String> {
-    Ok(run_script_collect(&script))
 }

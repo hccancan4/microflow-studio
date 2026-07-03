@@ -6,7 +6,7 @@
 //! PNG iş akışı:
 //!   1. Frontend (Konva Stage) istenen bounding-box + pixel ratio ile `toDataURL()`
 //!      çağırır, base64 "data:image/png;base64,..." stringi üretir.
-//!   2. Bu string `export_as_png` komutuna gelir; base64 gövdesi decode edilir,
+//!   2. Bu string `export_png_data` komutuna gelir; base64 gövdesi decode edilir,
 //!      `image` crate ile `RgbaImage` olarak okunur.
 //!   3. Opsiyonel arka plan tonu (White / Dark) ile compose edilir; Transparent
 //!      moda dokunulmaz. Çıkış PNG olarak diske yazılır.
@@ -137,22 +137,6 @@ pub fn save_svg(svg: &str, output_path: &std::path::Path) -> Result<()> {
     std::fs::write(output_path, svg)
         .with_context(|| format!("SVG yazılamadı: {output_path:?}"))?;
     log::info!("SVG dışa aktarıldı: {:?} ({} bytes)", output_path, svg.len());
-    Ok(())
-}
-
-/// Geriye dönük uyum — boş placeholder PNG (eski kullanım için).
-/// Yeni kod `save_png_from_base64` kullanmalı.
-pub fn export_png(
-    _canvas_data: &[u8],
-    width: u32,
-    height: u32,
-    output_path: &std::path::Path,
-    options: &ExportOptions,
-) -> Result<()> {
-    let bg = background_rgba(options.background);
-    let img: RgbaImage = ImageBuffer::from_pixel(width, height, bg);
-    img.save(output_path)
-        .with_context(|| format!("PNG yazılamadı: {output_path:?}"))?;
     Ok(())
 }
 
