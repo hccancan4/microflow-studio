@@ -6,7 +6,13 @@
  * eklenir; UI reaktif olarak ilerlemeyi gösterir.
  */
 import { invoke } from '@tauri-apps/api/core';
-import type { ChipComponent, Connection, FluidProperties } from '../../types';
+import type {
+  ChipComponent,
+  Connection,
+  FluidProperties,
+  RawAnalyticDesignResult,
+  RawAnalyticResult,
+} from '../../types';
 import { useSweepStore, buildSweepValues, type SweepConfig, type SweepRun } from './useSweepStore';
 import { withOverriddenParam } from './sweepHelpers';
 
@@ -46,7 +52,7 @@ async function runOnce(
   );
 
   try {
-    const res: any = await invoke('run_analytic_network', {
+    const res = await invoke<RawAnalyticDesignResult>('run_analytic_network', {
       req: {
         components: modified,
         connections,
@@ -56,7 +62,7 @@ async function runOnce(
       },
     });
 
-    const results: any[] = res.results ?? [];
+    const results: RawAnalyticResult[] = res.results ?? [];
     const comp = results.find((r) => r.component_id === targetId);
     const maxRe = results.reduce((m, r) => Math.max(m, r.reynolds_number ?? 0), 0);
 

@@ -12,7 +12,19 @@
  *   layer 1 / datatype 0  → akışkan kanalı (her bileşenin aktif alanı)
  *   layer 2 / datatype 0  → rezervuar / port açıklıkları (through-holes)
  */
-import type { ChipComponent } from '../../types';
+import type {
+  ChipComponent,
+  StraightChannelParams,
+  CurvedChannelParams,
+  TJunctionParams,
+  YJunctionParams,
+  SerpentineMixerParams,
+  ExpansionParams,
+  DropletGeneratorParams,
+  FilterArrayParams,
+  ReservoirParams,
+  PortParams,
+} from '../../types';
 
 export interface GdsPolygon {
   layer: number;
@@ -96,7 +108,6 @@ function toWorldPolygon(
 // ─── Bileşen-başı tessellation ──────────────────────────────────────────────
 
 function buildComponentPolygons(comp: ChipComponent, arcResolution: number): GdsPolygon[] {
-  const p: any = comp.params;
   const out: GdsPolygon[] = [];
   const push = (local: Array<[number, number]>, layer = 1, datatype = 0) => {
     if (local.length < 3) return;
@@ -105,17 +116,20 @@ function buildComponentPolygons(comp: ChipComponent, arcResolution: number): Gds
 
   switch (comp.type) {
     case 'straight_channel': {
+      const p = comp.params as StraightChannelParams;
       // Lokal (0, -w/2) → (length, +w/2)
       push(rectLocal(0, -p.width / 2, p.length, p.width));
       break;
     }
 
     case 'curved_channel': {
+      const p = comp.params as CurvedChannelParams;
       push(arcStrip(p.radius, p.width, p.angle, arcResolution));
       break;
     }
 
     case 't_junction': {
+      const p = comp.params as TJunctionParams;
       const mw = p.mainWidth;
       const bw = p.branchWidth;
       const armLen = mw * 5;
@@ -127,6 +141,7 @@ function buildComponentPolygons(comp: ChipComponent, arcResolution: number): Gds
     }
 
     case 'y_junction': {
+      const p = comp.params as YJunctionParams;
       const mw = p.mainWidth;
       const bw = p.branchWidth;
       const branchAngleRad = ((p.branchAngle ?? 45) * Math.PI) / 180;
@@ -162,6 +177,7 @@ function buildComponentPolygons(comp: ChipComponent, arcResolution: number): Gds
     }
 
     case 'serpentine_mixer': {
+      const p = comp.params as SerpentineMixerParams;
       const cw = p.channelWidth;
       const pitch = p.pitch;
       const turns = Math.max(1, p.turns);
@@ -187,6 +203,7 @@ function buildComponentPolygons(comp: ChipComponent, arcResolution: number): Gds
     }
 
     case 'expansion': {
+      const p = comp.params as ExpansionParams;
       const il = p.inletWidth,
         ol = p.outletWidth,
         L = p.length;
@@ -201,6 +218,7 @@ function buildComponentPolygons(comp: ChipComponent, arcResolution: number): Gds
     }
 
     case 'droplet_generator': {
+      const p = comp.params as DropletGeneratorParams;
       const w = p.mainChannelWidth;
       const d = p.dispersedChannelWidth ?? w;
       const ori = p.orificeWidth ?? w / 3;
@@ -214,6 +232,7 @@ function buildComponentPolygons(comp: ChipComponent, arcResolution: number): Gds
     }
 
     case 'filter_array': {
+      const p = comp.params as FilterArrayParams;
       const cols = p.columns ?? 10;
       const rows = p.rows ?? 5;
       const sp = p.spacing ?? 100;
@@ -230,11 +249,13 @@ function buildComponentPolygons(comp: ChipComponent, arcResolution: number): Gds
     }
 
     case 'reservoir': {
+      const p = comp.params as ReservoirParams;
       push(rectLocal(0, 0, p.width, p.height), 2, 0);
       break;
     }
 
     case 'port': {
+      const p = comp.params as PortParams;
       push(circleLocal(0, 0, p.diameter / 2, arcResolution), 2, 0);
       break;
     }

@@ -10,7 +10,21 @@
  */
 import React, { useMemo } from 'react';
 import { Image as KonvaImage, Rect } from 'react-konva';
-import type { CfdField, ChipComponent, ColormapType } from '../../types';
+import type {
+  CfdField,
+  ChipComponent,
+  ColormapType,
+  StraightChannelParams,
+  CurvedChannelParams,
+  SerpentineMixerParams,
+  ExpansionParams,
+  TJunctionParams,
+  YJunctionParams,
+  DropletGeneratorParams,
+  FilterArrayParams,
+  ReservoirParams,
+  PortParams,
+} from '../../types';
 import { fieldToImageData } from '../../utils/colormaps';
 import { TOKENS } from '../../theme/tokens';
 
@@ -36,40 +50,59 @@ function getComponentBbox(comp: ChipComponent): {
   h: number;
   anchor: { x: number; y: number };
 } {
-  const p: any = comp.params;
   switch (comp.type) {
-    case 'straight_channel':
+    case 'straight_channel': {
+      const p = comp.params as StraightChannelParams;
       return { w: p.length, h: p.width, anchor: { x: p.length / 2, y: 0 } };
-    case 'curved_channel':
+    }
+    case 'curved_channel': {
+      const p = comp.params as CurvedChannelParams;
       return { w: p.radius * 2, h: p.radius * 2, anchor: { x: p.radius, y: -p.radius } };
-    case 'serpentine_mixer':
+    }
+    case 'serpentine_mixer': {
+      const p = comp.params as SerpentineMixerParams;
       return {
         w: p.pitch * (p.turns + 1),
         h: p.pitch,
         anchor: { x: (p.pitch * (p.turns + 1)) / 2, y: 0 },
       };
-    case 'expansion':
+    }
+    case 'expansion': {
+      const p = comp.params as ExpansionParams;
       return {
         w: p.length,
         h: Math.max(p.inletWidth, p.outletWidth),
         anchor: { x: p.length / 2, y: 0 },
       };
-    case 't_junction':
+    }
+    case 't_junction': {
+      const p = comp.params as TJunctionParams;
       return { w: p.mainWidth * 3, h: p.mainWidth * 2.5, anchor: { x: 0, y: 0 } };
-    case 'y_junction':
+    }
+    case 'y_junction': {
+      const p = comp.params as YJunctionParams;
       return { w: p.mainWidth * 3, h: p.mainWidth * 2.5, anchor: { x: 0, y: 0 } };
-    case 'droplet_generator':
+    }
+    case 'droplet_generator': {
+      const p = comp.params as DropletGeneratorParams;
       return { w: p.mainChannelWidth * 4, h: p.mainChannelWidth * 3, anchor: { x: 0, y: 0 } };
-    case 'filter_array':
+    }
+    case 'filter_array': {
+      const p = comp.params as FilterArrayParams;
       return {
         w: p.columns * p.spacing,
         h: p.rows * p.spacing,
         anchor: { x: (p.columns * p.spacing) / 2, y: 0 },
       };
-    case 'reservoir':
+    }
+    case 'reservoir': {
+      const p = comp.params as ReservoirParams;
       return { w: p.width, h: p.height, anchor: { x: 0, y: 0 } };
-    case 'port':
+    }
+    case 'port': {
+      const p = comp.params as PortParams;
       return { w: p.diameter, h: p.diameter, anchor: { x: 0, y: 0 } };
+    }
     default:
       return { w: 1000, h: 200, anchor: { x: 500, y: 0 } };
   }

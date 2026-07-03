@@ -29,7 +29,7 @@ export interface PortInfo {
 
 /** Bileşen tipine göre port bilgilerini döndür */
 export function getPortInfos(comp: ChipComponent): PortInfo[] {
-  const p = comp.params as any;
+  const p = comp.params;
 
   switch (comp.type) {
     case 'straight_channel': {
@@ -148,13 +148,13 @@ export function getPortInfos(comp: ChipComponent): PortInfo[] {
     }
 
     case 'port': {
-      const { diameter = 500 } = p as PortParams;
+      const { diameter = 500, portType } = p as PortParams;
       return [
         {
           index: 0,
           localPos: { x: 0, y: 0 },
-          type: p.portType === 'inlet' ? 'output' : 'input',
-          label: p.portType === 'inlet' ? 'Çıkış' : 'Giriş',
+          type: portType === 'inlet' ? 'output' : 'input',
+          label: portType === 'inlet' ? 'Çıkış' : 'Giriş',
           diameter,
         },
       ];

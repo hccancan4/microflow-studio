@@ -1,21 +1,11 @@
 /**
- * ResultsPanel/shared — sekmeler arası paylaşılan küçük bileşenler ve
- * recharts tema sabitleri. Tek kaynak: tüm sekmeler buradan tüketir.
+ * ResultsPanel/shared — sekmeler arası paylaşılan küçük bileşenler.
+ * Recharts tema sabitleri: ./constants.ts (react-refresh uyumu için ayrı).
  */
 import React from 'react';
 import clsx from 'clsx';
-import { TOKENS } from '../../theme/tokens';
 import type { ExperimentDataSet } from '../../types';
 import type { computeMetrics } from '../../features/experiment/experimentMetrics';
-
-// ── Ortak recharts tema sabitleri (token-güdümlü) ─────────────────────────
-export const AXIS_TICK = { fontSize: 10, fill: TOKENS.chartAxis } as const;
-export const TOOLTIP_STYLE = {
-  background: TOKENS.chartTooltipBg,
-  border: `1px solid ${TOKENS.chartTooltipBorder}`,
-  borderRadius: 4,
-  fontSize: 11,
-} as const;
 
 export const MetricCard: React.FC<{
   label: string;

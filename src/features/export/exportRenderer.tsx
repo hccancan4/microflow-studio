@@ -17,121 +17,10 @@ import Konva from 'konva';
 
 import { ComponentShape } from '../../components/Canvas/shapes/ComponentShapes';
 import { getAllCanvasPorts } from '../../utils/portUtils';
+import { computeDesignBBox } from './designBBox';
+import type { DesignBBox } from './designBBox';
 import type { ChipComponent, Connection } from '../../types';
 import { TOKENS } from '../../theme/tokens';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Tasarım bounding-box hesaplayıcı
-// ─────────────────────────────────────────────────────────────────────────────
-
-export interface DesignBBox {
-  minX: number;
-  minY: number;
-  maxX: number;
-  maxY: number;
-}
-
-/**
- * Tasarımın dünya-koordinatlarındaki (μm) bounding box'ını hesaplar.
- * Bileşen bbox'ları rotation sonrası AABB olarak alınır; portlar da dahil edilir.
- */
-export function computeDesignBBox(components: ChipComponent[]): DesignBBox {
-  if (components.length === 0) {
-    return { minX: 0, minY: 0, maxX: 1000, maxY: 1000 };
-  }
-  let minX = Infinity,
-    minY = Infinity;
-  let maxX = -Infinity,
-    maxY = -Infinity;
-
-  const consider = (x: number, y: number) => {
-    if (x < minX) minX = x;
-    if (y < minY) minY = y;
-    if (x > maxX) maxX = x;
-    if (y > maxY) maxY = y;
-  };
-
-  for (const c of components) {
-    const p: any = c.params;
-    // Bileşen tipine göre lokal genişlik / yükseklik (kabaca)
-    let w = 500,
-      h = 500;
-    switch (c.type) {
-      case 'straight_channel':
-        w = p.length;
-        h = p.width;
-        break;
-      case 'curved_channel':
-        w = p.radius * 2;
-        h = p.radius * 2;
-        break;
-      case 'serpentine_mixer':
-        w = p.pitch * (p.turns + 1);
-        h = p.pitch * 2;
-        break;
-      case 'expansion':
-        w = p.length;
-        h = Math.max(p.inletWidth, p.outletWidth);
-        break;
-      case 't_junction':
-      case 'y_junction':
-        w = p.mainWidth * 3;
-        h = p.mainWidth * 3;
-        break;
-      case 'droplet_generator':
-        w = p.mainChannelWidth * 4;
-        h = p.mainChannelWidth * 3;
-        break;
-      case 'filter_array':
-        w = p.columns * p.spacing;
-        h = p.rows * p.spacing;
-        break;
-      case 'reservoir':
-        w = p.width;
-        h = p.height;
-        break;
-      case 'port':
-        w = p.diameter;
-        h = p.diameter;
-        break;
-    }
-
-    // Rotation sonrası AABB — dört köşeyi dön, min/max al.
-    const rad = (c.rotation * Math.PI) / 180;
-    const cos = Math.cos(rad),
-      sin = Math.sin(rad);
-    // Lokal çizim köşeleri: çoğu bileşen origin'i sol uçta; güvenlik için geniş AABB kullan
-    const corners = [
-      { x: 0, y: -h / 2 },
-      { x: w, y: -h / 2 },
-      { x: w, y: h / 2 },
-      { x: 0, y: h / 2 },
-    ];
-    for (const pt of corners) {
-      const wx = c.position.x + pt.x * cos - pt.y * sin;
-      const wy = c.position.y + pt.x * sin + pt.y * cos;
-      consider(wx, wy);
-    }
-  }
-
-  // Tüm portları da dahil et (bağlantı uçları zaten port konumlarını kullanır)
-  try {
-    const ports = getAllCanvasPorts(components);
-    for (const p of ports) {
-      consider(p.canvasPos.x, p.canvasPos.y);
-    }
-  } catch {
-    /* port util çağrısı başarısızsa bileşen bbox'ı yeterli */
-  }
-
-  if (!Number.isFinite(minX)) {
-    minX = 0;
-    minY = 0;
-    maxX = 1000;
-    maxY = 1000;
-  }
-  return { minX, minY, maxX, maxY };
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Scale bar yardımcısı — ihracat çıktısına sağ-alt köşede mm/μm çizgisi ekler.
@@ -256,7 +145,7 @@ const ExportRenderer: React.FC<ExportRendererProps> = ({ job }) => {
           pixelRatio,
         });
         job.resolve(dataUrl);
-      } catch (e: any) {
+      } catch (e: unknown) {
         job.reject(e instanceof Error ? e : new Error(String(e)));
       }
     });
@@ -284,7 +173,7 @@ const ExportRenderer: React.FC<ExportRendererProps> = ({ job }) => {
       }}
     >
       <Stage
-        ref={stageRef as any}
+        ref={stageRef}
         width={stageW}
         height={stageH}
         // Dünya koordinatlarındaki bbox'ı stage (0,0) ile hizala: translate(-minX+pad, -minY+pad)

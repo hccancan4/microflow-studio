@@ -31,7 +31,10 @@ function detectDelimiter(firstLine: string): string {
       if (ch === '"') inQuote = !inQuote;
       else if (ch === c && !inQuote) count++;
     }
-    if (count > bestCount) { bestCount = count; best = c; }
+    if (count > bestCount) {
+      bestCount = count;
+      best = c;
+    }
   }
   return best;
 }
@@ -45,15 +48,19 @@ function splitCsvLine(line: string, delim: string): string[] {
     const ch = line[i];
     if (inQuote) {
       if (ch === '"') {
-        if (line[i + 1] === '"') { cur += '"'; i++; }
-        else inQuote = false;
+        if (line[i + 1] === '"') {
+          cur += '"';
+          i++;
+        } else inQuote = false;
       } else {
         cur += ch;
       }
     } else {
       if (ch === '"') inQuote = true;
-      else if (ch === delim) { out.push(cur); cur = ''; }
-      else cur += ch;
+      else if (ch === delim) {
+        out.push(cur);
+        cur = '';
+      } else cur += ch;
     }
   }
   out.push(cur);
@@ -68,8 +75,7 @@ export function parseCsv(text: string): ParsedTable {
     return { headers: [], rows: [], rowCount: 0, preview: [] };
   }
   const delim = detectDelimiter(lines[0]);
-  const headers = splitCsvLine(lines[0], delim)
-    .map((h, i) => h || `col_${i + 1}`);
+  const headers = splitCsvLine(lines[0], delim).map((h, i) => h || `col_${i + 1}`);
 
   const rows: Array<Record<string, string>> = [];
   for (let i = 1; i < lines.length; i++) {
@@ -91,18 +97,17 @@ export function parseCsv(text: string): ParsedTable {
 }
 
 export function parseJsonTable(text: string): ParsedTable {
-  const data = JSON.parse(text);
+  const data: unknown = JSON.parse(text);
   // Biçim A: [{k: v, ...}, ...]
   if (Array.isArray(data)) {
     if (data.length === 0) return { headers: [], rows: [], rowCount: 0, preview: [] };
-    const first = data[0];
+    const first: unknown = data[0];
     if (typeof first !== 'object' || first === null) {
       throw new Error('JSON dizisi obje elemanları içermeli.');
     }
-    const headers = Array.from(
-      new Set(data.flatMap((o: any) => Object.keys(o))),
-    );
-    const rows = data.map((o: any) => {
+    const objects = data as Array<Record<string, unknown>>;
+    const headers = Array.from(new Set(objects.flatMap((o) => Object.keys(o))));
+    const rows = objects.map((o) => {
       const r: Record<string, string> = {};
       for (const h of headers) r[h] = o[h] !== undefined && o[h] !== null ? String(o[h]) : '';
       return r;
@@ -111,13 +116,17 @@ export function parseJsonTable(text: string): ParsedTable {
   }
   // Biçim B: {k: [...], k2: [...]}
   if (typeof data === 'object' && data !== null) {
-    const headers = Object.keys(data);
-    const len = headers.reduce((m, k) => Math.max(m, Array.isArray(data[k]) ? data[k].length : 0), 0);
+    const columns = data as Record<string, unknown>;
+    const headers = Object.keys(columns);
+    const len = headers.reduce((m, k) => {
+      const col = columns[k];
+      return Math.max(m, Array.isArray(col) ? col.length : 0);
+    }, 0);
     const rows: Array<Record<string, string>> = [];
     for (let i = 0; i < len; i++) {
       const r: Record<string, string> = {};
       for (const h of headers) {
-        const col = data[h];
+        const col = columns[h];
         r[h] = Array.isArray(col) && col[i] !== undefined && col[i] !== null ? String(col[i]) : '';
       }
       rows.push(r);

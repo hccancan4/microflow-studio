@@ -37,7 +37,7 @@ import { buildGridLines } from './canvasGrid';
 import { useSimulationStore } from '../../stores/useSimulationStore';
 import { useCursorStore } from '../../stores/useCursorStore';
 
-import type { ComponentType, ChipComponent } from '../../types';
+import type { ComponentType, ChipComponent, PortParams } from '../../types';
 import { getDefaultParams } from '../../utils/componentDefaults';
 import { worldBbox, bboxesIntersect } from '../../utils/componentBbox';
 import { TOKENS } from '../../theme/tokens';
@@ -172,8 +172,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
   // Stage container DOM node'una refreshCursor'u attach et.
   useEffect(() => {
     const c = stageRef.current?.container() as
-      | (HTMLDivElement & { __refreshCursor?: () => void })
-      | undefined;
+      (HTMLDivElement & { __refreshCursor?: () => void }) | undefined;
     if (c) c.__refreshCursor = refreshCursor;
     return () => {
       if (c) delete c.__refreshCursor;
@@ -423,7 +422,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
         // Port tipi: Sidebar'daki "Çıkış Portu" için outlet'e çevir
         const params = getDefaultParams(type);
         if (type === 'port' && portType) {
-          (params as any).portType = portType;
+          (params as PortParams).portType = portType;
         }
 
         const newComp: ChipComponent = {
@@ -670,15 +669,7 @@ const CanvasEditor: React.FC<CanvasEditorProps> = ({ width, height }) => {
 
       setContextMenu({ x: e.evt.clientX, y: e.evt.clientY, items });
     },
-    [
-      selectedIds,
-      components,
-      setSelected,
-      removeComponents,
-      copySelected,
-      duplicateSelected,
-      rotateSelected,
-    ],
+    [selectedIds, setSelected, removeComponents, copySelected, duplicateSelected, rotateSelected],
   );
 
   // ── Bağlantı sağ tık menüsü ──────────────────────────────────────────────

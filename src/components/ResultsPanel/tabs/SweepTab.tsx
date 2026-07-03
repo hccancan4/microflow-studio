@@ -18,7 +18,7 @@ import { useSweepStore } from '../../../features/sweep/useSweepStore';
 import { sweepResultsToCsv } from '../../../features/sweep/sweepRunner';
 import { toast } from '../../../stores/useUiStore';
 import { TOKENS, CHART_SERIES } from '../../../theme/tokens';
-import { AXIS_TICK, TOOLTIP_STYLE } from '../shared';
+import { AXIS_TICK, TOOLTIP_STYLE } from '../constants';
 
 export const SweepTab: React.FC = () => {
   const config = useSweepStore((s) => s.config);

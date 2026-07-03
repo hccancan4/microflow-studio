@@ -17,7 +17,8 @@ import { useSimulationStore } from '../../../stores/useSimulationStore';
 import { useExperimentStore } from '../../../features/experiment/useExperimentStore';
 import { colormapCssGradient, colormap as colormapEval } from '../../../utils/colormaps';
 import { TOKENS, CHART_SERIES } from '../../../theme/tokens';
-import { MetricCard, AXIS_TICK, TOOLTIP_STYLE } from '../shared';
+import { MetricCard } from '../shared';
+import { AXIS_TICK, TOOLTIP_STYLE } from '../constants';
 import type { CfdField, ColormapType, ExperimentDataSet } from '../../../types';
 
 export const CfdView: React.FC<{

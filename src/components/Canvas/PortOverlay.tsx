@@ -91,7 +91,7 @@ const PortOverlay: React.FC<PortOverlayProps> = ({
 
   /** Port'a tıklama */
   const handlePortClick = (
-    e: any,
+    e: Konva.KonvaEventObject<MouseEvent>,
     compId: string,
     portIndex: number,
     canvasPos: { x: number; y: number },

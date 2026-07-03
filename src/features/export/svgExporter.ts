@@ -10,9 +10,22 @@
  * yayımlanabilir vektör çizim üretmek için yeterlidir. Tam raster için
  * PNG exporter'ı (exportRenderer.tsx) kullanılmalıdır.
  */
-import type { ChipComponent, Connection } from '../../types';
+import type {
+  ChipComponent,
+  Connection,
+  StraightChannelParams,
+  CurvedChannelParams,
+  TJunctionParams,
+  YJunctionParams,
+  SerpentineMixerParams,
+  ExpansionParams,
+  DropletGeneratorParams,
+  FilterArrayParams,
+  ReservoirParams,
+  PortParams,
+} from '../../types';
 import { getAllCanvasPorts } from '../../utils/portUtils';
-import { computeDesignBBox } from './exportRenderer';
+import { computeDesignBBox } from './designBBox';
 import { COMPONENT_COLORS, PORT_COLORS } from '../../theme/componentColors';
 import { TOKENS } from '../../theme/tokens';
 
@@ -42,19 +55,20 @@ function escapeXml(s: string): string {
 
 /** Tek bir bileşenin SVG parçasını üretir (origin: bileşenin position'ı). */
 function componentSvg(c: ChipComponent): string {
-  const p: any = c.params;
   const t = c.type;
   const transform = `translate(${c.position.x} ${c.position.y}) rotate(${c.rotation})`;
 
   let body = '';
   switch (t) {
     case 'straight_channel': {
+      const p = c.params as StraightChannelParams;
       // Lokal: (0, -w/2) → (length, +w/2)
       body = `<rect x="0" y="${-p.width / 2}" width="${p.length}" height="${p.width}"
               fill="${COLOR_CHANNEL}" fill-opacity="0.85" stroke="${COLOR_CHANNEL_DRK}" stroke-width="10" />`;
       break;
     }
     case 'curved_channel': {
+      const p = c.params as CurvedChannelParams;
       const r = p.radius;
       const ang = (p.angle * Math.PI) / 180;
       const ex = r * Math.sin(ang);
@@ -78,6 +92,7 @@ function componentSvg(c: ChipComponent): string {
       break;
     }
     case 't_junction': {
+      const p = c.params as TJunctionParams;
       const mw = p.mainWidth;
       const bw = p.branchWidth;
       const armLen = mw * 5;
@@ -88,6 +103,7 @@ function componentSvg(c: ChipComponent): string {
       break;
     }
     case 'y_junction': {
+      const p = c.params as YJunctionParams;
       const mw = p.mainWidth;
       const armLen = mw * 5;
       body = `<polygon points="${-armLen},${mw / 2} ${armLen},${mw / 2} 0,${armLen + mw / 2}"
@@ -95,6 +111,7 @@ function componentSvg(c: ChipComponent): string {
       break;
     }
     case 'serpentine_mixer': {
+      const p = c.params as SerpentineMixerParams;
       const cw = p.channelWidth;
       const pitch = p.pitch;
       const turns = p.turns;
@@ -106,6 +123,7 @@ function componentSvg(c: ChipComponent): string {
       break;
     }
     case 'expansion': {
+      const p = c.params as ExpansionParams;
       const il = p.inletWidth,
         ol = p.outletWidth,
         L = p.length;
@@ -114,6 +132,7 @@ function componentSvg(c: ChipComponent): string {
       break;
     }
     case 'droplet_generator': {
+      const p = c.params as DropletGeneratorParams;
       const w = p.mainChannelWidth;
       body = `<rect x="0" y="${-w / 2}" width="${w * 4}" height="${w}"
               fill="${COLOR_JUNCTION}" fill-opacity="0.85" stroke="#8a4500" stroke-width="10" />
@@ -122,6 +141,7 @@ function componentSvg(c: ChipComponent): string {
       break;
     }
     case 'filter_array': {
+      const p = c.params as FilterArrayParams;
       const cols = p.columns,
         rows = p.rows,
         sp = p.spacing,
@@ -138,11 +158,13 @@ function componentSvg(c: ChipComponent): string {
       break;
     }
     case 'reservoir': {
+      const p = c.params as ReservoirParams;
       body = `<rect x="0" y="0" width="${p.width}" height="${p.height}"
               fill="${COLOR_RESERVOIR}" fill-opacity="0.6" stroke="#4a1259" stroke-width="12" rx="${Math.min(p.width, p.height) * 0.1}" />`;
       break;
     }
     case 'port': {
+      const p = c.params as PortParams;
       const d = p.diameter;
       body = `<circle cx="0" cy="0" r="${d / 2}" fill="${COLOR_PORT}" fill-opacity="0.85" stroke="#1b5e20" stroke-width="10" />`;
       break;

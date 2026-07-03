@@ -116,12 +116,12 @@ const ExperimentImportDialog: React.FC<Props> = ({ open, onCancel, onConfirm, su
         const parsed = parseTable(text, selected);
         setTable(parsed);
         if (!name) setName((selected.split(/[\\/]/).pop() ?? 'deney').replace(/\.[^.]+$/, ''));
-      } catch (e: any) {
-        setErr(`Dosya okunamadı: ${e.message ?? e}`);
+      } catch (e: unknown) {
+        setErr(`Dosya okunamadı: ${e instanceof Error ? e.message : String(e)}`);
         setTable(null);
       }
-    } catch (e: any) {
-      setErr(`Dosya seçilemedi: ${e}`);
+    } catch (e: unknown) {
+      setErr(`Dosya seçilemedi: ${String(e)}`);
     }
   };
 

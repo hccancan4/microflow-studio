@@ -4,7 +4,8 @@
  */
 import React, { useState } from 'react';
 import './monacoSetup'; // Monaco'yu yerel bundle'a bağla (CDN'siz / offline)
-import Editor from '@monaco-editor/react';
+import Editor, { type OnMount } from '@monaco-editor/react';
+import type { editor as monacoEditorNs } from 'monaco-editor';
 import { useProjectStore } from '../../stores/useProjectStore';
 import {
   FiPlay,
@@ -63,7 +64,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({
     bracketPairColorization: { enabled: true },
   };
 
-  const handleEditorMount = (editor: any, monaco: any) => {
+  const handleEditorMount: OnMount = (editor, monaco) => {
     // Özel koyu tema tanımla
     monaco.editor.defineTheme('mf-dark', {
       base: 'vs-dark',
@@ -260,7 +261,7 @@ const ScriptEditor: React.FC<ScriptEditorProps> = ({
     const runDiagnostics = () => {
       const model = editor.getModel();
       if (!model) return;
-      const markers: any[] = [];
+      const markers: monacoEditorNs.IMarkerData[] = [];
       const lines = model.getLinesContent();
       const keywordsOpeningBlock = /\b(function|then|do)\b/;
       const keywordClosingBlock = /\bend\b/;

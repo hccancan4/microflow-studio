@@ -24,7 +24,8 @@ import { useExperimentStore } from '../../../features/experiment/useExperimentSt
 import { computeMetrics } from '../../../features/experiment/experimentMetrics';
 import { TOKENS, CHART_SERIES } from '../../../theme/tokens';
 import { confirmAsync } from '../../../stores/useUiStore';
-import { MetricCard, MetricsCard, ChartCard, AXIS_TICK, TOOLTIP_STYLE } from '../shared';
+import { MetricCard, MetricsCard, ChartCard } from '../shared';
+import { AXIS_TICK, TOOLTIP_STYLE } from '../constants';
 import type {
   AnalyticResult,
   VelocityProfile,
@@ -33,13 +34,7 @@ import type {
 } from '../../../types';
 
 export type TabKey =
-  | 'summary'
-  | 'components'
-  | 'charts'
-  | 'profile'
-  | 'experiment'
-  | 'validation'
-  | 'sweep';
+  'summary' | 'components' | 'charts' | 'profile' | 'experiment' | 'validation' | 'sweep';
 
 export const AnalyticView: React.FC<{
   result: SimulationResult;
