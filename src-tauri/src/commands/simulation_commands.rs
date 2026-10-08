@@ -7,7 +7,7 @@
 use crate::simulation::{
     analytic::{analyze_design, AnalyticDesignResult, DesignComponent, DesignConnection},
     cfd::{CfdParams, CfdField, solve_stokes_2d},
-    hydraulic::{self, BranchSpec, FeedSpec, TargetSpec},
+    hydraulic::{self, BranchSpec, FeedSpec, SolveSpec, TargetSpec},
     FluidProperties,
 };
 use serde::{Deserialize, Serialize};
@@ -75,15 +75,16 @@ pub fn solve_targets(req: SolveTargetsRequest) -> Result<Vec<BranchSpec>, String
         viscosity: req.fluid_viscosity,
         density: req.fluid_density,
     };
-    hydraulic::solve_targets(
-        req.p_in_pa,
-        &fluid,
-        req.w_um,
-        req.h_um,
-        req.cell_mm,
-        req.feed.as_ref(),
-        &req.targets,
-    )
+    let spec = SolveSpec {
+        p_in_pa: req.p_in_pa,
+        w_um: req.w_um,
+        h_um: req.h_um,
+        cell_mm: req.cell_mm,
+        feed: req.feed,
+        // İstek DTO'su pürüzlülük taşımıyor: komut pürüzsüz (κ = 1) çözer.
+        rr: 0.0,
+    };
+    hydraulic::solve_targets(&spec, &fluid, &req.targets)
 }
 
 /// CFD simülasyon — gerçek 2D Stokes projeksiyon çözücüsü.
